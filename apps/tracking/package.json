@@ -1,0 +1,23 @@
+{
+  "name": "@adscrush/tracking",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@adscrush/db": "workspace:*",
+    "@adscrush/shared": "workspace:*",
+    "elysia": "^1.3.4",
+    "ua-parser-js": "^2.0.3"
+  },
+  "devDependencies": {
+    "@adscrush/typescript-config": "workspace:*",
+    "@types/bun": "^1.2.17",
+    "@types/ua-parser-js": "^0.7.39",
+    "typescript": "^5.9.3"
+  }
+}

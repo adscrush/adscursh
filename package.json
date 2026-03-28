@@ -13,7 +13,8 @@
     "db:push": "turbo db:push --filter=@adscrush/db",
     "db:generate": "turbo db:generate --filter=@adscrush/db",
     "db:migrate": "turbo db:migrate --filter=@adscrush/db",
-    "db:studio": "pnpm --filter @adscrush/db db:studio"
+    "db:studio": "pnpm --filter @adscrush/db db:studio",
+    "deploy:web-sdk:pages": "pnpm --filter @adscrush/web-sdk deploy:pages"
   },
   "devDependencies": {
     "@adscrush/eslint-config": "workspace:*",
