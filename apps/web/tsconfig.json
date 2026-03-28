@@ -1,10 +1,17 @@
 {
-  "extends": "@workspace/typescript-config/nextjs.json",
+  "extends": "@adscrush/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@adscrush/ui/globals.css": [
+        "../../packages/ui/src/styles/globals.css"
+      ],
+      "@adscrush/ui/*": [
+        "../../packages/ui/src/*"
+      ]
     },
     "plugins": [
       {
@@ -19,5 +26,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

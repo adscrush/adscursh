@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@adscrush/ui", "@adscrush/shared", "@adscrush/auth"],
 }
 
 export default nextConfig

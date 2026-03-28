@@ -1,10 +1,10 @@
 {
-  "name": "web",
+  "name": "@adscrush/web",
   "version": "0.0.1",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -12,20 +12,24 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@adscrush/auth": "workspace:*",
+    "@adscrush/shared": "workspace:*",
+    "@adscrush/ui": "workspace:*",
     "@tabler/icons-react": "^3.40.0",
-    "@workspace/ui": "workspace:*",
+    "@tanstack/react-table": "^8.21.3",
+    "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@adscrush/eslint-config": "workspace:^",
+    "@adscrush/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.1.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "@workspace/eslint-config": "workspace:^",
-    "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
   }
