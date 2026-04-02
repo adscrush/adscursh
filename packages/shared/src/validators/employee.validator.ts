@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const createEmployeeSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
   department: z.string().optional(),
   role: z.enum(["admin", "employee"]).default("employee"),

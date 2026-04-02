@@ -13,7 +13,7 @@ import {
   createEmployeeSchema,
   updateEmployeeSchema,
   updateEmployeeAccessSchema,
-} from "@adscrush/shared/validators"
+} from "@adscrush/shared/validators/employee.validator"
 
 export const employeeRoutes = new Elysia({ prefix: "/api/employees" })
   .use(requireAdmin)
@@ -47,7 +47,6 @@ export const employeeRoutes = new Elysia({ prefix: "/api/employees" })
           name: parsed.data.name,
           email: parsed.data.email,
           password: parsed.data.password,
-          role: parsed.data.role,
         },
       })
 

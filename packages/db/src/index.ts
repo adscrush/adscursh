@@ -1,2 +1,2 @@
-export { createDatabase, type Database, type DatabaseConfig } from "./client";
-export * from "./schema/index";
+export { createDatabase, type Database, type DatabaseConfig } from "./client"
+export * from "./schema/index"

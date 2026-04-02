@@ -10,7 +10,7 @@ import {
 import {
   createAffiliateSchema,
   updateAffiliateSchema,
-} from "@adscrush/shared/validators"
+} from "@adscrush/shared/validators/affiliate.validator"
 
 export const affiliateRoutes = new Elysia({ prefix: "/api/affiliates" })
   .use(requireAuth)

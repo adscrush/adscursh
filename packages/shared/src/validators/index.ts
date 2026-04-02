@@ -1,5 +1,0 @@
-export * from "./auth.validator.js"
-export * from "./employee.validator.js"
-export * from "./advertiser.validator.js"
-export * from "./affiliate.validator.js"
-export * from "./offer.validator.js"

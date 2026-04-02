@@ -1,11 +1,13 @@
 # ── API ──────────────────────────────────
-api.localhost {
-	reverse_proxy localhost:8989
+api.adscrush.local {
+
+  reverse_proxy localhost:9999
 }
 
 # ── Dashboard ────────────────────────────
-app.localhost {
-	reverse_proxy localhost:3000
+app.adscrush.local {
+
+  reverse_proxy localhost:3000
 }
 
 # ── Tracking (when ready) ────────────────

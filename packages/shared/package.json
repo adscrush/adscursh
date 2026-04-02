@@ -4,10 +4,11 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/index.ts",
     "./constants": "./src/constants/index.ts",
-    "./validators": "./src/validators/index.ts",
-    "./types": "./src/types/index.ts"
+    "./validators/*": "./src/validators/*.ts",
+    "./types": "./src/types/index.ts",
+    "./utils/*": "./src/utils/*.ts",
+    "./lib/*": "./src/lib/*.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -15,12 +16,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "nanoid": "^5.1.7",
+    "nodemailer": "^8.0.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@adscrush/eslint-config": "workspace:*",
     "@adscrush/typescript-config": "workspace:*",
     "@types/node": "^25.1.0",
+    "@types/nodemailer": "^7.0.11",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
   }

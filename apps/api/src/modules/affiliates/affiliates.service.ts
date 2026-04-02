@@ -1,7 +1,10 @@
 import { eq, like, sql, and, type SQL, inArray } from "@adscrush/db/drizzle"
 import type { Database } from "@adscrush/db"
 import { affiliates } from "@adscrush/db/schema"
-import type { CreateAffiliateInput, UpdateAffiliateInput } from "@adscrush/shared/validators"
+import type {
+  CreateAffiliateInput,
+  UpdateAffiliateInput,
+} from "@adscrush/shared/validators/affiliate.validator"
 
 interface ListParams {
   page?: number

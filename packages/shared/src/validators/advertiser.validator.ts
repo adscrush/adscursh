@@ -3,9 +3,9 @@ import { z } from "zod"
 export const createAdvertiserSchema = z.object({
   name: z.string().min(1),
   companyName: z.string().optional(),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8).optional(),
-  website: z.string().url().optional().or(z.literal("")),
+  website: z.url().optional().or(z.literal("")),
   country: z.string().optional(),
   accountManagerId: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]).default("active"),
@@ -14,8 +14,8 @@ export const createAdvertiserSchema = z.object({
 export const updateAdvertiserSchema = z.object({
   name: z.string().min(1).optional(),
   companyName: z.string().optional(),
-  email: z.string().email().optional(),
-  website: z.string().url().optional().or(z.literal("")),
+  email: z.email().optional(),
+  website: z.url().optional().or(z.literal("")),
   country: z.string().optional(),
   accountManagerId: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]).optional(),

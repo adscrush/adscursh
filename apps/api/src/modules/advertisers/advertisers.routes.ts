@@ -10,7 +10,7 @@ import {
 import {
   createAdvertiserSchema,
   updateAdvertiserSchema,
-} from "@adscrush/shared/validators"
+} from "@adscrush/shared/validators/advertiser.validator"
 
 export const advertiserRoutes = new Elysia({ prefix: "/api/advertisers" })
   .use(requireAuth)

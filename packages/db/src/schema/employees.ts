@@ -1,17 +1,13 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-} from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core"
 import { users } from "./auth"
+import { generateId } from "@adscrush/shared/lib/id"
 
 export const employees = pgTable(
   "employees",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => generateId("employee")),
     userId: text("user_id")
       .notNull()
       .unique()

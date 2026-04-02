@@ -15,11 +15,14 @@
     "@adscrush/shared": "workspace:*",
     "@elysiajs/cors": "^1.3.1",
     "@elysiajs/openapi": "^1.4.14",
-    "elysia": "^1.3.4"
+    "elysia": "^1.3.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@adscrush/typescript-config": "workspace:*",
-    "@types/bun": "^1.2.17",
+    "@types/bun": "^1.3.11",
+    "dotenv": "^17.2.2",
+    "dotenv-expand": "^12.0.3",
     "typescript": "^5.9.3"
   }
 }

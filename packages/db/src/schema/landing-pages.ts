@@ -1,15 +1,11 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-} from "drizzle-orm/pg-core"
-import { offers } from "./offers.js"
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core"
+import { offers } from "./offers"
+import { generateId } from "@adscrush/shared/lib/id"
 
 export const landingPages = pgTable("landing_pages", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => generateId("landing_page")),
   offerId: text("offer_id")
     .notNull()
     .references(() => offers.id, { onDelete: "cascade" }),

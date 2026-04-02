@@ -3,7 +3,7 @@
 import { SidebarProvider, SidebarInset } from "@adscrush/ui/components/sidebar"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AppHeader } from "@/components/layout/app-header"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 

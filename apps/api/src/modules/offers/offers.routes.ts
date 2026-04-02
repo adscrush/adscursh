@@ -24,7 +24,7 @@ import {
   assignAffiliateSchema,
   updateOfferAffiliateSchema,
   bulkOfferAffiliateSchema,
-} from "@adscrush/shared/validators"
+} from "@adscrush/shared/validators/offer.validator"
 
 export const offerRoutes = new Elysia({ prefix: "/api/offers" })
   .use(requireAuth)

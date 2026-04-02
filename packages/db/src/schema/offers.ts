@@ -1,16 +1,11 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  numeric,
-} from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean, numeric } from "drizzle-orm/pg-core"
 import { advertisers } from "./advertisers"
+import { generateId } from "@adscrush/shared/lib/id"
 
 export const offers = pgTable("offers", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => generateId("offer")),
   advertiserId: text("advertiser_id")
     .notNull()
     .references(() => advertisers.id, { onDelete: "cascade" }),

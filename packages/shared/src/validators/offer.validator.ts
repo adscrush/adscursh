@@ -4,15 +4,15 @@ export const createOfferSchema = z.object({
   name: z.string().min(1),
   advertiserId: z.string().min(1),
   description: z.string().optional(),
-  offerUrl: z.string().url(),
-  previewUrl: z.string().url().optional().or(z.literal("")),
+  offerUrl: z.url(),
+  previewUrl: z.url().optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "paused", "expired"]).default("active"),
   payoutType: z.enum(["CPA", "CPC", "CPL", "CPS"]).default("CPA"),
   defaultPayout: z.string().default("0"),
   defaultRevenue: z.string().default("0"),
   currency: z.string().default("USD"),
   targetGeo: z.string().optional(),
-  fallbackUrl: z.string().url().optional().or(z.literal("")),
+  fallbackUrl: z.url().optional().or(z.literal("")),
   allowMultiConversion: z.boolean().default(false),
 })
 
@@ -22,8 +22,8 @@ export const updateOfferSchema = createOfferSchema.partial().omit({
 
 export const createLandingPageSchema = z.object({
   name: z.string().min(1),
-  url: z.string().url(),
-  weight: z.number().int().min(1).default(1),
+  url: z.url(),
+  weight: z.int().min(1).default(1),
   status: z.enum(["active", "inactive"]).default("active"),
 })
 

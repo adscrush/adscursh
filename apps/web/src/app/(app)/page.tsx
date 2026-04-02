@@ -5,7 +5,8 @@ import TestimonialSection from "@/features/home/components/testimonial";
 import FAQSection from "@/features/home/components/faq";
 import CTASection from "@/features/home/components/cta";
 
-export default function RootPage() {
+export default async function RootPage() {
+
 
     return (
         <>

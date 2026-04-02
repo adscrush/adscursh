@@ -1,10 +1,11 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { employees } from "./employees"
+import { generateId } from "@adscrush/shared/lib/id"
 
 export const advertisers = pgTable("advertisers", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => generateId("advertiser")),
   name: text("name").notNull(),
   companyName: text("company_name"),
   email: text("email").notNull(),

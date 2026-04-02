@@ -6,13 +6,14 @@ import {
   numeric,
   index,
 } from "drizzle-orm/pg-core"
+import { generateId } from "@adscrush/shared/lib/id"
 
 export const conversions = pgTable(
   "conversions",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => generateId("conversion")),
     clickId: text("click_id").notNull(),
     offerId: text("offer_id").notNull(),
     affiliateId: text("affiliate_id").notNull(),

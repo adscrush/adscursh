@@ -4,7 +4,7 @@ import { SidebarTrigger } from "@adscrush/ui/components/sidebar"
 import { Separator } from "@adscrush/ui/components/separator"
 import { Button } from "@adscrush/ui/components/button"
 import { IconLogout } from "@tabler/icons-react"
-import { signOut } from "@/lib/auth-client"
+import { signOut } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 
 export function AppHeader({ title }: { title?: string }) {

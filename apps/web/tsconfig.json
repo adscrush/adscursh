@@ -6,9 +6,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@adscrush/ui/globals.css": [
-        "../../packages/ui/src/styles/globals.css"
-      ],
       "@adscrush/ui/*": [
         "../../packages/ui/src/*"
       ]

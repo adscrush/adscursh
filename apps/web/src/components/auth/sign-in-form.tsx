@@ -1,0 +1,215 @@
+"use client"
+
+import { signIn } from "@/lib/auth/client"
+import {
+  signInSchema,
+  type SignInForm,
+} from "@adscrush/shared/validators/auth.schema"
+import { Button } from "@adscrush/ui/components/button"
+import { Checkbox } from "@adscrush/ui/components/checkbox"
+import { Input } from "@adscrush/ui/components/input"
+import { Label } from "@adscrush/ui/components/label"
+import { toast } from "@adscrush/ui/sonner"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { EyeIcon, EyeOffIcon } from "lucide-react"
+import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { AuthLayout } from "./auth-layout"
+
+export function SignInForm() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInForm>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  })
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: callbackUrl,
+      })
+    } catch (error) {
+      toast.error("Failed to sign in with Google")
+      console.error(error)
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
+  const onSubmit = async (data: SignInForm) => {
+    try {
+      const { error } = await signIn.email({
+        email: data.email,
+        password: data.password,
+        callbackURL: callbackUrl,
+      })
+
+      if (error) {
+        toast.error(error.message || "Invalid email or password")
+      } else {
+        toast.success("Signed in successfully!")
+        router.push(callbackUrl)
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred")
+      console.error(error)
+    }
+  }
+
+  const isLoading = isSubmitting || isGoogleLoading
+
+  return (
+    <AuthLayout title="Sign In" description="Welcome back to Adscrush.">
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="your.email@example.com"
+            {...register("email")}
+            disabled={isLoading}
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            <Link
+              href={`/auth/forgot-password${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              {...register("password")}
+              disabled={isLoading}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <EyeIcon className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+          </div>
+          {errors.password && (
+            <p className="text-sm text-destructive">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox id="rememberMe" {...register("rememberMe")} />
+          <Label htmlFor="rememberMe" className="text-sm font-normal">
+            Remember me
+          </Label>
+        </div>
+
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isSubmitting ? "Signing in..." : "Sign In"}
+        </Button>
+      </form>
+
+      <div className="flex w-full items-center justify-center">
+        <div className="h-px w-full bg-border" />
+        <span className="px-2 text-xs text-muted-foreground">OR</span>
+        <div className="h-px w-full bg-border" />
+      </div>
+
+      <div className="space-y-2">
+        <Button
+          className="w-full"
+          variant="outline"
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+        >
+          <GoogleIcon className="mr-2 h-4 w-4" />
+          Continue with Google
+        </Button>
+
+        <Button
+          className="w-full"
+          variant="ghost"
+          type="button"
+          asChild
+          disabled={isLoading}
+        >
+          <Link
+            href={`/auth/magic-link${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+          >
+            Sign in with Magic Link
+          </Link>
+        </Button>
+      </div>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Don&apos;t have an account?{" "}
+        <Link
+          href={`/auth/sign-up${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          Sign up
+        </Link>
+      </p>
+
+      <p className="text-xs text-muted-foreground">
+        By signing in, you agree to our{" "}
+        <a className="underline underline-offset-4 hover:text-primary" href="#">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a className="underline underline-offset-4 hover:text-primary" href="#">
+          Privacy Policy
+        </a>
+        .
+      </p>
+    </AuthLayout>
+  )
+}
+
+const GoogleIcon = (props: React.ComponentProps<"svg">) => (
+  <svg
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <g>
+      <path d="M12.479,14.265v-3.279h11.049c0.108,0.571,0.164,1.247,0.164,1.979c0,2.46-0.672,5.502-2.84,7.669C18.744,22.829,16.051,24,12.483,24C5.869,24,0.308,18.613,0.308,12S5.869,0,12.483,0c3.659,0,6.265,1.436,8.223,3.307L18.392,5.62c-1.404-1.317-3.307-2.341-5.913-2.341C7.65,3.279,3.873,7.171,3.873,12s3.777,8.721,8.606,8.721c3.132,0,4.916-1.258,6.059-2.401c0.927-0.927,1.537-2.251,1.777-4.059L12.479,14.265z" />
+    </g>
+  </svg>
+)

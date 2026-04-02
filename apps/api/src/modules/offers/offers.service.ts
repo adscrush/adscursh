@@ -11,7 +11,7 @@ import type {
   UpdateOfferInput,
   CreateLandingPageInput,
   AssignAffiliateInput,
-} from "@adscrush/shared/validators"
+} from "@adscrush/shared/validators/offer.validator"
 
 interface ListParams {
   page?: number
@@ -47,7 +47,10 @@ export async function listOffers(db: Database, params: ListParams) {
       .limit(limit)
       .offset(offset)
       .orderBy(offers.createdAt),
-    db.select({ count: sql<number>`count(*)` }).from(offers).where(where),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(offers)
+      .where(where),
   ])
 
   const total = Number(countResult[0]?.count ?? 0)
@@ -234,7 +237,8 @@ export async function updateOfferAffiliate(
 ) {
   const values: Record<string, unknown> = {}
   if (data.status !== undefined) values["status"] = data.status
-  if (data.customPayout !== undefined) values["customPayout"] = data.customPayout
+  if (data.customPayout !== undefined)
+    values["customPayout"] = data.customPayout
   if (data.customRevenue !== undefined)
     values["customRevenue"] = data.customRevenue
 
