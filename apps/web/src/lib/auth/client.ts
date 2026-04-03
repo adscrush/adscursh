@@ -1,9 +1,10 @@
 "use client"
 
 import { createAuthClient } from "@adscrush/auth/client"
+import { env } from "@/env"
 
 export const authClient = createAuthClient({
-  baseURL: "https://api.adscrush.local",
+  baseURL: env.NEXT_PUBLIC_API_URL,
   basePath: "/api/v1/auth",
 })
 
