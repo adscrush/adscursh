@@ -1,44 +1,20 @@
-"use client"
+import { DashboardSidebar } from "@/features/dashboard/components/dashboard-sidebar"
+import { SidebarInset, SidebarProvider } from "@adscrush/ui/components/sidebar"
+import { cookies } from "next/headers"
 
-import { SidebarProvider, SidebarInset } from "@adscrush/ui/components/sidebar"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { AppHeader } from "@/components/layout/app-header"
-import { useSession } from "@/lib/auth/client"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, isPending } = useSession()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!isPending && !session) {
-      router.push("/login")
-    }
-  }, [session, isPending, router])
-
-  if (isPending) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <div className="text-muted-foreground text-sm">Loading...</div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return null
-  }
+  const cookieStore = await cookies()
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <AppHeader />
-        <main className="flex-1 p-6">{children}</main>
+    <SidebarProvider defaultOpen={defaultOpen} className="h-svh">
+      <DashboardSidebar />
+      <SidebarInset className="min-h-0 min-w-0">
+        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

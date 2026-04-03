@@ -39,3 +39,4 @@ npm-debug.log*
 .agent
 .pnpm-store
 docs/*
+.kilo/*

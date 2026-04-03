@@ -5,7 +5,7 @@ import { Input } from "@adscrush/ui/components/input"
 import { Label } from "@adscrush/ui/components/label"
 import { signUp } from "@/lib/auth/client"
 import {
-  signUpSchema,
+  signUpBaseSchema,
   type SignUpForm,
 } from "@adscrush/shared/validators/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -31,7 +31,7 @@ export function SignUpForm() {
     formState: { errors, isSubmitting },
   } = useForm<SignUpForm>({
     resolver: zodResolver(
-      signUpSchema.pick({ name: true, email: true, password: true })
+      signUpBaseSchema.pick({ name: true, email: true, password: true })
     ),
     defaultValues: {
       name: "",

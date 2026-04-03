@@ -18,18 +18,21 @@ export const signInSchema = z.object({
 })
 
 // Sign Up
-export const signUpSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email address").toLowerCase().trim(),
-    password: passwordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-    role: z.enum(ROLES).default(ROLES.EMPLOYEE),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
+export const signUpBaseSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address").toLowerCase().trim(),
+  password: passwordSchema,
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  role: z.enum(ROLES).default(ROLES.EMPLOYEE),
+})
+
+export const signUpSchema = signUpBaseSchema.refine(
+  (data) => data.password === data.confirmPassword,
+  {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  },
+)
 
 // Reset Password
 export const resetPasswordSchema = z

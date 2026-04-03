@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { PageHeader } from "@/components/common/page-header"
 import { StatCard } from "@/components/common/stat-card"
-import { apiGet } from "@/lib/api-client"
 
 interface OverviewData {
   clicks: number
@@ -18,13 +17,6 @@ export default function DashboardPage() {
   const [overview, setOverview] = useState<OverviewData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    apiGet<{ success: boolean; data: OverviewData }>("/api/reports/overview")
-      .then((res) => setOverview(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -33,9 +25,7 @@ export default function DashboardPage() {
       />
 
       {loading ? (
-        <div className="text-muted-foreground text-sm">
-          Loading stats...
-        </div>
+        <div className="text-sm text-muted-foreground">Loading stats...</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <StatCard

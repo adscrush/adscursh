@@ -2,7 +2,7 @@
 
 import { signUp } from "@/lib/auth/client"
 import {
-  signUpSchema,
+  signUpBaseSchema,
   type SignUpForm,
 } from "@adscrush/shared/validators/auth.schema"
 import { Button } from "@adscrush/ui/components/button"
@@ -28,7 +28,7 @@ const SignUp = () => {
     formState: { errors },
   } = useForm<Pick<SignUpForm, "name" | "email" | "password">>({
     resolver: zodResolver(
-      signUpSchema.pick({ name: true, email: true, password: true })
+      signUpBaseSchema.pick({ name: true, email: true, password: true })
     ),
     defaultValues: {
       name: "",
