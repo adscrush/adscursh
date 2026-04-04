@@ -3,7 +3,7 @@
 import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import { Label } from "@adscrush/ui/components/label"
-import { signUp } from "@/lib/auth/client"
+import { getCallbackURL, signUp } from "@/lib/auth/client"
 import {
   signUpBaseSchema,
   type SignUpForm,
@@ -22,7 +22,8 @@ export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const callbackUrl = getCallbackURL(rawCallbackUrl)
 
   const {
     register,

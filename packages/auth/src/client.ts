@@ -4,24 +4,23 @@ import type { Auth } from "./server";
 
 
 interface CreateAuthClientProps {
-    baseURL: string
-    basePath: string
+  baseURL: string
+  basePath?: string
 }
 
 export const createAuthClient = (props: CreateAuthClientProps) =>
-    createBetterAuthClient({
-        baseURL: props.baseURL,
-        basePath: props.basePath ?? '/api/v1/auth',
-        plugins: [
-            magicLinkClient(),
-            inferAdditionalFields<Auth>(),
-            customSessionClient<Auth>(),
-        ],
-        fetchOptions: {
-            credentials: "include"
-        }
+  createBetterAuthClient({
+    baseURL: props.baseURL,
+    basePath: props.basePath ?? "/api/v1/auth",
+    plugins: [
+      magicLinkClient(),
+      inferAdditionalFields<Auth>(),
+      customSessionClient<Auth>(),
+    ],
+    fetchOptions: {
+      credentials: "include",
     },
-    )
+  })
 
 
 /**

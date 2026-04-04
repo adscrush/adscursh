@@ -7,6 +7,7 @@ import { cn } from "@adscrush/ui/lib/utils"
 import { Toaster } from "@adscrush/ui/components/sonner"
 import { RevealEffect } from "@/components/common/reveal-effect"
 import { Metadata, Viewport } from "next"
+import NextTopLoader from "nextjs-toploader"
 
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
 
@@ -59,6 +60,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <NextTopLoader color="#2299DD" showSpinner={false} />
           <TooltipProvider>
             {children}
             <RevealEffect />

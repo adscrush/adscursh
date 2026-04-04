@@ -1,6 +1,6 @@
 "use client"
 
-import { requestPasswordReset } from "@/lib/auth/client"
+import { getCallbackURL, requestPasswordReset } from "@/lib/auth/client"
 import {
   forgotPasswordSchema,
   type ForgotPasswordForm,
@@ -21,7 +21,8 @@ export function ForgotPasswordForm() {
   const [emailSent, setEmailSent] = useState(false)
   const [sentEmail, setSentEmail] = useState("")
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const callbackUrl = getCallbackURL(rawCallbackUrl)
 
   const {
     register,
@@ -38,7 +39,7 @@ export function ForgotPasswordForm() {
     try {
       const { error } = await requestPasswordReset({
         email: data.email,
-        redirectTo: `/auth/reset-password?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        redirectTo: getCallbackURL(`/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`),
       })
 
       if (error) {
@@ -59,7 +60,7 @@ export function ForgotPasswordForm() {
     try {
       const { error } = await requestPasswordReset({
         email: sentEmail,
-        redirectTo: `/auth/reset-password?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        redirectTo: getCallbackURL(`/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`),
       })
 
       if (error) {

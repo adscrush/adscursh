@@ -1,6 +1,6 @@
 "use client"
 
-import { authClient, signIn } from "@/lib/auth/client"
+import { authClient, getCallbackURL, signIn } from "@/lib/auth/client"
 import {
   magicLinkRequestSchema,
   type MagicLinkRequestForm,
@@ -30,7 +30,8 @@ export function MagicLinkForm() {
   const [isVerifying, setIsVerifying] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const callbackUrl = getCallbackURL(rawCallbackUrl)
   const urlToken = searchParams.get("token")
 
   const {

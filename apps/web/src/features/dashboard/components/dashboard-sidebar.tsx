@@ -15,9 +15,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
+  useSidebar,
 } from "@adscrush/ui/components/sidebar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@adscrush/ui/components/tooltip"
 import { Skeleton } from "@adscrush/ui/components/skeleton"
+import { UserButton } from "@/components/auth/user-button"
 
 import {
   type LucideIcon,
@@ -27,6 +33,7 @@ import {
   Volume2,
   Settings,
   Headphones,
+  PanelLeft,
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
@@ -35,6 +42,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@adscrush/ui/components/avatar"
+import { Button } from "@adscrush/ui/components/button"
 
 interface MenuItem {
   title: string
@@ -96,7 +104,7 @@ function NavSection({ label, items, pathname }: NavSectionProps) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  //   const clerk = useClerk()
+  const { open, setOpen } = useSidebar()
   const [voiceDialogOpen, setVoiceDialogOpen] = useState(false)
 
   const mainMenuItems: MenuItem[] = [
@@ -126,7 +134,7 @@ export function DashboardSidebar() {
     {
       title: "Settings",
       icon: Settings,
-      //   onClick: () => clerk.openOrganizationProfile(),
+      url: "/settings",
     },
     {
       title: "Help and support",
@@ -141,59 +149,53 @@ export function DashboardSidebar() {
       open={voiceDialogOpen}
       onOpenChange={setVoiceDialogOpen}
     /> */}
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="flex flex-col gap-4 pt-4">
-          <div className="flex items-center gap-2 pl-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:pl-0">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="h-8 w-8 rounded-sm">
-                    <AvatarImage
-                      src={"/logo.png"}
-                      alt="AdsCrush Analytics"
-                      className="rounded-sm"
-                    />
-                    <AvatarFallback className="rounded-sm">AC</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="text-lg font-semibold tracking-tighter text-foreground group-data-[collapsible=icon]:hidden">
-                      Adscrush
-                    </span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-
-            <SidebarTrigger className="ml-auto lg:hidden" />
+      <Sidebar collapsible="icon" variant="inset">
+        <SidebarHeader className="h-12 border-b border-dashed border-border pb-2 transition-[padding] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="flex h-full items-center justify-between group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:h-0">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-6 w-6 rounded-md">
+                <AvatarImage
+                  src={"/logo.png"}
+                  alt="AdsCrush"
+                  className="rounded-md"
+                />
+                <AvatarFallback className="rounded-md">AC</AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-semibold tracking-tight text-foreground">
+                Adscrush
+              </span>
+            </div>
+            <Button
+              onClick={() => setOpen(!open)}
+              variant="ghost"
+              size="icon"
+              // className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <PanelLeft className="size-4" />
+            </Button>
           </div>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              {/* <OrganizationSwitcher
-                hidePersonal
-                fallback={
-                  <Skeleton className="h-8.5 w-full rounded-md border bg-white group-data-[collapsible=icon]:size-8" />
-                }
-                appearance={{
-                  elements: {
-                    rootBox:
-                      "w-full! group-data-[collapsible=icon]:w-auto! group-data-[collapsible=icon]:flex! group-data-[collapsible=icon]:justify-center!",
-                    organizationSwitcherTrigger:
-                      "w-full! justify-between! bg-white! border! border-border! rounded-md! pl-1! pr-2! py-1! gap-3! group-data-[collapsible=icon]:w-auto! group-data-[collapsible=icon]:p-1! shadow-[0px_1px_1.5px_0px_rgba(44,54,53,0.03)]!",
-                    organizationPreview: "gap-2!",
-                    organizationPreviewAvatarBox: "size-6! rounded-sm!",
-                    organizationPreviewTextContainer:
-                      "text-xs! tracking-tight! font-medium! text-foreground! group-data-[collapsible=icon]:hidden!",
-                    organizationPreviewMainIdentifier: "text-[13px]!",
-                    organizationSwitcherTriggerIcon:
-                      "size-4! text-sidebar-foreground! group-data-[collapsible=icon]:hidden!",
-                  },
-                }}
-              /> */}
-            </SidebarMenuItem>
-          </SidebarMenu>
+
+          <div className="hidden group-data-[collapsible=icon]:relative group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+            <Avatar className="h-6 w-6 rounded-md group-hover:invisible">
+              <AvatarImage
+                src={"/logo.png"}
+                alt="AdsCrush"
+                className="rounded-md"
+              />
+              <AvatarFallback className="rounded-md">AC</AvatarFallback>
+            </Avatar>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setOpen(!open)}
+                  className="absolute inset-0 m-auto flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
+                >
+                  <PanelLeft className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Open sidebar</TooltipContent>
+            </Tooltip>
+          </div>
         </SidebarHeader>
         <div className="border-b border-dashed border-border" />
         <SidebarContent>
@@ -209,24 +211,7 @@ export function DashboardSidebar() {
           {/* <UsageContainer /> */}
           <SidebarMenu>
             <SidebarMenuItem>
-              {/* <UserButton
-                showName
-                fallback={
-                  <Skeleton className="h-8.5 w-full rounded-md border border-border bg-white group-data-[collapsible=icon]:size-8" />
-                }
-                appearance={{
-                  elements: {
-                    rootBox:
-                      "w-full! group-data-[collapsible=icon]:w-auto! group-data-[collapsible=icon]:flex! group-data-[collapsible=icon]:justify-center!",
-                    userButtonTrigger:
-                      "w-full! justify-between! bg-white! border! border-border! rounded-md! pl-1! pr-2! py-1! shadow-[0px_1px_1.5px_0px_rgba(44,54,53,0.03)]! group-data-[collapsible=icon]:w-auto! group-data-[collapsible=icon]:p-1! group-data-[collapsible=icon]:after:hidden! [--border:color-mix(in_srgb,transparent,var(--clerk-color-neutral,#000000)_15%)]!",
-                    userButtonBox: "flex-row-reverse! gap-2!",
-                    userButtonOuterIdentifier:
-                      "text-[13px]! tracking-tight! font-medium! text-foreground! pl-0! group-data-[collapsible=icon]:hidden!",
-                    userButtonAvatarBox: "size-6!",
-                  },
-                }}
-              /> */}
+              <UserButton />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>

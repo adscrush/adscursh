@@ -3,7 +3,7 @@
 import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import { Label } from "@adscrush/ui/components/label"
-import { resetPassword } from "@/lib/auth/client"
+import { getCallbackURL, resetPassword } from "@/lib/auth/client"
 import { getPasswordStrength } from "@adscrush/shared/utils/password"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
@@ -30,7 +30,8 @@ export function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = getCallbackURL(rawCallbackUrl)
 
   const {
     register,

@@ -8,6 +8,16 @@ export const authClient = createAuthClient({
   basePath: "/api/v1/auth",
 })
 
+/**
+ * Ensures the callback URL is absolute and points to the frontend domain.
+ * This is required when the auth server and frontend are on different domains.
+ */
+export const getCallbackURL = (path: string) => {
+  if (path.startsWith("http")) return path
+  const base = env.NEXT_PUBLIC_APP_URL
+  return `${base}${path.startsWith("/") ? "" : "/"}${path}`
+}
+
 export const {
   signIn,
   signUp,

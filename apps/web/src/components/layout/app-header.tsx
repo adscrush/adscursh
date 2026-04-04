@@ -12,7 +12,7 @@ export function AppHeader({ title }: { title?: string }) {
 
   const handleSignOut = async () => {
     await signOut()
-    router.push("/login")
+    router.push("/auth/sign-in")
   }
 
   return (

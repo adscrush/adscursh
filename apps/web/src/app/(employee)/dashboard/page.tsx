@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { env } from "@/env"
 import { PageHeader } from "@/components/common/page-header"
 import { StatCard } from "@/components/common/stat-card"
+import { SiteHeader } from "@/components/common/site-header"
 
 interface OverviewData {
   clicks: number
@@ -38,6 +39,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <SiteHeader title="Dashboard" />
       <PageHeader
         title="Dashboard"
         description="Overview of your ad network performance"
