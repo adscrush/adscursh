@@ -1,22 +1,22 @@
 "use client"
 
-import { Button } from "@adscrush/ui/components/button"
-import { Input } from "@adscrush/ui/components/input"
-import { Label } from "@adscrush/ui/components/label"
 import { getCallbackURL, signUp } from "@/lib/auth/client"
+import { getPasswordStrength } from "@adscrush/shared/utils/password"
 import {
   signUpBaseSchema,
   type SignUpForm,
 } from "@adscrush/shared/validators/auth.schema"
+import { Button } from "@adscrush/ui/components/button"
+import { Input } from "@adscrush/ui/components/input"
+import { Label } from "@adscrush/ui/components/label"
+import { toast } from "@adscrush/ui/sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon, EyeIcon, EyeOffIcon, XIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "@adscrush/ui/sonner"
 import { AuthLayout } from "./auth-layout"
-import { getPasswordStrength } from "@adscrush/shared/utils/password"
 
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false)

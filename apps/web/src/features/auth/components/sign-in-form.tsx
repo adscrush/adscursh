@@ -1,5 +1,6 @@
 "use client"
 
+import { Icons } from "@/components/icons"
 import { getCallbackURL, signIn } from "@/lib/auth/client"
 import {
   signInSchema,
@@ -17,7 +18,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { AuthLayout } from "./auth-layout"
-import { Icons } from "../icons"
 
 export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)

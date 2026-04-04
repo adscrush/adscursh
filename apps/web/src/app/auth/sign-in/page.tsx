@@ -1,22 +1,22 @@
-import { SignInForm } from "@/components/auth/sign-in-form";
-import { auth } from "@/lib/auth/server";
-import { SearchParams } from "@/types";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
+import { SignInForm } from "@/features/auth/components/sign-in-form"
+import { auth } from "@/lib/auth/server"
+import { SearchParams } from "@/types"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { Suspense } from "react"
 
 interface PageProps {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<SearchParams>
 }
 
 async function SessionChecker({ searchParams }: PageProps) {
-  const headersRaw = await headers();
+  const headersRaw = await headers()
   const session = await auth.api.getSession({
     headers: headersRaw,
-  });
-  const search = await searchParams;
-  if (session) redirect(search.callbackUrl ?? "/dashboard");
-  return <SignInForm />;
+  })
+  const search = await searchParams
+  if (session) redirect(search.callbackUrl ?? "/dashboard")
+  return <SignInForm />
 }
 
 export default function Page({ searchParams }: PageProps) {
@@ -24,5 +24,5 @@ export default function Page({ searchParams }: PageProps) {
     <Suspense fallback={null}>
       <SessionChecker searchParams={searchParams} />
     </Suspense>
-  );
+  )
 }

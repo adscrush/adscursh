@@ -1,12 +1,16 @@
-import { Geist, Geist_Mono, Figtree } from "next/font/google"
+import { Figtree, Geist, Geist_Mono } from "next/font/google"
 
-import "@adscrush/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { TooltipProvider } from "@adscrush/ui/components/tooltip"
-import { cn } from "@adscrush/ui/lib/utils"
-import { Toaster } from "@adscrush/ui/components/sonner"
 import { RevealEffect } from "@/components/common/reveal-effect"
+import { ThemeProvider } from "@/components/theme-provider"
+import { META_THEME_COLORS } from "@adscrush/shared/config/site"
+import { Toaster } from "@adscrush/ui/components/sonner"
+import { TooltipProvider } from "@adscrush/ui/components/tooltip"
+import "@adscrush/ui/globals.css"
+import { cn } from "@adscrush/ui/lib/utils"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
+
 import { Metadata, Viewport } from "next"
+import Script from "next/script"
 import NextTopLoader from "nextjs-toploader"
 
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
@@ -41,6 +45,21 @@ export const viewport: Viewport = {
   ],
 }
 
+// Thanks @shadcn-ui, @tailwindcss
+const darkModeScript = String.raw`
+  try {
+    if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '${META_THEME_COLORS.dark}')
+    }
+  } catch (_) {}
+
+  try {
+    if (/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+      document.documentElement.classList.add('os-macos')
+    }
+  } catch (_) {}
+`
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,14 +77,27 @@ export default function RootLayout({
         geistHeading.variable
       )}
     >
+      <head>
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{ __html: darkModeScript }}
+        />
+        {/*
+          Thanks @tailwindcss. We inject the script via the `<Script/>` tag again,
+          since we found the regular `<script>` tag to not execute when rendering a not-found page.
+         */}
+        <Script src={`data:text/javascript;base64,${btoa(darkModeScript)}`} />
+      </head>
       <body>
         <ThemeProvider>
-          <NextTopLoader color="#2299DD" showSpinner={false} />
-          <TooltipProvider>
-            {children}
-            <RevealEffect />
-          </TooltipProvider>
-          <Toaster richColors position="top-center" />
+          <NuqsAdapter>
+            <NextTopLoader color="#2299DD" showSpinner={false} />
+            <TooltipProvider>
+              {children}
+              <RevealEffect />
+            </TooltipProvider>
+            <Toaster richColors position="top-center" />
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

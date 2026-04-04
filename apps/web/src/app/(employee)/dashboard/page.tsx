@@ -39,7 +39,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <SiteHeader title="Dashboard" />
       <PageHeader
         title="Dashboard"
         description="Overview of your ad network performance"

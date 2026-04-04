@@ -1,4 +1,4 @@
-import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
 import { auth } from "@/lib/auth/server";
 import { SearchParams } from "@/types";
 import { headers } from "next/headers";

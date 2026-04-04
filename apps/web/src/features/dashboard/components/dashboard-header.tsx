@@ -1,38 +1,40 @@
 "use client"
 
-import { Headphones, ThumbsUp } from "lucide-react"
-import Link from "next/link"
-
-import { Button } from "@adscrush/ui/components/button"
-import { useSession } from "@/lib/auth/client"
+import { CommandMenu } from "@/components/common/command-menu"
+import { SidebarTrigger } from "@adscrush/ui/components/sidebar"
+import { Separator } from "@adscrush/ui/components/separator"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@adscrush/ui/components/breadcrumb"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function DashboardHeader() {
-  const { data, isPending } = useSession()
-  const user = data?.user
-
   return (
-    <div className="flex items-start justify-between">
-      <div className="space-y-1">
-        <p className="text-sm text-muted-foreground">Nice to see you</p>
-        <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">
-          {isPending ? (user?.name?.split(" ")[0] ?? "there") : "..."}
-        </h1>
+    <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-dashed px-4 transition-[width,height] ease-linear">
+      <div className="flex items-center gap-2">
+        <SidebarTrigger className="-ml-1 md:hidden" />
+        <Separator orientation="vertical" className="mr-2 h-4 md:hidden" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Overview</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
-
-      <div className="hidden items-center gap-3 lg:flex">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="mailto:business@codewithantonio.com">
-            <ThumbsUp />
-            <span className="hidden lg:block">Feedback</span>
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="mailto:business@codewithantonio.com">
-            <Headphones />
-            <span className="hidden lg:block">Need help?</span>
-          </Link>
-        </Button>
+      <div className="flex items-center gap-2">
+        <CommandMenu />
+        <ThemeToggle />
       </div>
-    </div>
+    </header>
   )
 }

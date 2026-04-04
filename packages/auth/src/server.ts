@@ -5,7 +5,7 @@ import {
   verifications,
 } from "@adscrush/db/schema/auth"
 import { MagicLinkEmail, PasswordResetEmail, render } from "@adscrush/email"
-import { ROLES } from "@adscrush/shared/constants"
+import { ROLES } from "@adscrush/shared/constants/roles"
 import type { BetterAuthOptions } from "better-auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
