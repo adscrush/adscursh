@@ -1,12 +1,12 @@
 import Elysia from "elysia"
-import { requireAuth } from "../../middleware/auth.middleware.js"
-import { db } from "../../lib/db.js"
+import { requireAuth } from "../../middleware/auth.middleware"
+import { db } from "../../lib/db"
 import {
   listAffiliates,
   getAffiliate,
   createAffiliate,
   updateAffiliate,
-} from "./affiliates.service.js"
+} from "./affiliates.service"
 import {
   createAffiliateSchema,
   updateAffiliateSchema,

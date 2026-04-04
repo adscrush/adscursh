@@ -1,14 +1,14 @@
 import Elysia from "elysia"
-import { requireAdmin } from "../../middleware/auth.middleware.js"
-import { db } from "../../lib/db.js"
-import { auth } from "../../lib/auth.js"
+import { requireAdmin } from "../../middleware/auth.middleware"
+import { db } from "../../lib/db"
+import { auth } from "../../lib/auth"
 import {
   listEmployees,
   getEmployee,
   createEmployee,
   updateEmployee,
   updateEmployeeAccess,
-} from "./employees.service.js"
+} from "./employees.service"
 import {
   createEmployeeSchema,
   updateEmployeeSchema,

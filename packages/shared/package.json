@@ -5,6 +5,7 @@
   "private": true,
   "exports": {
     "./constants": "./src/constants/index.ts",
+    "./constants/roles": "./src/constants/roles.ts",
     "./validators/*": "./src/validators/*.ts",
     "./types": "./src/types/index.ts",
     "./utils/*": "./src/utils/*.ts",

@@ -2,7 +2,7 @@ import { DashboardSidebar } from "@/features/dashboard/components/dashboard-side
 import { SidebarInset, SidebarProvider } from "@adscrush/ui/components/sidebar"
 import { cookies } from "next/headers"
 
-export default async function DashboardLayout({
+export default async function EmployeeLayout({
   children,
 }: {
   children: React.ReactNode

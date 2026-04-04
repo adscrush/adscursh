@@ -17,6 +17,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { AuthLayout } from "./auth-layout"
+import { Icons } from "../icons"
 
 export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -157,7 +158,7 @@ export function SignInForm() {
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
-          <GoogleIcon className="mr-2 h-4 w-4" />
+          <Icons.google className="mr-2 h-4 w-4" />
           Continue with Google
         </Button>
 

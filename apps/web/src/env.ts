@@ -3,9 +3,19 @@ import { z } from "zod"
 
 export const env = createEnv({
   server: {
-    BETTER_AUTH_URL: z.string().min(1),
     BETTER_AUTH_SECRET: z.string().min(1),
     DATABASE_URL: z.string().min(1),
+
+    // Social Login
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
+
+    // SMTP Mailing
+    SMTP_HOST: z.string().min(1),
+    SMTP_PORT: z.string().transform((v) => parseInt(v, 10)),
+    SMTP_USER: z.string().min(1),
+    SMTP_PASS: z.string().min(1),
+    SMTP_FROM: z.email(),
   },
 
   client: {

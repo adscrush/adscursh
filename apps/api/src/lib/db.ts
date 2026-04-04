@@ -1,5 +1,6 @@
 import { createDatabase } from "@adscrush/db"
+import env from "@/env"
 
 export const db = createDatabase({
-  url: process.env["DATABASE_URL"],
+  url: env.DATABASE_URL,
 })

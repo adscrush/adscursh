@@ -1,2 +1,3 @@
-export { MagicLinkEmail  } from './templates/magic-link-email';
-export { PasswordResetEmail } from './templates/password-reset-email';
+export { MagicLinkEmail } from "./templates/magic-link-email"
+export { PasswordResetEmail } from "./templates/password-reset-email"
+export { render } from "@react-email/render"

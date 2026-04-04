@@ -29,12 +29,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchOverview()
-      .then(setOverview)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
-      .finally(() => setLoading(false))
-  }, [])
+  // useEffect(() => {
+  //   fetchOverview()
+  //     .then(setOverview)
+  //     .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
+  //     .finally(() => setLoading(false))
+  // }, [])
 
   return (
     <div className="space-y-6">

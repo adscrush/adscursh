@@ -1,11 +1,11 @@
 import Elysia from "elysia"
-import { requireAuth } from "../../middleware/auth.middleware.js"
-import { db } from "../../lib/db.js"
+import { requireAuth } from "../../middleware/auth.middleware"
+import { db } from "../../lib/db"
 import {
   getOverview,
   getPerformanceReport,
   getConversionLog,
-} from "./reports.service.js"
+} from "./reports.service"
 
 export const reportRoutes = new Elysia({ prefix: "/api/reports" })
   .use(requireAuth)
