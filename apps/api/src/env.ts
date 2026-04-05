@@ -29,6 +29,7 @@ const EnvSchema = z.object({
   //   auth & db
   DATABASE_URL: z.url(),
   BETTER_AUTH_SECRET: z.string(),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 
   //   public urls
   PUBLIC_FRONTEND_URL: z.url().default("https://app.adscrush.local"),

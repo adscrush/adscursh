@@ -1,17 +1,18 @@
-import { Elysia } from "elysia"
 import { cors } from "@elysiajs/cors"
-import { authRoutes } from "./modules/auth/auth.routes"
-import { employeeRoutes } from "./modules/employees/employees.routes"
-import { advertiserRoutes } from "./modules/advertisers/advertisers.routes"
-import { affiliateRoutes } from "./modules/affiliates/affiliates.routes"
-import { offerRoutes } from "./modules/offers/offers.routes"
-import { reportRoutes } from "./modules/reports/reports.routes"
 import openapi, { fromTypes } from "@elysiajs/openapi"
+import { Elysia } from "elysia"
 import env from "./env"
-
-const PORT = process.env["PORT"] ?? 9999
+import { advertiserRoutes } from "./modules/advertisers/module"
+import { affiliateRoutes } from "./modules/affiliates/module"
+import { authRoutes } from "./modules/auth/auth.routes"
+import { employeeRoutes } from "./modules/employees/module"
+import { offerRoutes } from "./modules/offers/module"
+import { reportRoutes } from "./modules/reports/module"
+import { errorHandler } from "./middleware/error.middleware"
+import { security } from "./middleware/security.middleware"
 
 const app = new Elysia({ name: "adscrush-api" })
+  .use(security())
   .use(
     cors({
       origin: process.env["DASHBOARD_URL"] ?? [
@@ -38,13 +39,7 @@ const app = new Elysia({ name: "adscrush-api" })
       },
     })
   )
-  .onError(({ code, error, set }) => {
-    if (code === "NOT_FOUND") return
-
-    console.error("Unhandled error:", error)
-    set.status = 500
-    return { success: false, error: "Internal server error" }
-  })
+  .use(errorHandler)
   .get("/", () => ({ status: "ok", service: "adscrush-api" }))
   .group("/api/v1", (app) =>
     app
@@ -55,12 +50,12 @@ const app = new Elysia({ name: "adscrush-api" })
       .use(offerRoutes)
       .use(reportRoutes)
   )
-  .listen(PORT)
+  .listen(env.PORT)
 
 console.log(
   [
-    `🚀 Server running at http://localhost:${PORT}`,
-    `🚀 Proxy running at ${process.env["PUBLIC_API_URL"]}`,
+    `🟢 Server running at http://localhost:${env.PORT}`,
+    `🟢 Proxy running at ${env.PUBLIC_API_URL}`,
   ].join("\n")
 )
 

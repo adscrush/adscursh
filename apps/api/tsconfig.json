@@ -6,6 +6,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "es2024",
+    "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
