@@ -12,7 +12,7 @@ import {
   updateAdvertiserSchema,
 } from "@adscrush/shared/validators/advertiser.validator"
 
-export const advertiserRoutes = new Elysia({ prefix: "/api/advertisers" })
+export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .use(requireAuth)
   .get("/", async ({ query }) => {
     const result = await listAdvertisers(db, {

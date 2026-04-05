@@ -250,7 +250,6 @@ export function DashboardSidebar() {
       icon: CircleUser,
       items: [
         { title: "Settings", url: "/settings" },
-        { title: "Billing", url: "/billing" },
         { title: "Profile", url: "/profile" },
         { title: "Employee", url: "/employee" },
         { title: "Security", url: "/security" },

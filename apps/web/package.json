@@ -14,6 +14,7 @@
   "dependencies": {
     "@1771technologies/lytenyte-core": "^2.0.3",
     "@adscrush/auth": "workspace:*",
+    "@adscrush/api": "workspace:*",
     "@adscrush/db": "workspace:*",
     "@adscrush/shared": "workspace:*",
     "@adscrush/ui": "workspace:*",

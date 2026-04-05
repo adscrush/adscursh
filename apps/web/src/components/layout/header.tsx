@@ -5,10 +5,13 @@ import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@adscrush/ui/components/button"
 import { navLinks } from "@/features/home/data"
+import { useSession } from "@/lib/auth/client"
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { data } = useSession()
+  const user = data?.user
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -45,13 +48,23 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button
-            asChild
-            variant="hero"
-            className="hidden h-9 px-5 lg:inline-flex"
-          >
-            <Link href="/auth/sign-in">Sign In</Link>
-          </Button>
+          {user ? (
+            <Button
+              asChild
+              variant="hero"
+              className="hidden h-9 px-5 lg:inline-flex"
+            >
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              variant="hero"
+              className="hidden h-9 px-5 lg:inline-flex"
+            >
+              <Link href="/auth/sign-in">Sign In</Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

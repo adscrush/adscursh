@@ -100,6 +100,9 @@ importers:
       '@1771technologies/lytenyte-core':
         specifier: ^2.0.3
         version: 2.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@adscrush/api':
+        specifier: workspace:*
+        version: link:../api
       '@adscrush/auth':
         specifier: workspace:*
         version: link:../../packages/auth

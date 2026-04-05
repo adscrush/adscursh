@@ -65,4 +65,3 @@ console.log(
 )
 
 export default app
-export type App = typeof app

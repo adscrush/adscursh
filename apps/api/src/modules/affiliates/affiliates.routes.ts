@@ -12,7 +12,7 @@ import {
   updateAffiliateSchema,
 } from "@adscrush/shared/validators/affiliate.validator"
 
-export const affiliateRoutes = new Elysia({ prefix: "/api/affiliates" })
+export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .use(requireAuth)
   .get("/", async ({ query }) => {
     const result = await listAffiliates(db, {

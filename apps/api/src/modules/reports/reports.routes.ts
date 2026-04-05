@@ -7,7 +7,7 @@ import {
   getConversionLog,
 } from "./reports.service"
 
-export const reportRoutes = new Elysia({ prefix: "/api/reports" })
+export const reportRoutes = new Elysia({ prefix: "/reports" })
   .use(requireAuth)
   .get("/overview", async ({ query }) => {
     const data = await getOverview(db, {

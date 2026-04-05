@@ -15,7 +15,7 @@ import {
   updateEmployeeAccessSchema,
 } from "@adscrush/shared/validators/employee.validator"
 
-export const employeeRoutes = new Elysia({ prefix: "/api/employees" })
+export const employeeRoutes = new Elysia({ prefix: "/employees" })
   .use(requireAdmin)
   .get("/", async ({ query }) => {
     const result = await listEmployees(db, {

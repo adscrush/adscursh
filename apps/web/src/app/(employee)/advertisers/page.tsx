@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/lib/api"
@@ -15,23 +15,14 @@ import {
   SelectValue,
 } from "@adscrush/ui/components/select"
 import { Badge } from "@adscrush/ui/components/badge"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@adscrush/ui/components/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@adscrush/ui/components/pagination"
-import { IconPlus } from "@tabler/icons-react"
+import { IconPlus, IconLoader2 } from "@tabler/icons-react"
+
+// Lyte Nyte Grid Core
+import { Grid, useClientDataSource } from "@1771technologies/lytenyte-core"
+import "@1771technologies/lytenyte-core/grid.css"
+import "@1771technologies/lytenyte-core/shadcn.css"
+
+import { AddAdvertiserDialog } from "@/features/advertisers/components/add-advertiser-dialog"
 
 interface Advertiser {
   id: string
@@ -70,31 +61,32 @@ export default function AdvertisersPage() {
 
   const page = Number(searchParams.get("page")) || 1
   const search = searchParams.get("search") || ""
-  const status = searchParams.get("status") || "all"
+  const statusFilter = searchParams.get("status") || "all"
+
+  const fetchAdvertisers = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      params.set("page", String(page))
+      params.set("limit", "10")
+      if (search) params.set("search", search)
+      if (statusFilter !== "all") params.set("status", statusFilter)
+
+      const response = await api.advertisers.get(params.toString() as never)
+      if (response.data?.success && response.data.data) {
+        setAdvertisers(response.data.data)
+        setTotalPages(response.data.totalPages || 1)
+      }
+    } catch (error) {
+      console.error("Failed to fetch advertisers:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchAdvertisers() {
-      setLoading(true)
-      try {
-        const params = new URLSearchParams()
-        params.set("page", String(page))
-        params.set("limit", "10")
-        if (search) params.set("search", search)
-        if (status !== "all") params.set("status", status)
-
-        const response = await api.advertisers.get(params.toString() as never)
-        if (response.data?.success && response.data.data) {
-          setAdvertisers(response.data.data)
-          setTotalPages(response.data.totalPages || 1)
-        }
-      } catch (error) {
-        console.error("Failed to fetch advertisers:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchAdvertisers()
-  }, [page, search, status])
+  }, [page, search, statusFilter])
 
   const handleSearch = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -124,18 +116,114 @@ export default function AdvertisersPage() {
     return `/advertisers?${params.toString()}`
   }
 
+  const ds = useClientDataSource<Advertiser>({
+    data: advertisers,
+  })
+
+  const columns = useMemo<Grid.Column<Advertiser>[]>(
+    () => [
+      {
+        id: "name",
+        name: "Name",
+        width: 200,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4">
+            <Link
+              href={`/advertisers/${props.row.data.id}`}
+              className="font-medium text-primary hover:underline"
+            >
+              {props.row.data.name}
+            </Link>
+          </div>
+        ),
+      },
+      {
+        id: "companyName",
+        name: "Company",
+        width: 180,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4">
+            {props.row.data.companyName || "-"}
+          </div>
+        ),
+      },
+      {
+        id: "email",
+        name: "Email",
+        width: 250,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4 text-muted-foreground">
+            {props.row.data.email}
+          </div>
+        ),
+      },
+      {
+        id: "website",
+        name: "Website",
+        width: 150,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4">
+            {props.row.data.website ? (
+              <a
+                href={props.row.data.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Visit
+              </a>
+            ) : (
+              "-"
+            )}
+          </div>
+        ),
+      },
+      {
+        id: "accountManager",
+        name: "Account Manager",
+        width: 200,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4">
+            {props.row.data.accountManager?.name || "-"}
+          </div>
+        ),
+      },
+      {
+        id: "status",
+        name: "Status",
+        width: 120,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4">
+            <StatusBadge status={props.row.data.status} />
+          </div>
+        ),
+      },
+      {
+        id: "createdAt",
+        name: "Created",
+        width: 150,
+        cellRenderer: (props) => (
+          <div className="flex h-full items-center px-4 text-muted-foreground">
+            {new Date(props.row.data.createdAt).toLocaleDateString()}
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
   return (
-    <div className="space-y-6">
+    <div className="flex h-full flex-col space-y-6">
       <PageHeader
         title="Advertisers"
         description="Manage your advertiser partnerships"
       >
-        <Link href="/advertisers/new">
+        <AddAdvertiserDialog onCreated={fetchAdvertisers}>
           <Button>
             <IconPlus className="mr-2 size-4" />
             Create Advertiser
           </Button>
-        </Link>
+        </AddAdvertiserDialog>
       </PageHeader>
 
       <div className="flex gap-4">
@@ -150,7 +238,7 @@ export default function AdvertisersPage() {
             }}
           />
         </div>
-        <Select value={status} onValueChange={handleStatusFilter}>
+        <Select value={statusFilter} onValueChange={handleStatusFilter}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -163,123 +251,73 @@ export default function AdvertisersPage() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Website</TableHead>
-              <TableHead>Account Manager</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-48 text-center text-muted-foreground"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : advertisers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-48 text-center text-muted-foreground"
-                >
-                  No advertisers found
-                </TableCell>
-              </TableRow>
-            ) : (
-              advertisers.map((advertiser) => (
-                <TableRow key={advertiser.id}>
-                  <TableCell className="font-medium">
-                    <Link
-                      href={`/advertisers/${advertiser.id}`}
-                      className="hover:underline"
-                    >
-                      {advertiser.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{advertiser.companyName || "-"}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {advertiser.email}
-                  </TableCell>
-                  <TableCell>
-                    {advertiser.website ? (
-                      <a
-                        href={advertiser.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Visit
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {advertiser.accountManager?.name || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={advertiser.status} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(advertiser.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      <div className="relative flex-1 overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="h-[600px] w-full lg:h-[calc(100vh-320px)]">
+          {loading ? (
+            <div className="flex h-full items-center justify-center space-x-2 text-muted-foreground">
+              <IconLoader2 className="size-5 animate-spin" />
+              <span>Loading advertisers...</span>
+            </div>
+          ) : advertisers.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              No advertisers found
+            </div>
+          ) : (
+            <Grid columns={columns} rowSource={ds} />
+          )}
+        </div>
       </div>
 
       {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href={buildPageUrl(page - 1)}
-                aria-disabled={page <= 1}
-              />
-            </PaginationItem>
-            {page > 2 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-            {page > 1 && (
-              <PaginationItem>
-                <PaginationPrevious href={buildPageUrl(page - 1)} />
-              </PaginationItem>
-            )}
-            <PaginationItem>
-              <Badge variant="outline">{page}</Badge>
-            </PaginationItem>
-            {page < totalPages && (
-              <PaginationItem>
-                <PaginationNext href={buildPageUrl(page + 1)} />
-              </PaginationItem>
-            )}
-            {page < totalPages - 1 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-            <PaginationItem>
-              <PaginationNext
-                href={buildPageUrl(page + 1)}
-                aria-disabled={page >= totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <div className="flex items-center justify-center border-t py-4">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => router.push(buildPageUrl(page - 1))}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                if (
+                  p === 1 ||
+                  p === totalPages ||
+                  (p >= page - 1 && p <= page + 1)
+                ) {
+                  return (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="size-8 p-0"
+                      onClick={() => router.push(buildPageUrl(p))}
+                    >
+                      {p}
+                    </Button>
+                  )
+                }
+                if (p === page - 2 || p === page + 2) {
+                  return (
+                    <span key={p} className="px-1 text-muted-foreground">
+                      ...
+                    </span>
+                  )
+                }
+                return null
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => router.push(buildPageUrl(page + 1))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

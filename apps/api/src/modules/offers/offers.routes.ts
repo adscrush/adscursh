@@ -26,7 +26,7 @@ import {
   bulkOfferAffiliateSchema,
 } from "@adscrush/shared/validators/offer.validator"
 
-export const offerRoutes = new Elysia({ prefix: "/api/offers" })
+export const offerRoutes = new Elysia({ prefix: "/offers" })
   .use(requireAuth)
   .get("/", async ({ query }) => {
     const result = await listOffers(db, {
