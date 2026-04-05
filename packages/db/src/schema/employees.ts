@@ -10,7 +10,6 @@ export const employees = pgTable(
       .$defaultFn(() => generateId("employee")),
     userId: text("user_id")
       .notNull()
-      .unique()
       .references(() => users.id, { onDelete: "cascade" }),
     department: text("department"),
     status: text("status").notNull().default("active"),
@@ -48,3 +47,7 @@ export const employeeAdvertiserAccess = pgTable(
 
 export type Employee = typeof employees.$inferSelect
 export type NewEmployee = typeof employees.$inferInsert
+export type EmployeeAffiliateAccess = typeof employeeAffiliateAccess.$inferSelect
+export type NewEmployeeAffiliateAccess = typeof employeeAffiliateAccess.$inferInsert
+export type EmployeeAdvertiserAccess = typeof employeeAdvertiserAccess.$inferSelect
+export type NewEmployeeAdvertiserAccess = typeof employeeAdvertiserAccess.$inferInsert

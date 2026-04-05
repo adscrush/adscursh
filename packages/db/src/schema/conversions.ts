@@ -7,6 +7,7 @@ import {
   index,
 } from "drizzle-orm/pg-core"
 import { generateId } from "@adscrush/shared/lib/id"
+import { clicks } from "./clicks"
 
 export const conversions = pgTable(
   "conversions",
@@ -14,7 +15,9 @@ export const conversions = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => generateId("conversion")),
-    clickId: text("click_id").notNull(),
+    clickId: text("click_id").notNull().references(() => clicks.id, {
+      onDelete: "restrict",
+    }),
     offerId: text("offer_id").notNull(),
     affiliateId: text("affiliate_id").notNull(),
     advertiserId: text("advertiser_id").notNull(),

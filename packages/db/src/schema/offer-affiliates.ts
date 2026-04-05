@@ -8,12 +8,14 @@ import {
 import { offers } from "./offers"
 import { affiliates } from "./affiliates"
 
+import { generateId } from "@adscrush/shared/lib/id"
+
 export const offerAffiliates = pgTable(
   "offer_affiliates",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => generateId("offer_affiliate")),
     offerId: text("offer_id")
       .notNull()
       .references(() => offers.id, { onDelete: "cascade" }),
