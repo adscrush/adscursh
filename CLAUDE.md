@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Monorepo-wide (using Turbo)
 - `pnpm dev` - Start all applications in development mode
+- `pnpm --filter @adscrush/tracking dev` - Start tracking service (defaults to port 3002)
+- `pnpm deploy:web-sdk:pages` - Build and deploy web SDK to Cloudflare Pages
 - `pnpm build` - Build all applications
 - `pnpm lint` - Run ESLint across the codebase
 - `pnpm format` - Format code with Prettier
@@ -45,12 +47,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **apps/** - Contains deployable applications
   - `api/` - Bun/Elysia REST API server
   - `web/` - Next.js dashboard application
+  - `tracking/` - Bun/Elysia click/pixel/S2S tracking service (runs on `TRACKING_PORT`, defaults to 3002)
 - **packages/** - Shared libraries and utilities
   - `auth/` - Authentication utilities (client/server)
   - `db/` - Database schema and Drizzle ORM configuration
   - `shared/` - Common types, constants, validators, and utilities
   - `ui/` - Shared UI components
   - `email/` - Email templating service
+  - `web-sdk/` - Browser SDK with Cloudflare Pages deploy for client-side tracking
+  - `eslint-config/` - Shared ESLint configuration
+  - `typescript-config/` - Shared TypeScript configuration
 
 ### API Layer (@adscrush/api)
 - Built with **Elysia** (Bun-based web framework)

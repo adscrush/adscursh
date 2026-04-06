@@ -13,6 +13,8 @@ import { Metadata, Viewport } from "next"
 import Script from "next/script"
 import NextTopLoader from "nextjs-toploader"
 
+import { QueryProvider } from "@/providers/query-provider"
+
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" })
@@ -90,14 +92,16 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <NuqsAdapter>
-            <NextTopLoader color="#2299DD" showSpinner={false} />
-            <TooltipProvider>
-              {children}
-              <RevealEffect />
-            </TooltipProvider>
-            <Toaster richColors position="top-center" />
-          </NuqsAdapter>
+          <QueryProvider>
+            <NuqsAdapter>
+              <NextTopLoader color="#2299DD" showSpinner={false} />
+              <TooltipProvider>
+                {children}
+                <RevealEffect />
+              </TooltipProvider>
+              <Toaster richColors position="top-center" />
+            </NuqsAdapter>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
