@@ -7,7 +7,6 @@ import {
   Hr,
   Html,
   Img,
-  Link,
   pixelBasedPreset,
   Preview,
   Section,
@@ -22,7 +21,7 @@ interface PasswordResetEmailProps {
 
 const logoUrl = `https://adscrush.com/wp-content/uploads/2023/08/favicon.png`
 
-export const PasswordResetEmail = ({ url, token }: PasswordResetEmailProps) => (
+export const PasswordResetEmail = ({ url, token: _token }: PasswordResetEmailProps) => (
   <Html>
     <Head />
     <Tailwind

@@ -7,7 +7,6 @@ import {
   Hr,
   Html,
   Img,
-  Link,
   pixelBasedPreset,
   Preview,
   Section,

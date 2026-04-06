@@ -17,6 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.4.1",
+    "date-fns": "^4.1.0",
     "nanoid": "^5.1.7",
     "nodemailer": "^8.0.4",
     "zod": "^4.3.6"
