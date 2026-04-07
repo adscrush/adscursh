@@ -8,7 +8,7 @@ export const advertisers = pgTable("advertisers", {
     .$defaultFn(() => generateId("advertiser")),
   name: text("name").notNull(),
   companyName: text("company_name"),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
   website: text("website"),
   country: text("country"),
   accountManagerId: text("account_manager_id").references(() => employees.id, {

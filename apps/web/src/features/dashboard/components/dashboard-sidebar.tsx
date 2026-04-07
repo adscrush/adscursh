@@ -94,7 +94,7 @@ function NavSection({ items, pathname }: NavSectionProps) {
                     isActive={isActive}
                     onClick={item.onClick}
                     tooltip={item.title}
-                    className="h-9 border border-transparent px-3 py-2 text-[13px] font-medium tracking-tight data-[active=true]:border-border data-[active=true]:shadow-[0px_1px_1px_0px_rgba(44,54,53,0.03),inset_0px_0px_0px_2px_white]"
+                    className="h-9 px-3 py-2 text-[13px] font-medium tracking-tight data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:bg-sidebar-accent dark:data-[active=true]:text-sidebar-accent-foreground"
                   >
                     {item.url ? (
                       <Link href={item.url}>
@@ -205,10 +205,7 @@ export function DashboardSidebar() {
     {
       title: "Advertisers",
       icon: Building,
-      items: [
-        { title: "All Advertisers", url: "/advertisers" },
-        { title: "Create Advertiser", url: "/advertisers/new" },
-      ],
+      url: "/advertisers",
     },
     {
       title: "Employees",
