@@ -5,7 +5,7 @@ import * as React from "react"
 
 import { Input } from "@adscrush/ui/components/input"
 import { cn } from "@adscrush/ui/lib/utils"
-import type { ExtendedColumnFilter } from "@/types/data-table"
+import type { ExtendedColumnFilter } from "@adscrush/shared/types/data-table"
 
 interface DataTableRangeFilterProps<TData> extends React.ComponentProps<"div"> {
   filter: ExtendedColumnFilter<TData>

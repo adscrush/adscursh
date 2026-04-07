@@ -15,11 +15,6 @@ import { cn } from "@adscrush/ui/lib/utils"
 import { DataTableResizer } from "./data-table-resizer"
 
 // import utils
-import { DataTableResizeOptions } from "@/types/data-table"
-import {
-  cleanupColumnResizing,
-  trackColumnResizing,
-} from "./utils/column-sizing"
 
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>

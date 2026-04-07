@@ -6,7 +6,7 @@ import type * as React from "react"
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options"
 import { cn } from "@adscrush/ui/lib/utils"
 import { DataTableSettingsOptions } from "./data-table-settings-options"
-import { DataTableResizeOptions } from "@/types/data-table"
+import { DataTableResizeOptions } from "@adscrush/shared/types/data-table"
 
 interface DataTableAdvancedToolbarProps<
   TData,

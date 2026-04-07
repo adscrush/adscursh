@@ -43,9 +43,12 @@ import {
 } from "@/components/data-table/lib/data-table"
 import { formatDate } from "@adscrush/shared/lib/format"
 import { generateId } from "@adscrush/shared/lib/id"
-import { getFiltersStateParser } from "@/components/data-table/lib/parsers"
+import { getFiltersStateParser } from "@adscrush/shared/lib/parsers"
 import { cn } from "@adscrush/ui/lib/utils"
-import type { ExtendedColumnFilter, FilterOperator } from "@/types/data-table"
+import type {
+  ExtendedColumnFilter,
+  FilterOperator,
+} from "@adscrush/shared/types/data-table"
 import { IconLoader2 } from "@tabler/icons-react"
 import {
   InputGroup,

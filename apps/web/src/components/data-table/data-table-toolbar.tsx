@@ -12,7 +12,7 @@ import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import { cn } from "@adscrush/ui/lib/utils"
 import { DataTableSettingsOptions } from "./data-table-settings-options"
-import { DataTableResizeOptions } from "@/types/data-table"
+import { DataTableResizeOptions } from "@adscrush/shared/types/data-table"
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>

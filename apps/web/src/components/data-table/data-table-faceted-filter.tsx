@@ -22,7 +22,7 @@ import {
 } from "@adscrush/ui/components/popover"
 import { Separator } from "@adscrush/ui/components/separator"
 import { cn } from "@adscrush/ui/lib/utils"
-import type { Option } from "@/types/data-table"
+import type { Option } from "@adscrush/shared/types/data-table"
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>

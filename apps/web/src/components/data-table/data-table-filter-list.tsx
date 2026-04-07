@@ -55,7 +55,7 @@ import {
   SortableItemHandle,
   SortableOverlay,
 } from "@adscrush/ui/components/sortable"
-import { dataTableConfig } from "@/config/data-table"
+import { dataTableConfig } from "@adscrush/shared/config/data-table"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import {
   getDefaultFilterOperator,
@@ -63,13 +63,13 @@ import {
 } from "@/components/data-table/lib/data-table"
 import { formatDate } from "@adscrush/shared/lib/format"
 import { generateId } from "@adscrush/shared/lib/id"
-import { getFiltersStateParser } from "@/components/data-table/lib/parsers"
+import { getFiltersStateParser } from "@adscrush/shared/lib/parsers"
 import { cn } from "@adscrush/ui/lib/utils"
 import type {
   ExtendedColumnFilter,
   FilterOperator,
   JoinOperator,
-} from "@/types/data-table"
+} from "@adscrush/shared/types/data-table"
 
 const DEBOUNCE_MS = 300
 const THROTTLE_MS = 50

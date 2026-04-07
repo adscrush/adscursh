@@ -33,7 +33,7 @@ import {
   SortableItemHandle,
   SortableOverlay,
 } from "@adscrush/ui/components/sortable"
-import { dataTableConfig } from "@/config/data-table"
+import { dataTableConfig } from "@adscrush/shared/config/data-table"
 import { cn } from "@adscrush/ui/lib/utils"
 
 const SORT_SHORTCUT_KEY = "s"

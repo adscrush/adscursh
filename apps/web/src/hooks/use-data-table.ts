@@ -33,8 +33,11 @@ import * as React from "react"
 
 import { useTableColumnResize } from "@/components/data-table/hooks/use-table-column-resize"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { getSortingStateParser } from "@/components/data-table/lib/parsers"
-import type { ExtendedColumnSort, QueryKeys } from "@/types/data-table"
+import { getSortingStateParser } from "@adscrush/shared/lib/parsers"
+import type {
+  ExtendedColumnSort,
+  QueryKeys,
+} from "@adscrush/shared/types/data-table"
 
 const PAGE_KEY = "page"
 const PER_PAGE_KEY = "perPage"

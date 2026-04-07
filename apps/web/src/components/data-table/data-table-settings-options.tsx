@@ -10,7 +10,7 @@ import type { Table } from "@tanstack/react-table"
 import { EyeOff, Settings, Undo2, X } from "lucide-react"
 import * as React from "react"
 import { useTableColumnResize } from "./hooks/use-table-column-resize"
-import { getFiltersStateParser } from "./lib/parsers"
+import { getFiltersStateParser } from "@adscrush/shared/lib/parsers"
 import { parseAsStringEnum, useQueryState } from "nuqs"
 
 interface DataTableSettingsOptionsProps<TData> extends React.ComponentProps<
