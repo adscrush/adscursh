@@ -6,7 +6,7 @@ export const createAffiliateSchema = z.object({
   email: z.email(),
   password: z.string().min(8).optional(),
   accountManagerId: z.string().optional(),
-  status: z.enum(["active", "inactive", "pending"]).default("active"),
+  status: z.enum(["active", "inactive", "pending"]),
 })
 
 export const updateAffiliateSchema = z.object({

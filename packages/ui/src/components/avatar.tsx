@@ -41,15 +41,40 @@ function AvatarImage({
   )
 }
 
+const AVATAR_COLORS = [
+  "bg-red-500/15 text-red-500",
+  "bg-orange-500/15 text-orange-500",
+  "bg-amber-500/15 text-amber-500",
+  "bg-emerald-500/15 text-emerald-500",
+  "bg-teal-500/15 text-teal-500",
+  "bg-cyan-500/15 text-cyan-500",
+  "bg-sky-500/15 text-sky-500",
+  "bg-blue-500/15 text-blue-500",
+  "bg-indigo-500/15 text-indigo-500",
+  "bg-violet-500/15 text-violet-500",
+  "bg-fuchsia-500/15 text-fuchsia-500",
+  "bg-pink-500/15 text-pink-500",
+]
+
+function getAvatarColors(initials: string) {
+  let hash = 0
+  for (let i = 0; i < initials.length; i++) {
+    hash = initials.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
 function AvatarFallback({
   className,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  const initials = props.children?.toString() ?? ""
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
+        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs",
+        getAvatarColors(initials),
         className
       )}
       {...props}

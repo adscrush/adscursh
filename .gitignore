@@ -40,3 +40,4 @@ npm-debug.log*
 .pnpm-store
 docs/*
 .kilo/*
+.claude/*

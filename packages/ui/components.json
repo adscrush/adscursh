@@ -21,6 +21,7 @@
     "hooks": "@adscrush/ui/hooks"
   },
   "registries": {
-    "@lytenyte": "https://www.1771technologies.com/r/{name}.json"
+    "@lytenyte": "https://www.1771technologies.com/r/{name}.json",
+    "@coss": "https://coss.com/ui/r/{name}.json"
   }
 }

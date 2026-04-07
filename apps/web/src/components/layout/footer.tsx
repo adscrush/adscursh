@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { IconBrandTwitter, IconBrandInstagram, IconBrandFacebook, IconBrandLinkedin } from '@tabler/icons-react';
 
 const Footer = () => {
+  const year = typeof window !== "undefined" ? new Date().getFullYear() : 2026;
   const productLinks = [
     ["Pricing", "#pricing"],
     ["Platform", "#platform"],
@@ -80,7 +81,7 @@ const Footer = () => {
 
       <div className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-border/5 pt-8 sm:flex-row">
         <p className="text-xs text-foreground/45">
-          © {new Date().getFullYear()} Adscrush. Built for faster attribution and cleaner performance operations.
+          © {year} Adscrush. Built for faster attribution and cleaner performance operations.
         </p>
         <div className="flex items-center gap-6">
           <Link href="#contact" className="text-xs text-foreground/45 hover:text-foreground">Help</Link>

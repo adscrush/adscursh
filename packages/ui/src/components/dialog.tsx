@@ -7,10 +7,68 @@ import * as React from "react"
 import { Button } from "@adscrush/ui/components/button"
 import { cn } from "@adscrush/ui/lib/utils"
 
+type BackdropType = "opaque" | "blur" | "transparent" | "gradient"
+
+interface DialogContextType {
+  backdrop: BackdropType
+  size:
+    | "sm"
+    | "md"
+    | "lg"
+    | "xl"
+    | "2xl"
+    | "3xl"
+    | "4xl"
+    | "5xl"
+    | "6xl"
+    | "7xl"
+    | "full"
+  classNames?: {
+    backdrop?: string
+    content?: string
+  }
+}
+
+const sizeMap = {
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
+  "3xl": "sm:max-w-3xl",
+  "4xl": "sm:max-w-4xl",
+  "5xl": "sm:max-w-5xl",
+  "6xl": "sm:max-w-6xl",
+  "7xl": "sm:max-w-7xl",
+  full: "sm:max-w-full",
+}
+
+const backdropStyles: Record<BackdropType, string> = {
+  opaque: "bg-black/50",
+  blur: "backdrop-blur-sm backdrop-saturate-150 bg-black/50",
+  transparent: "bg-transparent",
+  gradient: "bg-gradient-to-t from-black/90 to-black/20 backdrop-opacity-20",
+}
+
+const DialogContext = React.createContext<DialogContextType>({
+  backdrop: "gradient",
+  size: "md",
+})
+
 function Dialog({
+  backdrop = "gradient",
+  size = "md",
+  classNames,
+  ref,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+}: React.ComponentProps<typeof DialogPrimitive.Root> & {
+  ref?: React.RefObject<HTMLDivElement | null>
+} & Partial<DialogContextType>) {
+  return (
+    <DialogContext.Provider value={{ backdrop, size, classNames }}>
+      <DialogPrimitive.Root data-slot="dialog" {...props} />
+    </DialogContext.Provider>
+  )
 }
 
 function DialogTrigger({
@@ -35,11 +93,15 @@ function DialogOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+  const { backdrop, classNames } = React.useContext(DialogContext)
+
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
         "fixed inset-0 isolate z-50 bg-black/20 duration-100 dark:bg-black/40 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        backdropStyles[backdrop],
+        classNames?.backdrop,
         className
       )}
       {...props}
@@ -57,6 +119,8 @@ function DialogContent({
   showCloseButton?: boolean
   showOverlay?: boolean
 }) {
+  const { size, classNames } = React.useContext(DialogContext)
+
   return (
     <DialogPortal>
       {showOverlay && <DialogOverlay />}
@@ -64,6 +128,8 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-2xl bg-background p-6 text-sm shadow-lg ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-md dark:ring-foreground/20 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          sizeMap[size],
+          classNames?.content,
           className
         )}
         {...props}

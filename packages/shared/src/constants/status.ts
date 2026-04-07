@@ -43,3 +43,12 @@ export const CONVERSION_STATUS = {
 
 export type ConversionStatus =
   (typeof CONVERSION_STATUS)[keyof typeof CONVERSION_STATUS]
+
+export const ADVERTISER_STATUS = {
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+  PENDING: "pending",
+} as const
+
+export type AdvertiserStatus =
+  (typeof ADVERTISER_STATUS)[keyof typeof ADVERTISER_STATUS]

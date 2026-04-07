@@ -11,7 +11,6 @@
   scrollbar-width: thin; /* For Firefox */
 }
 
-
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -62,6 +61,13 @@
   --home-cta-background: oklch(0.985 0 0);
   --home-cta-foreground: oklch(0.141 0.005 285.823);
   --home-cta-muted: oklch(0.985 0 0 / 0.1);
+  --destructive-foreground: var(--color-red-700);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-700);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-700);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-700);
 }
 
 .dark {
@@ -112,6 +118,13 @@
   --home-cta-background: oklch(0.985 0 0);
   --home-cta-foreground: oklch(0.141 0.005 285.823);
   --home-cta-muted: oklch(0.985 0 0 / 0.1);
+  --destructive-foreground: var(--color-red-400);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-400);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-400);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-400);
 }
 
 @theme inline {
@@ -155,6 +168,13 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: var(--font-sans);
   --font-heading: var(--font-heading);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 @layer base {
@@ -247,7 +267,6 @@
   }
 }
 
-
 @utility scroll-fade-effect-y {
   --mask-height: 64px;
   --mask-offset-top: 0px;
@@ -309,7 +328,6 @@
     calc(100% - var(--scroll-buffer)) 100%;
   animation-fill-mode: both;
 }
-
 
 /* ------------------ TABLE STYLES ------------------ */
 

@@ -1,8 +1,15 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import { UserButton } from "@/components/auth/user-button"
+import { authClient } from "@/lib/auth/client"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@adscrush/ui/components/avatar"
+import { Button } from "@adscrush/ui/components/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,17 +37,7 @@ import {
   TooltipTrigger,
 } from "@adscrush/ui/components/tooltip"
 
-import { authClient } from "@/lib/auth/client"
-import { useRouter } from "next/navigation"
-
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@adscrush/ui/components/avatar"
-import { Button } from "@adscrush/ui/components/button"
-import {
-  type LucideIcon,
   BarChart3,
   Box,
   Building,
@@ -52,10 +49,12 @@ import {
   Settings,
   ShieldAlert,
   Tag,
+  UserCog,
   Users,
   Zap,
 } from "lucide-react"
 import Link from "next/link"
+import type { LucideIcon } from "lucide-react"
 
 interface MenuItem {
   title: string
@@ -175,11 +174,7 @@ export function DashboardSidebar() {
   }
 
   const mainNavItems: MenuItem[] = [
-    {
-      title: "Dashboard",
-      url: "/",
-      icon: Home,
-    },
+    { title: "Dashboard", url: "/dashboard", icon: Home },
     {
       title: "Offers",
       icon: Tag,
@@ -214,6 +209,11 @@ export function DashboardSidebar() {
         { title: "All Advertisers", url: "/advertisers" },
         { title: "Create Advertiser", url: "/advertisers/new" },
       ],
+    },
+    {
+      title: "Employees",
+      icon: UserCog,
+      items: [{ title: "All Employees", url: "/employees" }],
     },
   ]
 
@@ -251,54 +251,20 @@ export function DashboardSidebar() {
       items: [
         { title: "Settings", url: "/settings" },
         { title: "Profile", url: "/profile" },
-        { title: "Employee", url: "/employee" },
         { title: "Security", url: "/security" },
         { title: "Access logs", url: "/account/access-logs" },
       ],
     },
-    {
-      title: "Support",
-      icon: LifeBuoy,
-      url: "/support",
-    },
-    {
-      title: "Settings",
-      icon: Settings,
-      url: "/settings",
-    },
+    { title: "Support", icon: LifeBuoy, url: "/support" },
+    { title: "Settings", icon: Settings, url: "/settings" },
   ]
 
   return (
-    <>
-      <Sidebar collapsible="icon" variant="sidebar">
-        <SidebarHeader className="flex h-12 flex-row items-center gap-0 border-b border-dashed border-border p-0! px-4 transition-[padding] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0">
-          <div className="flex grow items-center justify-between pr-2 pl-4 group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:size-0 group-data-[collapsible=icon]:pr-0 group-data-[collapsible=icon]:pl-0">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-6 w-6 rounded-md">
-                <AvatarImage
-                  src={"/logo.png"}
-                  alt="AdsCrush"
-                  className="rounded-md"
-                />
-                <AvatarFallback className="rounded-md">AC</AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-semibold tracking-tight text-foreground">
-                Adscrush
-              </span>
-            </div>
-            <Button
-              onClick={() => setOpen(!open)}
-              variant="ghost"
-              size="icon-sm"
-              className="size-8"
-            >
-              <PanelLeft className="size-4" />
-              <span className="sr-only">Toggle Sidebar</span>
-            </Button>
-          </div>
-
-          <div className="hidden group-data-[collapsible=icon]:relative group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
-            <Avatar className="h-6 w-6 rounded-md group-hover:invisible">
+    <Sidebar collapsible="icon" variant="sidebar">
+      <SidebarHeader className="flex h-12 flex-row items-center gap-0 border-b border-dashed border-border p-0! px-4 transition-[padding] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0">
+        <div className="flex grow items-center justify-between pr-2 pl-4 group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:size-0 group-data-[collapsible=icon]:pr-0 group-data-[collapsible=icon]:pl-0">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-6 w-6 rounded-md">
               <AvatarImage
                 src={"/logo.png"}
                 alt="AdsCrush"
@@ -306,37 +272,59 @@ export function DashboardSidebar() {
               />
               <AvatarFallback className="rounded-md">AC</AvatarFallback>
             </Avatar>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setOpen(!open)}
-                  className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
-                >
-                  <PanelLeft className="size-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Open sidebar</TooltipContent>
-            </Tooltip>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              Adscrush
+            </span>
           </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <NavSection items={mainNavItems} pathname={pathname} />
-          <NavSection items={serviceNavItems} pathname={pathname} />
-          <div className="mt-auto">
-            <NavSection items={bottomNavItems} pathname={pathname} />
-          </div>
-        </SidebarContent>
-        <div className="border-b border-dashed border-border" />
-        <SidebarFooter className="gap-3 py-3">
-          {/* <UsageContainer /> */}
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <UserButton />
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-    </>
+          <Button
+            onClick={() => setOpen(!open)}
+            variant="ghost"
+            size="icon-sm"
+            className="size-8"
+          >
+            <PanelLeft className="size-4" />
+            <span className="sr-only">Toggle Sidebar</span>
+          </Button>
+        </div>
+
+        <div className="hidden group-data-[collapsible=icon]:relative group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+          <Avatar className="h-6 w-6 rounded-md group-hover:invisible">
+            <AvatarImage
+              src={"/logo.png"}
+              alt="AdsCrush"
+              className="rounded-md"
+            />
+            <AvatarFallback className="rounded-md">AC</AvatarFallback>
+          </Avatar>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setOpen(!open)}
+                className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
+              >
+                <PanelLeft className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Open sidebar</TooltipContent>
+          </Tooltip>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavSection items={mainNavItems} pathname={pathname} />
+        <NavSection items={serviceNavItems} pathname={pathname} />
+        <div className="mt-auto">
+          <NavSection items={bottomNavItems} pathname={pathname} />
+        </div>
+      </SidebarContent>
+      <div className="border-b border-dashed border-border" />
+      <SidebarFooter className="gap-3 py-3">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <UserButton />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
   )
 }

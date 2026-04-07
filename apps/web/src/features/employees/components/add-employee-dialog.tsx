@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { api } from "@/lib/api"
+import { useCreateEmployee } from "@/features/employees/queries"
 import {
   Dialog,
   DialogContent,
@@ -24,15 +24,16 @@ import {
 import { Field, FieldLabel, FieldGroup } from "@adscrush/ui/components/field"
 import { createEmployeeSchema, type CreateEmployeeInput } from "@adscrush/shared/validators/employee.validator"
 import { toast } from "@adscrush/ui/sonner"
-import { IconLoader2 } from "@tabler/icons-react"
+import { IconLoader2, IconPlus } from "@tabler/icons-react"
 
 interface AddEmployeeDialogProps {
-  children?: React.ReactNode
   onCreated?: () => void
 }
 
-export function AddEmployeeDialog({ children, onCreated }: AddEmployeeDialogProps) {
+export function AddEmployeeDialog({ onCreated }: AddEmployeeDialogProps) {
   const [open, setOpen] = useState(false)
+
+  const createEmployee = useCreateEmployee()
 
   const {
     register,
@@ -40,7 +41,7 @@ export function AddEmployeeDialog({ children, onCreated }: AddEmployeeDialogProp
     setValue,
     watch,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeSchema),
     defaultValues: {
@@ -56,15 +57,11 @@ export function AddEmployeeDialog({ children, onCreated }: AddEmployeeDialogProp
 
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
-      const response = await api.employees.post(data as any)
-      if (response.data?.success) {
-        toast.success("Employee created successfully!")
-        setOpen(false)
-        reset()
-        if (onCreated) onCreated()
-      } else {
-        toast.error(response.data?.error || "Failed to create employee")
-      }
+      await createEmployee.mutateAsync(data)
+      toast.success("Employee created successfully!")
+      setOpen(false)
+      reset()
+      if (onCreated) onCreated()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "An error occurred")
     }
@@ -73,7 +70,10 @@ export function AddEmployeeDialog({ children, onCreated }: AddEmployeeDialogProp
   return (
     <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) reset(); }}>
       <DialogTrigger asChild>
-        {children}
+        <Button variant="outline" size="sm">
+          <IconPlus className="mr-2 size-3.5" />
+          Add Employee
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -147,8 +147,8 @@ export function AddEmployeeDialog({ children, onCreated }: AddEmployeeDialogProp
           </FieldGroup>
 
           <div className="flex gap-4 pt-2">
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? (
+            <Button type="submit" disabled={createEmployee.isPending} className="flex-1">
+              {createEmployee.isPending ? (
                 <>
                   <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...

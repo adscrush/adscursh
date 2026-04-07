@@ -7,8 +7,11 @@ export const createAdvertiserSchema = z.object({
   password: z.string().min(8).optional(),
   website: z.url().optional().or(z.literal("")),
   country: z.string().optional(),
-  accountManagerId: z.string().optional(),
-  status: z.enum(["active", "inactive", "pending"]).default("active"),
+  accountManagerId: z.string(),
+  status: z
+    .enum(["active", "inactive", "pending"])
+    .default("active")
+    .nonoptional(),
 })
 
 export const updateAdvertiserSchema = z.object({
