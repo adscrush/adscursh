@@ -7,7 +7,7 @@
     "./config/*": "./src/config/*.ts",
     "./constants/*": "./src/constants/*.ts",
     "./validators/*": "./src/validators/*.ts",
-    "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*.ts",
     "./utils/*": "./src/utils/*.ts",
     "./lib/*": "./src/lib/*.ts"
   },
@@ -17,7 +17,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@adscrush/db": "workspace:*",
     "@date-fns/tz": "^1.4.1",
+    "@date-fns/utc": "^2.1.1",
     "date-fns": "^4.1.0",
     "nanoid": "^5.1.7",
     "nodemailer": "^8.0.4",
@@ -26,9 +28,11 @@
   "devDependencies": {
     "@adscrush/eslint-config": "workspace:*",
     "@adscrush/typescript-config": "workspace:*",
+    "@tanstack/react-table": "^8.21.3",
     "@types/node": "^25.1.0",
     "@types/nodemailer": "^7.0.11",
     "eslint": "^9.39.2",
+    "nuqs": "^2.8.9",
     "typescript": "^5.9.3"
   }
 }
