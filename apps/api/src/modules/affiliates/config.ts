@@ -6,5 +6,4 @@ export const listQuerySchema = z.object({
   search: z.string().optional(),
   status: z.string().optional(),
   accountManagerId: z.string().optional(),
-  sort: z.string().optional(),
 })
