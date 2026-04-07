@@ -1,10 +1,13 @@
 import { z } from "zod"
 
 export const createAdvertiserSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1, { error: "Advertiser name is required" }),
   companyName: z.string().optional(),
   email: z.email(),
-  password: z.string().min(8).optional(),
+  password: z
+    .string()
+    .min(8, { error: "Password must be at least 8 characters long" })
+    .optional(),
   website: z.url().optional().or(z.literal("")),
   country: z.string().optional(),
   accountManagerId: z.string(),

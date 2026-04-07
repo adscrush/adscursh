@@ -263,7 +263,7 @@ export function DataTableFilterMenu<TData>({
             aria-label="Open filter command menu"
             variant="outline"
             size={filters.length > 0 ? "icon" : "sm"}
-            className={cn(filters.length > 0 && "size-8", "h-8 font-normal")}
+            className={cn(filters.length > 0 && "size-8", "font-normal")}
             ref={triggerRef}
             onKeyDown={onTriggerKeyDown}
           >
@@ -410,7 +410,6 @@ function DataTableFilterItem<TData>({
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
               className="rounded-none rounded-l-md border border-r-0 font-normal dark:bg-input/30"
             >
               {columnMeta?.icon && (

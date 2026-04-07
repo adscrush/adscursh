@@ -27,13 +27,16 @@ export function DeleteAdvertisersDialog({
   showTrigger = true,
   onSuccess,
   ...props
-}: DeleteAdvertisersDialogProps & Omit<React.ComponentPropsWithoutRef<typeof Dialog>, "children">) {
+}: DeleteAdvertisersDialogProps &
+  Omit<React.ComponentPropsWithoutRef<typeof Dialog>, "children">) {
   const deleteMutation = useDeleteAdvertiser()
 
   const handleDelete = async () => {
     try {
       await Promise.all(
-        advertisers.map((advertiser) => deleteMutation.mutateAsync(advertiser.id)),
+        advertisers.map((advertiser) =>
+          deleteMutation.mutateAsync(advertiser.id)
+        )
       )
       toast.success("Advertiser(s) deleted")
       props.onOpenChange?.(false)
@@ -82,9 +85,7 @@ export function DeleteAdvertisersDialog({
           these items may be referenced by other resources.
         </div>
         <DialogFooter className="gap-2 sm:space-x-0">
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline">Cancel</Button>} />
           <Button
             aria-label="Delete selected rows"
             variant="destructive"

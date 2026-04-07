@@ -36,7 +36,7 @@ export default async function AdvertisersPage(props: AdvertisersPageProps) {
     <div className="flex flex-1 flex-col gap-4">
       <PageHeader title="Advertisers" description="Manage your advertisers">
         <AddAdvertiserDialog>
-          <Button variant="outline" size="sm">
+          <Button size="sm">
             <IconPlus className="mr-2 size-3.5" />
             Add Advertiser
           </Button>

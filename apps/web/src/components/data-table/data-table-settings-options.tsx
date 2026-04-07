@@ -68,7 +68,7 @@ export function DataTableSettingsOptions<TData>({
           role="combobox"
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 font-normal lg:flex"
+          className="ml-auto hidden font-normal lg:flex"
         >
           <Settings className="h-4 w-4" />
           <span className="sr-only">Open table settings</span>
@@ -79,7 +79,7 @@ export function DataTableSettingsOptions<TData>({
           <h4 className="leading-none font-medium">Table Settings</h4>
         </div>
 
-        <div className="mt-4 grid gap-2">
+        <div className="mt-0 grid gap-2">
           {resizing?.enableColumnResizing && (
             <Button
               variant="outline"

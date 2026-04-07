@@ -22,6 +22,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -57,7 +58,7 @@ function generatePassword(): string {
 }
 
 interface AddAdvertiserDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactElement
   onOpenChange?: (open: boolean) => void
   onCreated?: () => void
 }
@@ -130,8 +131,8 @@ export function AddAdvertiserDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} size="lg">
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto" ref={ref}>
+      <DialogTrigger render={children} />
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Advertiser</DialogTitle>
           <DialogDescription>
@@ -139,7 +140,7 @@ export function AddAdvertiserDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FieldGroup className="flex flex-row items-start gap-4">
             {/* ── Name ── */}
             <Controller
@@ -403,7 +404,7 @@ export function AddAdvertiserDialog({
             />
           </FieldGroup>
           {/* ── Submit ── */}
-          <div className="flex justify-end pt-4">
+          <DialogFooter>
             <Button
               type="submit"
               disabled={isSubmitting || createMutation.isPending}
@@ -417,7 +418,7 @@ export function AddAdvertiserDialog({
                 "Create Advertiser"
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -27,6 +27,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
+  CommandItem,
   CommandList,
 } from "@adscrush/ui/components/command"
 import {
@@ -63,7 +64,11 @@ function SortableColumnItem<TData>({
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-1">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex w-full items-center gap-1"
+    >
       <button
         {...attributes}
         {...listeners}
@@ -73,7 +78,7 @@ function SortableColumnItem<TData>({
         <GripVertical className="h-3.5 w-3.5" />
       </button>
       <button
-        className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs/relaxed outline-none ring-0 hover:bg-accent hover:text-accent-foreground"
+        className="group flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs/relaxed ring-0 outline-none hover:bg-accent hover:text-accent-foreground"
         onClick={() => onToggleVisibility(column.id)}
       >
         <span className="truncate">
@@ -81,7 +86,7 @@ function SortableColumnItem<TData>({
         </span>
         <Check
           className={cn(
-            "ml-auto h-4 w-4 shrink-0",
+            "ml-auto h-4 w-4 shrink-0 text-foreground",
             column.getIsVisible() ? "opacity-100" : "opacity-0"
           )}
         />
@@ -100,8 +105,6 @@ export function DataTableViewOptions<TData>({
   table,
   ...props
 }: DataTableViewOptionsProps<TData>) {
-  const [isCommandListEmpty, setIsCommandListEmpty] = React.useState(false)
-
   const columnIds = React.useMemo(
     () =>
       table
@@ -127,6 +130,7 @@ export function DataTableViewOptions<TData>({
 
   const STORAGE_KEY = React.useMemo(() => {
     const base = columns.map((c) => c.id).join(",")
+    if (typeof window === "undefined") return ""
     return `data-table-column-order:${window.location.pathname}:base[${btoa(base)}]`
   }, [columns.map((c) => c.id).join(",")])
 
@@ -135,7 +139,9 @@ export function DataTableViewOptions<TData>({
     [columns.map((c) => c.id).join(",")]
   )
 
+  const isClient = typeof window !== "undefined"
   const [columnOrder, setColumnOrder] = React.useState<string[]>(() => {
+    if (!isClient) return defaultOrder
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
@@ -182,19 +188,16 @@ export function DataTableViewOptions<TData>({
     [table]
   )
 
-  const handleDragEnd = React.useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event
-      if (!over || active.id === over.id) return
+  const handleDragEnd = React.useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-      setColumnOrder((prev) => {
-        const oldIndex = prev.indexOf(active.id as string)
-        const newIndex = prev.indexOf(over.id as string)
-        return arrayMove(prev, oldIndex, newIndex)
-      })
-    },
-    []
-  )
+    setColumnOrder((prev) => {
+      const oldIndex = prev.indexOf(active.id as string)
+      const newIndex = prev.indexOf(over.id as string)
+      return arrayMove(prev, oldIndex, newIndex)
+    })
+  }, [])
 
   const sortedColumns = React.useMemo(() => {
     if (columnOrder.length === 0) return columns
@@ -212,7 +215,7 @@ export function DataTableViewOptions<TData>({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   return (
@@ -223,7 +226,7 @@ export function DataTableViewOptions<TData>({
           role="combobox"
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 font-normal lg:flex"
+          className="ml-auto hidden font-normal lg:flex"
         >
           <Settings2 className="text-muted-foreground" />
           View
@@ -232,13 +235,8 @@ export function DataTableViewOptions<TData>({
       <PopoverContent className="w-48 p-0" {...props}>
         <Command>
           <CommandInput placeholder="Search columns..." className="h-9" />
-          <CommandList
-            onEmptyChange={(empty) => setIsCommandListEmpty(empty)}
-            data-slot="command-list"
-          >
-            <CommandEmpty className="hidden">
-              No columns found.
-            </CommandEmpty>
+          <CommandList data-slot="command-list">
+            <CommandEmpty className="hidden">No columns found.</CommandEmpty>
             <CommandGroup
               data-column-list={sortedColumns.join(",")}
               className="flex-1"
@@ -254,17 +252,22 @@ export function DataTableViewOptions<TData>({
                   strategy={verticalListSortingStrategy}
                 >
                   {sortedColumns.map((column) => (
-                    <div key={column.id} className="px-1">
+                    <CommandItem
+                      key={column.id}
+                      value={column.columnDef.meta?.label ?? column.id}
+                      onSelect={() => toggleColumnVisibility(column.id)}
+                      className="px-0 py-0"
+                    >
                       <SortableColumnItem
                         column={column}
                         onToggleVisibility={toggleColumnVisibility}
                       />
-                    </div>
+                    </CommandItem>
                   ))}
                 </SortableContext>
               </DndContext>
             </CommandGroup>
-            <div className="mt-auto px-1 py-1 border-t border-border/50">
+            <div className="mt-auto border-t border-border/50 px-1 py-1">
               <button
                 className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs/relaxed font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 onClick={resetColumnOrder}

@@ -1,19 +1,34 @@
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { Button } from "@adscrush/ui/components/button"
 import { Checkbox } from "@adscrush/ui/components/checkbox"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "@adscrush/ui/components/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@adscrush/ui/components/dropdown-menu"
 import { Badge } from "@adscrush/ui/components/badge"
 import type { DataTableRowAction } from "@/types/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { Advertiser } from "../queries"
 import { CalendarIcon, CircleDashed, Ellipsis, Text } from "lucide-react"
-import { IconCircleCheckFilled, IconCircleXFilled, IconClock } from "@tabler/icons-react"
+import {
+  IconCircleCheckFilled,
+  IconCircleXFilled,
+  IconClock,
+} from "@tabler/icons-react"
 
 interface GetAdvertisersTableColumnsProps {
-  setRowAction: React.Dispatch<React.SetStateAction<DataTableRowAction<Advertiser> | null>>
+  setRowAction: React.Dispatch<
+    React.SetStateAction<DataTableRowAction<Advertiser> | null>
+  >
 }
 
-export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTableColumnsProps): ColumnDef<Advertiser>[] {
+export function getAdvertisersTableColumns({
+  setRowAction,
+}: GetAdvertisersTableColumnsProps): ColumnDef<Advertiser>[] {
   return [
     {
       id: "select",
@@ -21,12 +36,20 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
         <Checkbox
           aria-label="Select all"
           className="translate-y-0.5"
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
       ),
       cell: ({ row }) => (
-        <Checkbox aria-label="Select row" className="translate-y-0.5" checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} />
+        <Checkbox
+          aria-label="Select row"
+          className="translate-y-0.5"
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+        />
       ),
       enableSorting: false,
       enableHiding: false,
@@ -38,8 +61,12 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
     {
       id: "name",
       accessorKey: "name",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Advertiser" />,
-      cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Advertiser" />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("name")}</span>
+      ),
       meta: {
         label: "Advertiser",
         placeholder: "Search advertiser...",
@@ -52,8 +79,14 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
     {
       id: "companyName",
       accessorKey: "companyName",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Company" />,
-      cell: ({ cell }) => <span className="text-muted-foreground">{cell.getValue<string>() || "-"}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Company" />
+      ),
+      cell: ({ cell }) => (
+        <span className="text-muted-foreground">
+          {cell.getValue<string>() || "-"}
+        </span>
+      ),
       meta: {
         label: "Company",
         placeholder: "Search company...",
@@ -66,8 +99,12 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
     {
       id: "email",
       accessorKey: "email",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Email" />,
-      cell: ({ cell }) => <span className="text-muted-foreground">{cell.getValue<string>()}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Email" />
+      ),
+      cell: ({ cell }) => (
+        <span className="text-muted-foreground">{cell.getValue<string>()}</span>
+      ),
       meta: {
         label: "Email",
         variant: "text",
@@ -79,14 +116,25 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
     {
       id: "accountManager",
       accessorKey: "accountManager",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Account Manager" />,
-      cell: ({ cell }) => <span className="text-muted-foreground">{cell.getValue<{ name: string }>()?.name || "-"}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Account Manager" />
+      ),
+      cell: ({ cell }) => (
+        <span className="text-muted-foreground">
+          {cell.getValue<{ name: string }>()?.name || "-"}
+        </span>
+      ),
       minSize: 180,
+      meta: {
+        label: "Account Manager",
+      },
     },
     {
       id: "status",
       accessorKey: "status",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Status" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Status" />
+      ),
       cell: ({ row }) => <AdvertiserStatusBadge status={row.original.status} />,
       enableSorting: true,
       meta: {
@@ -105,8 +153,18 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
     {
       id: "createdAt",
       accessorKey: "createdAt",
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Created" />,
-      cell: ({ cell }) => <span className="text-muted-foreground">{new Date(cell.getValue<Date>()).toLocaleDateString()}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Created" />
+      ),
+      cell: ({ cell }) => (
+        <span className="text-muted-foreground">
+          {new Date(cell.getValue<Date>()).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })}
+        </span>
+      ),
       meta: {
         label: "Created",
         variant: "dateRange",
@@ -121,17 +179,25 @@ export function getAdvertisersTableColumns({ setRowAction }: GetAdvertisersTable
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="Open action menu" variant="ghost" className="flex size-8 p-0 data-[state=open]:bg-muted">
+              <Button
+                aria-label="Open action menu"
+                variant="ghost"
+                className="flex size-8 p-0 data-[state=open]:bg-muted"
+              >
                 <Ellipsis className="size-4" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onSelect={() => setRowAction({ row, variant: "update" })}>
+              <DropdownMenuItem
+                onSelect={() => setRowAction({ row, variant: "update" })}
+              >
                 Edit
                 <DropdownMenuShortcut>E</DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => setRowAction({ row, variant: "delete" })}>
+              <DropdownMenuItem
+                onSelect={() => setRowAction({ row, variant: "delete" })}
+              >
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
