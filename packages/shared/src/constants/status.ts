@@ -52,3 +52,12 @@ export const ADVERTISER_STATUS = {
 
 export type AdvertiserStatus =
   (typeof ADVERTISER_STATUS)[keyof typeof ADVERTISER_STATUS]
+
+export const AFFILIATE_STATUS = {
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+  PENDING: "pending",
+} as const
+
+export type AffiliateStatus =
+  (typeof AFFILIATE_STATUS)[keyof typeof AFFILIATE_STATUS]

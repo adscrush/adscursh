@@ -8,7 +8,7 @@ export const affiliates = pgTable("affiliates", {
     .$defaultFn(() => generateId("affiliate")),
   name: text("name").notNull(),
   companyName: text("company_name"),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
   accountManagerId: text("account_manager_id").references(() => employees.id, {
     onDelete: "set null",
   }),

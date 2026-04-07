@@ -7,7 +7,8 @@ export const createAdvertiserSchema = z.object({
   password: z
     .string()
     .min(8, { error: "Password must be at least 8 characters long" })
-    .optional(),
+    .optional()
+    .or(z.literal("")),
   website: z.url().optional().or(z.literal("")),
   country: z.string().optional(),
   accountManagerId: z.string(),

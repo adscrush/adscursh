@@ -197,10 +197,7 @@ export function DashboardSidebar() {
     {
       title: "Affiliates",
       icon: Users,
-      items: [
-        { title: "All Affiliates", url: "/affiliates" },
-        { title: "Create Affiliate", url: "/affiliates/new" },
-      ],
+      url: "/affiliates",
     },
     {
       title: "Advertisers",
