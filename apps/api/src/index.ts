@@ -59,4 +59,4 @@ console.log(
   ].join("\n")
 )
 
-export default app
+export type AppType = typeof app

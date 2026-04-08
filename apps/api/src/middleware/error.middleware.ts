@@ -8,7 +8,7 @@ import { errorResponse } from "../utils/response"
  */
 export const errorHandler = new Elysia({ name: "error-handler" }).onError(
   { as: "global" },
-  ({ code, error, set, request }) => {
+  ({ code, error, set }) => {
     // Log all errors in development, or only unknown/server errors in production
     if (
       process.env.NODE_ENV === "development" ||

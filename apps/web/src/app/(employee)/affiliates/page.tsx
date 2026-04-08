@@ -23,14 +23,7 @@ export default async function AffiliatesPage(props: AffiliatesPageProps) {
   const search = searchParamsCache.parse(searchParams)
   const queryClient = new QueryClient()
 
-  await queryClient.ensureQueryData(
-    getAffiliatesQueryOptions({
-      page: search.page,
-      perPage: search.perPage,
-      ...(search.name ? { search: search.name } : {}),
-      ...(search.status.length > 0 ? { status: search.status.join(",") } : {}),
-    })
-  )
+  await queryClient.ensureQueryData(getAffiliatesQueryOptions(search))
 
   return (
     <div className="flex flex-1 flex-col gap-4">

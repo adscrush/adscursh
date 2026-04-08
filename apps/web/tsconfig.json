@@ -2,13 +2,17 @@
   "extends": "@adscrush/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+     "skipLibCheck": true,
     "paths": {
       "@/*": [
         "./src/*"
       ],
+      "~/*": [
+        "../../apps/api/src/*"
+      ],
       "@adscrush/ui/*": [
         "../../packages/ui/src/*"
-      ]
+      ],
     },
     "plugins": [
       {
@@ -22,8 +26,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
+
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+     "../../apps/api/src",
   ]
 }

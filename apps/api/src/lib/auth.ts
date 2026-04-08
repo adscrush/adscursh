@@ -1,6 +1,6 @@
-import env from "@/env"
 import { createAuth } from "@adscrush/auth"
 import { db } from "./db"
+import env from "~/env"
 
 export const auth = createAuth({
   db: db,

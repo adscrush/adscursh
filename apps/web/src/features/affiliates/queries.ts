@@ -9,6 +9,9 @@ import { api } from "@/lib/api"
 import { createAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
 import type { z } from "zod"
 
+import type { GetAffiliatesSchema } from "./validations"
+import SuperJSON from "superjson"
+
 /* ── Types ────────────────────────────────────────────────────────── */
 
 export interface Affiliate {
@@ -27,13 +30,9 @@ export interface Affiliate {
 export const affiliateKeys = {
   all: ["affiliates"] as const,
   lists: () => [...affiliateKeys.all, "list"] as const,
-  list: (filters: {
-    page: number
-    perPage: number
-    search?: string
-    status?: string
-    accountManagerId?: string
-  }) => [...affiliateKeys.lists(), { filters }] as const,
+  list: (
+    params: Omit<GetAffiliatesSchema, "filterFlag"> & { filterFlag?: string }
+  ) => [...affiliateKeys.lists(), { params }] as const,
   statusCounts: () => [...affiliateKeys.all, "status-counts"] as const,
   employeeList: () => [...affiliateKeys.all, "employees"] as const,
 }
@@ -58,40 +57,39 @@ function parseApiError(errorPayload: unknown): string {
 
   if (data.message) return String(data.message)
 
+  // Debug: log the actual error structure to help diagnose issues
+  console.error("API Error payload:", errorPayload)
+  console.error("API Error data:", data)
+
   return "An unexpected error occurred"
 }
 
 /* ── Query Options Factories ──────────────────────────────────────── */
 
-export function getAffiliatesQueryOptions(params: {
-  page: number
-  perPage: number
-  search?: string
-  status?: "active" | "inactive" | "pending"
-  accountManagerId?: string
-}) {
+export function getAffiliatesQueryOptions(params: GetAffiliatesSchema) {
   return queryOptions({
-    queryKey: affiliateKeys.list({
-      page: params.page,
-      perPage: params.perPage,
-      search: params.search,
-      status: params.status,
-      accountManagerId: params.accountManagerId,
-    }),
+    queryKey: affiliateKeys.list(params),
     queryFn: async () => {
       const { data, error } = await api.affiliates.get({
         query: {
+          filterFlag: params.filterFlag,
+          name: params.name ?? "",
           page: params.page,
-          limit: params.perPage,
-          ...(params.search ? { search: params.search } : {}),
-          ...(params.status ? { status: params.status } : {}),
-          ...(params.accountManagerId
-            ? { accountManagerId: params.accountManagerId }
-            : {}),
+          perPage: params.perPage,
+          sort: JSON.stringify(
+            params.sort
+          ) as unknown as GetAffiliatesSchema["sort"],
+          filters: JSON.stringify(
+            params.filters
+          ) as unknown as GetAffiliatesSchema["filters"],
+          joinOperator: params.joinOperator,
+          createdAt: params.createdAt,
+          status: params.status,
         },
       })
 
       if (error) {
+        console.log(JSON.stringify(error))
         throw new Error(parseApiError(error))
       }
 
@@ -99,7 +97,11 @@ export function getAffiliatesQueryOptions(params: {
         throw new Error("Invalid response")
       }
 
-      return { data: data.data, pageCount: data.meta.totalPages, meta: data.meta }
+      return {
+        data: data.data,
+        pageCount: data.meta.totalPages,
+        meta: data.meta,
+      }
     },
     placeholderData: keepPreviousData,
   })
@@ -121,13 +123,7 @@ export function getAffiliateStatusCountsOptions() {
 
 /* ── Hooks ─────────────────────────────────────────────────────────── */
 
-export function useAffiliates(params: {
-  page: number
-  perPage: number
-  search?: string
-  status?: "active" | "inactive" | "pending"
-  accountManagerId?: string
-}) {
+export function useAffiliates(params: GetAffiliatesSchema) {
   return useQuery(getAffiliatesQueryOptions(params))
 }
 
@@ -141,7 +137,7 @@ export function useDeleteAffiliate() {
           id,
         })
         .delete()
-        
+
       if (error) {
         throw new Error(parseApiError(error))
       }
@@ -159,15 +155,15 @@ export function useCreateAffiliate() {
   return useMutation({
     mutationFn: async (data: z.infer<typeof createAffiliateSchema>) => {
       const { data: resData, error } = await api.affiliates.post(data)
-      
+
       if (error) {
         throw new Error(parseApiError(error))
       }
-      
+
       if (!resData || !resData.success) {
         throw new Error("Failed to create affiliate")
       }
-      
+
       return resData.data
     },
     onSuccess: () => {
@@ -189,15 +185,15 @@ export function useUpdateAffiliate() {
           id,
         })
         .put(payload)
-        
+
       if (error) {
         throw new Error(parseApiError(error))
       }
-      
+
       if (!data || !data.success) {
         throw new Error("Failed to update affiliate")
       }
-      
+
       return data.data
     },
     onSuccess: () => {
@@ -211,15 +207,15 @@ export function useEmployees() {
     queryKey: affiliateKeys.employeeList(),
     queryFn: async () => {
       const { data, error } = await api.employees.get({ query: { limit: 100 } })
-      
+
       if (error) {
         throw new Error(parseApiError(error))
       }
-      
+
       if (!data || !data.success) {
         throw new Error("Failed to fetch employees")
       }
-      
+
       return data.data
     },
     staleTime: 5 * 60 * 1000,

@@ -77,7 +77,7 @@ export function EditEmployeeDialog({ open, employee, onOpenChange }: EditEmploye
         setIsOpen(false)
         onOpenChange(false)
       } else {
-        toast.error(response.data?.error || "Failed to update employee")
+        toast.error("Failed to update employee")
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "An error occurred")

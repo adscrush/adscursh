@@ -72,7 +72,6 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .post(
     "/",
     async ({ body }) => {
-      console.log("helo")
       const [advertiser] = await db.insert(advertisers).values(body).returning()
       return { success: true, data: advertiser, status: 201 }
     },

@@ -1,10 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { env } from "@/env"
 import { PageHeader } from "@/components/common/page-header"
 import { StatCard } from "@/components/common/stat-card"
-import { SiteHeader } from "@/components/common/site-header"
+import { useState } from "react"
 
 interface OverviewData {
   clicks: number
@@ -13,16 +11,6 @@ interface OverviewData {
   payout: number
   profit: number
   conversionRate: number
-}
-
-async function fetchOverview(): Promise<OverviewData> {
-  const baseUrl = env.NEXT_PUBLIC_API_URL
-  const res = await fetch(`${baseUrl}/api/v1/reports/overview`, {
-    credentials: "include",
-  })
-  if (!res.ok) throw new Error("Failed to fetch overview")
-  const json = await res.json()
-  return json.data
 }
 
 export default function DashboardPage() {

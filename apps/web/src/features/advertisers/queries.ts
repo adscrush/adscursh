@@ -121,9 +121,9 @@ export function useDeleteAdvertiser() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await (api.advertisers as any)(id).delete()
+      const response = await api.advertisers({ id }).delete()
       if (!response?.data?.success) {
-        throw new Error(response?.data?.error || "Failed to delete advertiser")
+        throw new Error("Failed to delete advertiser")
       }
       return response.data
     },

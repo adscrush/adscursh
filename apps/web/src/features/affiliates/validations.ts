@@ -1,8 +1,9 @@
+import { flagConfig } from "@/config/flag"
+import { Affiliate, affiliates } from "@adscrush/db/schema"
 import {
   getFiltersStateParser,
   getSortingStateParser,
 } from "@adscrush/shared/lib/parsers"
-import { flagConfig } from "@/config/flag"
 import {
   createSearchParamsCache,
   parseAsArrayOf,
@@ -11,22 +12,22 @@ import {
   parseAsStringEnum,
 } from "nuqs/server"
 
-const statusValues = ["active", "inactive", "pending"] as string[]
-
 export const searchParamsCache = createSearchParamsCache({
   filterFlag: parseAsStringEnum(
     flagConfig.featureFlags.map((flag) => flag.value)
   ).withDefault("commandFilters"),
   page: parseAsInteger.withDefault(1),
-  perPage: parseAsInteger.withDefault(20),
-  sort: getSortingStateParser<Record<string, unknown>>().withDefault([
+  perPage: parseAsInteger.withDefault(10),
+
+  sort: getSortingStateParser<Affiliate>().withDefault([
     { id: "createdAt", desc: true },
-  ] as any),
+  ]),
   name: parseAsString.withDefault(""),
   status: parseAsArrayOf(
-    parseAsStringEnum(statusValues as ["active", "inactive", "pending"])
+    parseAsStringEnum(affiliates.status.enumValues)
   ).withDefault([]),
-  createdAt: parseAsArrayOf(parseAsString).withDefault([]),
+
+  createdAt: parseAsArrayOf(parseAsInteger).withDefault([]),
   // advanced filter
   filters: getFiltersStateParser().withDefault([]),
   joinOperator: parseAsStringEnum(["and", "or"]).withDefault("and"),

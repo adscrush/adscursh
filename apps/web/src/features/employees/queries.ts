@@ -50,15 +50,16 @@ export function useEmployees({
       status: status !== "all" ? status : undefined,
     }),
     queryFn: async () => {
-      const params = new URLSearchParams()
-      params.set("page", String(page))
-      params.set("limit", "20")
-      if (search) params.set("search", search)
-      if (status !== "all") params.set("status", status)
-
-      const response = await api.employees.get(params.toString() as never)
+      const response = await api.employees.get({
+        query: {
+          page,
+          limit: 20,
+          search: search || undefined,
+          status: status !== "all" ? status : undefined,
+        },
+      })
       if (!response.data?.success || !response.data.data) {
-        throw new Error(response.data?.error || "Failed to fetch employees")
+        throw new Error("Failed to fetch employees")
       }
       return response.data as EmployeeListResponse
     },
@@ -72,7 +73,7 @@ export function useUpdateEmployee() {
     mutationFn: async ({ id, data }: { id: string; data: UpdateEmployeeInput }) => {
       const response = await api.employees.put(id, data as any)
       if (!response.data?.success) {
-        throw new Error(response.data?.error || "Failed to update employee")
+        throw new Error("Failed to update employee")
       }
       return response.data
     },
@@ -89,7 +90,7 @@ export function useCreateEmployee() {
     mutationFn: async (data: CreateEmployeeInput) => {
       const response = await api.employees.post(data as any)
       if (!response.data?.success) {
-        throw new Error(response.data?.error || "Failed to create employee")
+        throw new Error("Failed to create employee")
       }
       return response.data
     },

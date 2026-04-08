@@ -19,6 +19,8 @@ import { getAffiliatesTableColumns } from "./affiliates-table-columns"
 import { UpdateAffiliateDialog } from "./update-affiliate-dialog"
 import { DeleteAffiliatesDialog } from "./delete-affiliates-dialog"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs"
+import { getFiltersStateParser, getSortingStateParser } from "@adscrush/shared/lib/parsers"
 
 interface AffiliatesDataTableProps {
   search: GetAffiliatesSchema
@@ -28,12 +30,38 @@ interface AffiliatesDataTableProps {
 export function AffiliatesDataTable({ search, queryKeys }: AffiliatesDataTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags()
 
-  const { data, isLoading } = useAffiliates({
-    page: search.page,
-    perPage: search.perPage,
-    ...(search.name ? { search: search.name } : {}),
-    ...(search.status.length > 0 ? { status: search.status.join(",") } : {}),
-  })
+  // These stay in sync with live URL params (set by useDataTable)
+  const pageState = useQueryState(
+    queryKeys?.page ?? "page",
+    parseAsInteger.withDefault(search.page)
+  )
+  const perPageState = useQueryState(
+    queryKeys?.perPage ?? "perPage",
+    parseAsInteger.withDefault(search.perPage)
+  )
+  const [sorting] = useQueryState(
+    queryKeys?.sort ?? "sort",
+    getSortingStateParser().withDefault([{ id: "createdAt", desc: true }] as any)
+  )
+  const [filters] = useQueryState(
+    queryKeys?.filters ?? "filters",
+    getFiltersStateParser().withDefault([] as any)
+  )
+  const [joinOperator] = useQueryState(
+    queryKeys?.joinOperator ?? "joinOperator",
+    parseAsString.withDefault(search.joinOperator)
+  )
+
+  const params = {
+    ...search,
+    page: pageState[0],
+    perPage: perPageState[0] ?? perPageState[1],
+    sort: sorting ?? [{ id: "createdAt", desc: true }] as any,
+    filters: filters ?? [],
+    joinOperator: (joinOperator ?? "and") as "and" | "or",
+  }
+
+  const { data, isLoading } = useAffiliates(params)
 
   const [rowAction, setRowAction] =
     React.useState<DataTableRowAction<Affiliate> | null>(null)

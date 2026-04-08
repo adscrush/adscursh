@@ -1,14 +1,25 @@
-import Elysia from "elysia"
-import { eq, like, sql, and, type SQL } from "@adscrush/db/drizzle"
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  like,
+  lte,
+  or,
+  sql,
+} from "@adscrush/db/drizzle"
 import { affiliates } from "@adscrush/db/schema"
-import { db } from "../../lib/db"
-import { AppError } from "../../utils/errors"
-import { requireAuth } from "../../middleware/auth.middleware"
-import { listQuerySchema } from "./config"
+import { filterColumns, getColumn } from "@adscrush/shared/lib/filter-columns"
 import {
   createAffiliateSchema,
   updateAffiliateSchema,
 } from "@adscrush/shared/validators/affiliate.validator"
+import Elysia from "elysia"
+import { db } from "~/lib/db"
+import { requireAuth } from "~/middleware/auth.middleware"
+import { AppError } from "~/utils/errors"
+import { listQuerySchema } from "./config"
 
 export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .use(requireAuth)
@@ -17,30 +28,84 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .get(
     "/",
     async ({ query }) => {
+      const parsed = listQuerySchema.parse(query)
       const {
-        page = 1,
-        limit = 20,
-        search,
+        page,
+        perPage,
+        filterFlag,
+        name,
         status,
-        accountManagerId,
-      } = listQuerySchema.parse(query)
-      const offset = (page - 1) * limit
+        createdAt,
+        joinOperator,
+        sort,
+        filters,
+      } = parsed
 
-      const conditions: SQL[] = []
-      if (search) conditions.push(like(affiliates.name, `%${search}%`))
-      if (status) conditions.push(eq(affiliates.status, status))
-      if (accountManagerId)
-        conditions.push(eq(affiliates.accountManagerId, accountManagerId))
-      const where = conditions.length > 0 ? and(...conditions) : undefined
+      const offset = (page - 1) * perPage
+
+      const advancedTable =
+        filterFlag === "advancedFilters" || filterFlag === "commandFilters"
+
+      const advancedWhere = filterColumns({
+        table: affiliates,
+        filters,
+        joinOperator,
+        database: "postgres",
+      })
+
+      const simpleWhere =
+        name || status.length > 0 || createdAt.length > 0
+          ? and(
+              name ? like(affiliates.name, `%${name}%`) : undefined,
+              status.length > 0
+                ? or(...status.map((s) => eq(affiliates.status, s)))
+                : undefined,
+              createdAt.length > 0
+                ? and(
+                    createdAt[0]
+                      ? gte(
+                          affiliates.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[0])
+                            d.setHours(0, 0, 0, 0)
+                            return d
+                          })()
+                        )
+                      : undefined,
+                    createdAt[1]
+                      ? lte(
+                          affiliates.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[1])
+                            d.setHours(23, 59, 59, 999)
+                            return d
+                          })()
+                        )
+                      : undefined
+                  )
+                : undefined
+            )
+          : undefined
+
+      const where = advancedTable ? advancedWhere : simpleWhere
+
+      const orderBy =
+        sort.length > 0
+          ? sort.map((item) =>
+              item.desc
+                ? desc(getColumn(affiliates, item.id))
+                : asc(getColumn(affiliates, item.id))
+            )
+          : [asc(affiliates.createdAt)]
 
       const [items, countResult] = await Promise.all([
         db
           .select()
           .from(affiliates)
           .where(where)
-          .limit(limit)
+          .limit(perPage)
           .offset(offset)
-          .orderBy(affiliates.createdAt),
+          .orderBy(...orderBy),
         db
           .select({ count: sql<number>`count(*)` })
           .from(affiliates)
@@ -51,7 +116,12 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
       return {
         success: true,
         data: items,
-        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        meta: {
+          page,
+          perPage,
+          total,
+          totalPages: Math.ceil(total / perPage),
+        },
       }
     },
     { query: listQuerySchema }
@@ -72,10 +142,7 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .post(
     "/",
     async ({ body }) => {
-      const [affiliate] = await db
-        .insert(affiliates)
-        .values(body)
-        .returning()
+      const [affiliate] = await db.insert(affiliates).values(body).returning()
       return { success: true, data: affiliate, status: 201 }
     },
     { body: createAffiliateSchema }
