@@ -6,8 +6,8 @@ import {
   initializeColumnSizes,
   trackColumnResizing,
 } from "@/components/data-table/utils/column-sizing"
-import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect"
-import { DataTableResizeOptions } from "@/types/data-table"
+import { useIsomorphicLayoutEffect } from "@adscrush/ui/hooks/use-isomorphic-layout-effect"
+import { DataTableResizeOptions } from "@adscrush/shared/types/data-table"
 import { ColumnDef, Table } from "@tanstack/react-table"
 import React from "react"
 
