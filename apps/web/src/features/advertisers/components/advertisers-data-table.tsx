@@ -27,6 +27,7 @@ import {
   getFiltersStateParser,
   getSortingStateParser,
 } from "@adscrush/shared/lib/parsers"
+import { AdvertisersTableActionBar } from "./advertiser-table-action-bar"
 
 interface AdvertisersDataTableProps {
   search: GetAdvertisersSchema
@@ -115,7 +116,10 @@ export function AdvertisersDataTable({
           withPagination={true}
         />
       ) : (
-        <DataTable table={table}>
+        <DataTable
+          table={table}
+          actionBar={<AdvertisersTableActionBar table={table} />}
+        >
           {enableAdvancedFilter ? (
             <DataTableAdvancedToolbar table={table} resizing={resizing}>
               <DataTableSortList table={table} align="start" />
