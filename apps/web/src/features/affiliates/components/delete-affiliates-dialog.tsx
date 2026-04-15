@@ -15,6 +15,7 @@ import {
 import { toast } from "@adscrush/ui/sonner"
 import { useDeleteAffiliate } from "../queries"
 import type { Affiliate } from "../queries"
+import { useRef } from "react"
 
 interface DeleteAffiliatesDialogProps {
   affiliates: Affiliate[]
@@ -26,20 +27,20 @@ export function DeleteAffiliatesDialog({
   affiliates,
   showTrigger = true,
   onSuccess,
+  onOpenChange,
   ...props
 }: DeleteAffiliatesDialogProps &
   Omit<React.ComponentPropsWithoutRef<typeof Dialog>, "children">) {
   const deleteMutation = useDeleteAffiliate()
+  const closeRef = useRef<HTMLButtonElement>(null)
 
   const handleDelete = async () => {
     try {
       await Promise.all(
-        affiliates.map((affiliate) =>
-          deleteMutation.mutateAsync(affiliate.id)
-        )
+        affiliates.map((affiliate) => deleteMutation.mutateAsync(affiliate.id))
       )
       toast.success("Affiliate(s) deleted")
-      props.onOpenChange?.(false)
+      closeRef.current?.click()
       onSuccess?.()
     } catch {
       toast.error("Failed to delete affiliate(s)")
@@ -47,19 +48,21 @@ export function DeleteAffiliatesDialog({
   }
 
   return (
-    <Dialog {...props}>
+    <Dialog onOpenChange={onOpenChange} {...props}>
       {showTrigger && (
-        <DialogTrigger asChild>
-          <Button
-            aria-label="Delete selected"
-            variant="outline"
-            size="sm"
-            className="h-8"
-          >
-            <Trash className="mr-2 size-4" aria-hidden="true" />
-            Delete
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button
+              aria-label="Delete selected"
+              variant="outline"
+              size="sm"
+              className="h-8"
+            >
+              <Trash className="mr-2 size-4" aria-hidden="true" />
+              Delete
+            </Button>
+          }
+        />
       )}
       <DialogContent>
         <DialogHeader>
@@ -85,7 +88,10 @@ export function DeleteAffiliatesDialog({
           these items may be referenced by other resources.
         </div>
         <DialogFooter className="gap-2 sm:space-x-0">
-          <DialogClose render={<Button variant="outline">Cancel</Button>} />
+          <DialogClose
+            ref={closeRef}
+            render={<Button variant="outline">Cancel</Button>}
+          />
           <Button
             aria-label="Delete selected rows"
             variant="destructive"

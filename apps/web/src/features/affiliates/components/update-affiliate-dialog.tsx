@@ -82,7 +82,7 @@ export function UpdateAffiliateDialog({
       {
         onSuccess: () => {
           toast.success("Affiliate updated")
-          onOpenChange?.(false)
+          onOpenChange(false)
         },
         onError: (error) => {
           toast.error(error.message)
@@ -153,7 +153,7 @@ export function UpdateAffiliateDialog({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => onOpenChange?.(false)}
+              onClick={() => onOpenChange(false)}
               disabled={isLoading}
               type="button"
             >

@@ -9,7 +9,7 @@ import {
   or,
   sql,
 } from "@adscrush/db/drizzle"
-import { affiliates } from "@adscrush/db/schema"
+import { affiliates, employees, users } from "@adscrush/db/schema"
 import { filterColumns, getColumn } from "@adscrush/shared/lib/filter-columns"
 import {
   createAffiliateSchema,
@@ -100,8 +100,27 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
 
       const [items, countResult] = await Promise.all([
         db
-          .select()
+          .select({
+            id: affiliates.id,
+            name: affiliates.name,
+            companyName: affiliates.companyName,
+            email: affiliates.email,
+            status: affiliates.status,
+            accountManagerId: affiliates.accountManagerId,
+            createdAt: affiliates.createdAt,
+            updatedAt: affiliates.updatedAt,
+            accountManager: {
+              id: employees.id,
+              department: employees.department,
+              status: employees.status,
+              name: users.name,
+              email: users.email,
+              image: users.image,
+            },
+          })
           .from(affiliates)
+          .leftJoin(employees, eq(affiliates.accountManagerId, employees.id))
+          .leftJoin(users, eq(employees.userId, users.id))
           .where(where)
           .limit(perPage)
           .offset(offset)

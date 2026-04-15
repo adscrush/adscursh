@@ -9,7 +9,10 @@ import { DataTableToolbar } from "@/components/data-table/data-table-toolbar"
 import { useDataTable } from "@/hooks/use-data-table"
 import { DataTableProvider } from "@/providers/data-table-provider"
 import { useFeatureFlags } from "@/providers/feature-flags-provider"
-import type { DataTableRowAction, QueryKeys } from "@/types/data-table"
+import type {
+  DataTableRowAction,
+  QueryKeys,
+} from "@adscrush/shared/types/data-table"
 import * as React from "react"
 
 import { useAffiliates } from "../queries"
@@ -20,14 +23,20 @@ import { UpdateAffiliateDialog } from "./update-affiliate-dialog"
 import { DeleteAffiliatesDialog } from "./delete-affiliates-dialog"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs"
-import { getFiltersStateParser, getSortingStateParser } from "@adscrush/shared/lib/parsers"
+import {
+  getFiltersStateParser,
+  getSortingStateParser,
+} from "@adscrush/shared/lib/parsers"
 
 interface AffiliatesDataTableProps {
   search: GetAffiliatesSchema
   queryKeys?: Partial<QueryKeys>
 }
 
-export function AffiliatesDataTable({ search, queryKeys }: AffiliatesDataTableProps) {
+export function AffiliatesDataTable({
+  search,
+  queryKeys,
+}: AffiliatesDataTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags()
 
   // These stay in sync with live URL params (set by useDataTable)
@@ -41,11 +50,13 @@ export function AffiliatesDataTable({ search, queryKeys }: AffiliatesDataTablePr
   )
   const [sorting] = useQueryState(
     queryKeys?.sort ?? "sort",
-    getSortingStateParser().withDefault([{ id: "createdAt", desc: true }] as any)
+    getSortingStateParser<Omit<Affiliate, "accountManager">>().withDefault([
+      { id: "createdAt", desc: true },
+    ])
   )
   const [filters] = useQueryState(
     queryKeys?.filters ?? "filters",
-    getFiltersStateParser().withDefault([] as any)
+    getFiltersStateParser().withDefault([])
   )
   const [joinOperator] = useQueryState(
     queryKeys?.joinOperator ?? "joinOperator",
@@ -56,7 +67,7 @@ export function AffiliatesDataTable({ search, queryKeys }: AffiliatesDataTablePr
     ...search,
     page: pageState[0],
     perPage: perPageState[0] ?? perPageState[1],
-    sort: sorting ?? [{ id: "createdAt", desc: true }] as any,
+    sort: sorting ?? [{ id: "createdAt", desc: true }],
     filters: filters ?? [],
     joinOperator: (joinOperator ?? "and") as "and" | "or",
   }
@@ -142,9 +153,7 @@ export function AffiliatesDataTable({ search, queryKeys }: AffiliatesDataTablePr
       <DeleteAffiliatesDialog
         open={rowAction?.variant === "delete"}
         onOpenChange={handleRowActionChange}
-        affiliates={
-          rowAction?.row.original ? [rowAction?.row.original] : []
-        }
+        affiliates={rowAction?.row.original ? [rowAction?.row.original] : []}
         showTrigger={false}
         onSuccess={() => rowAction?.row.toggleSelected(false)}
       />

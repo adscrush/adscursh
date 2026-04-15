@@ -1,3 +1,5 @@
+import { api } from "@/lib/api"
+import { createAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
 import {
   keepPreviousData,
   queryOptions,
@@ -5,26 +7,13 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { api } from "@/lib/api"
-import { createAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
 import type { z } from "zod"
 
 import type { GetAffiliatesSchema } from "./validations"
-import SuperJSON from "superjson"
+import { Treaty } from "@elysiajs/eden"
 
 /* ── Types ────────────────────────────────────────────────────────── */
-
-export interface Affiliate {
-  id: string
-  name: string
-  companyName: string | null
-  email: string
-  accountManagerId: string | null
-  accountManager?: { id: string; name: string }
-  status: "active" | "inactive" | "pending"
-  createdAt: Date
-}
-
+export type Affiliate = Treaty.Data<typeof api.affiliates.get>["data"][number]
 /* ── Query Keys ────────────────────────────────────────────────────── */
 
 export const affiliateKeys = {

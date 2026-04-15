@@ -26,6 +26,7 @@ export function DeleteAdvertisersDialog({
   advertisers,
   showTrigger = true,
   onSuccess,
+  onOpenChange,
   ...props
 }: DeleteAdvertisersDialogProps &
   Omit<React.ComponentPropsWithoutRef<typeof Dialog>, "children">) {
@@ -39,7 +40,7 @@ export function DeleteAdvertisersDialog({
         )
       )
       toast.success("Advertiser(s) deleted")
-      props.onOpenChange?.(false)
+      onOpenChange?.(false)
       onSuccess?.()
     } catch {
       toast.error("Failed to delete advertiser(s)")
@@ -47,7 +48,7 @@ export function DeleteAdvertisersDialog({
   }
 
   return (
-    <Dialog {...props}>
+    <Dialog onOpenChange={onOpenChange} {...props}>
       {showTrigger && (
         <DialogTrigger asChild>
           <Button

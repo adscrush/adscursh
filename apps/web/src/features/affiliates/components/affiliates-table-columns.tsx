@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@adscrush/ui/components/dropdown-menu"
 import { Badge } from "@adscrush/ui/components/badge"
-import type { DataTableRowAction } from "@/types/data-table"
+import type { DataTableRowAction } from "@adscrush/shared/types/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { Affiliate } from "../queries"
 import { CalendarIcon, CircleDashed, Ellipsis, Text } from "lucide-react"
@@ -19,6 +19,11 @@ import {
   IconCircleXFilled,
   IconClock,
 } from "@tabler/icons-react"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@adscrush/ui/components/avatar"
 
 interface GetAffiliatesTableColumnsProps {
   setRowAction: React.Dispatch<
@@ -119,11 +124,31 @@ export function getAffiliatesTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} label="Account Manager" />
       ),
-      cell: ({ cell }) => (
-        <span className="text-muted-foreground">
-          {cell.getValue<{ name: string }>()?.name || "-"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const affManager = row.original.accountManager
+        return (
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar className="size-5 shrink-0">
+              {affManager.image ? (
+                <AvatarImage
+                  src={affManager.image}
+                  alt={affManager.name ?? ""}
+                />
+              ) : null}
+              <AvatarFallback className="text-[0.5rem]">
+                {affManager.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate">{affManager.name}</span>
+          </div>
+        )
+      },
+      enableSorting: false,
       minSize: 180,
       meta: {
         label: "Account Manager",
