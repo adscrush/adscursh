@@ -1,6 +1,17 @@
 import Elysia from "elysia"
-import { eq, like, sql, and, type SQL } from "@adscrush/db/drizzle"
-import { advertisers } from "@adscrush/db/schema"
+import {
+  eq,
+  like,
+  sql,
+  and,
+  type SQL,
+  or,
+  gte,
+  lte,
+  desc,
+  asc,
+} from "@adscrush/db/drizzle"
+import { advertisers, employees, users } from "@adscrush/db/schema"
 import { db } from "../../lib/db"
 import { AppError } from "../../utils/errors"
 import { requireAuth } from "../../middleware/auth.middleware"
@@ -9,6 +20,7 @@ import {
   createAdvertiserSchema,
   updateAdvertiserSchema,
 } from "@adscrush/shared/validators/advertiser.schema"
+import { filterColumns, getColumn } from "@adscrush/shared/lib/filter-columns"
 
 export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .use(requireAuth)
@@ -17,30 +29,103 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .get(
     "/",
     async ({ query }) => {
+      const parsed = listQuerySchema.parse(query)
       const {
-        page = 1,
-        limit = 20,
-        search,
+        page,
+        perPage,
+        filterFlag,
+        name,
         status,
-        accountManagerId,
-      } = listQuerySchema.parse(query)
-      const offset = (page - 1) * limit
+        createdAt,
+        joinOperator,
+        sort,
+        filters,
+      } = parsed
 
-      const conditions: SQL[] = []
-      if (search) conditions.push(like(advertisers.name, `%${search}%`))
-      if (status) conditions.push(eq(advertisers.status, status))
-      if (accountManagerId)
-        conditions.push(eq(advertisers.accountManagerId, accountManagerId))
-      const where = conditions.length > 0 ? and(...conditions) : undefined
+      const offset = (page - 1) * perPage
+
+      const advancedTable =
+        filterFlag === "advancedFilters" || filterFlag === "commandFilters"
+
+      const advancedWhere = filterColumns({
+        table: advertisers,
+        filters,
+        joinOperator,
+        database: "postgres",
+      })
+
+      const simpleWhere =
+        name || status.length > 0 || createdAt.length > 0
+          ? and(
+              name ? like(advertisers.name, `%${name}%`) : undefined,
+              status.length > 0
+                ? or(...status.map((s) => eq(advertisers.status, s)))
+                : undefined,
+              createdAt.length > 0
+                ? and(
+                    createdAt[0]
+                      ? gte(
+                          advertisers.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[0])
+                            d.setHours(0, 0, 0, 0)
+                            return d
+                          })()
+                        )
+                      : undefined,
+                    createdAt[1]
+                      ? lte(
+                          advertisers.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[1])
+                            d.setHours(23, 59, 59, 999)
+                            return d
+                          })()
+                        )
+                      : undefined
+                  )
+                : undefined
+            )
+          : undefined
+
+      const where = advancedTable ? advancedWhere : simpleWhere
+
+      const orderBy =
+        sort.length > 0
+          ? sort.map((item) =>
+              item.desc
+                ? desc(getColumn(advertisers, item.id))
+                : asc(getColumn(advertisers, item.id))
+            )
+          : [asc(advertisers.createdAt)]
 
       const [items, countResult] = await Promise.all([
         db
-          .select()
+          .select({
+            id: advertisers.id,
+            name: advertisers.name,
+            companyName: advertisers.companyName,
+            email: advertisers.email,
+            status: advertisers.status,
+            accountManagerId: advertisers.accountManagerId,
+            createdAt: advertisers.createdAt,
+            updatedAt: advertisers.updatedAt,
+            accountManager: {
+              id: employees.id,
+              department: employees.department,
+              status: employees.status,
+              name: users.name,
+              email: users.email,
+              image: users.image,
+            },
+          })
           .from(advertisers)
+          .leftJoin(employees, eq(advertisers.accountManagerId, employees.id))
+          .leftJoin(users, eq(employees.userId, users.id))
           .where(where)
-          .limit(limit)
+          .limit(perPage)
           .offset(offset)
-          .orderBy(advertisers.createdAt),
+          .orderBy(...orderBy),
         db
           .select({ count: sql<number>`count(*)` })
           .from(advertisers)
@@ -51,7 +136,12 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
       return {
         success: true,
         data: items,
-        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        meta: {
+          page,
+          perPage,
+          total,
+          totalPages: Math.ceil(total / perPage),
+        },
       }
     },
     { query: listQuerySchema }

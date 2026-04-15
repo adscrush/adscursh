@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@adscrush/ui/components/dropdown-menu"
 import { Badge } from "@adscrush/ui/components/badge"
-import type { DataTableRowAction } from "@/types/data-table"
+import type { DataTableRowAction } from "@adscrush/shared/types/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { Advertiser } from "../queries"
 import { CalendarIcon, CircleDashed, Ellipsis, Text } from "lucide-react"
@@ -19,6 +19,11 @@ import {
   IconCircleXFilled,
   IconClock,
 } from "@tabler/icons-react"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@adscrush/ui/components/avatar"
 
 interface GetAdvertisersTableColumnsProps {
   setRowAction: React.Dispatch<
@@ -119,11 +124,31 @@ export function getAdvertisersTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} label="Account Manager" />
       ),
-      cell: ({ cell }) => (
-        <span className="text-muted-foreground">
-          {cell.getValue<{ name: string }>()?.name || "-"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const advManager = row.original.accountManager
+        return (
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar className="size-5 shrink-0">
+              {advManager.image ? (
+                <AvatarImage
+                  src={advManager.image}
+                  alt={advManager.name ?? ""}
+                />
+              ) : null}
+              <AvatarFallback className="text-[0.5rem]">
+                {advManager.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate">{advManager.name}</span>
+          </div>
+        )
+      },
+      enableSorting: false,
       minSize: 180,
       meta: {
         label: "Account Manager",

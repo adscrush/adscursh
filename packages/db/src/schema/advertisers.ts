@@ -14,7 +14,11 @@ export const advertisers = pgTable("advertisers", {
   accountManagerId: text("account_manager_id").references(() => employees.id, {
     onDelete: "set null",
   }),
-  status: text("status").notNull().default("active"),
+  status: text("status", {
+    enum: ["active", "inactive", "pending"],
+  })
+    .notNull()
+    .default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })

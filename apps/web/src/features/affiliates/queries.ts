@@ -11,6 +11,7 @@ import type { z } from "zod"
 
 import type { GetAffiliatesSchema } from "./validations"
 import { Treaty } from "@elysiajs/eden"
+import { parseApiError } from "@/lib/error"
 
 /* ── Types ────────────────────────────────────────────────────────── */
 export type Affiliate = Treaty.Data<typeof api.affiliates.get>["data"][number]
@@ -24,33 +25,6 @@ export const affiliateKeys = {
   ) => [...affiliateKeys.lists(), { params }] as const,
   statusCounts: () => [...affiliateKeys.all, "status-counts"] as const,
   employeeList: () => [...affiliateKeys.all, "employees"] as const,
-}
-
-/* ── Helpers ───────────────────────────────────────────────────────── */
-
-function parseApiError(errorPayload: unknown): string {
-  if (!errorPayload) return "An unexpected error occurred"
-
-  // If we passed Eden's error object directly containing `.value`
-  const obj = errorPayload as Record<string, unknown>
-  const data = (obj.status && obj.value ? obj.value : obj) as Record<
-    string,
-    unknown
-  >
-
-  if (typeof data === "string") return data
-
-  if (data.error) {
-    return String(data.error)
-  }
-
-  if (data.message) return String(data.message)
-
-  // Debug: log the actual error structure to help diagnose issues
-  console.error("API Error payload:", errorPayload)
-  console.error("API Error data:", data)
-
-  return "An unexpected error occurred"
 }
 
 /* ── Query Options Factories ──────────────────────────────────────── */
@@ -146,6 +120,7 @@ export function useCreateAffiliate() {
       const { data: resData, error } = await api.affiliates.post(data)
 
       if (error) {
+        console.log(error)
         throw new Error(parseApiError(error))
       }
 

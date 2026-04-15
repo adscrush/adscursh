@@ -8,88 +8,67 @@ import {
 import { api } from "@/lib/api"
 import { createAdvertiserSchema } from "@adscrush/shared/validators/advertiser.schema"
 import type { z } from "zod"
+import { Treaty } from "@elysiajs/eden"
+import { GetAdvertisersSchema } from "./validations"
+import { parseApiError } from "@/lib/error"
 
 /* ── Types ─────────────────────────────────────────────────────────── */
-
-export interface Advertiser {
-  id: string
-  name: string
-  companyName: string | null
-  email: string
-  website: string | null
-  country: string | null
-  accountManagerId: string | null
-  accountManager?: { id: string; name: string }
-  status: "active" | "inactive" | "pending"
-  createdAt: Date
-}
+export type Advertiser = Treaty.Data<typeof api.advertisers.get>["data"][number]
 
 /* ── Query Keys ────────────────────────────────────────────────────── */
 
 export const advertiserKeys = {
   all: ["advertisers"] as const,
   lists: () => [...advertiserKeys.all, "list"] as const,
-  list: (filters: {
-    page: number
-    perPage: number
-    search?: string
-    status?: string
-    accountManagerId?: string
-  }) => [...advertiserKeys.lists(), { filters }] as const,
+  list: (
+    params: Omit<GetAdvertisersSchema, "filterFlag"> & { filterFlag?: string }
+  ) => [...advertiserKeys.lists(), { params }] as const,
   statusCounts: () => [...advertiserKeys.all, "status-counts"] as const,
   employeeList: () => [...advertiserKeys.all, "employees"] as const,
 }
 
 /* ── Query Options Factories (usable in ensureQueryData + useQuery) ── */
 
-export function getAdvertisersQueryOptions(params: {
-  page: number
-  perPage: number
-  search?: string
-  status?: string
-  accountManagerId?: string
-}) {
+export function getAdvertisersQueryOptions(params: GetAdvertisersSchema) {
   return queryOptions({
-    queryKey: advertiserKeys.list({
-      page: params.page,
-      perPage: params.perPage,
-      search: params.search,
-      status: params.status,
-      accountManagerId: params.accountManagerId,
-    }),
+    queryKey: advertiserKeys.list(params),
     queryFn: async () => {
-      const response = await api.advertisers.get({
+      const { data, error } = await api.advertisers.get({
         query: {
+          filterFlag: params.filterFlag,
+          name: params.name ?? "",
           page: params.page,
-          limit: params.perPage,
-          ...(params.search ? { search: params.search } : {}),
-          ...(params.status ? { status: params.status } : {}),
-          ...(params.accountManagerId
-            ? { accountManagerId: params.accountManagerId }
-            : {}),
+          perPage: params.perPage,
+          sort: JSON.stringify(
+            params.sort
+          ) as unknown as GetAdvertisersSchema["sort"],
+          filters: JSON.stringify(
+            params.filters
+          ) as unknown as GetAdvertisersSchema["filters"],
+          joinOperator: params.joinOperator,
+          createdAt: params.createdAt,
+          status: params.status,
         },
-        throwHttpError: true as any,
       })
 
-      const responseData = response.data
-      if (!responseData || !responseData.success) {
-        throw new Error("Failed to fetch advertisers")
+      if (error) {
+        console.log(JSON.stringify(error))
+        throw new Error(parseApiError(error))
       }
 
-      const data = responseData.data as Advertiser[]
-      const meta = responseData.meta as {
-        page: number
-        limit: number
-        total: number
-        totalPages: number
+      if (!data || !data.success) {
+        throw new Error("Invalid response")
       }
 
-      return { data, pageCount: meta.totalPages, meta }
+      return {
+        data: data.data,
+        pageCount: data.meta.totalPages,
+        meta: data.meta,
+      }
     },
     placeholderData: keepPreviousData,
   })
 }
-
 export function getAdvertiserStatusCountsOptions() {
   return queryOptions({
     queryKey: advertiserKeys.statusCounts(),
@@ -106,13 +85,7 @@ export function getAdvertiserStatusCountsOptions() {
 
 /* ── Hooks ─────────────────────────────────────────────────────────── */
 
-export function useAdvertisers(params: {
-  page: number
-  perPage: number
-  search?: string
-  status?: string
-  accountManagerId?: string
-}) {
+export function useAdvertisers(params: GetAdvertisersSchema) {
   return useQuery(getAdvertisersQueryOptions(params))
 }
 
@@ -144,7 +117,7 @@ export function useCreateAdvertiser() {
           (response.data as any).error || "Failed to create advertiser"
         )
       }
-      return response.data.data as Advertiser
+      return response.data.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: advertiserKeys.all })
