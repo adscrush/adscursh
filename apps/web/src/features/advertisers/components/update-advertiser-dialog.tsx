@@ -59,8 +59,6 @@ export function UpdateAdvertiserDialog({
       name: advertiser?.name || "",
       companyName: advertiser?.companyName || "",
       email: advertiser?.email || "",
-      website: advertiser?.website || "",
-      country: advertiser?.country || "",
       status: advertiser?.status || "active",
     },
   })
@@ -71,8 +69,6 @@ export function UpdateAdvertiserDialog({
         name: advertiser.name,
         companyName: advertiser.companyName || "",
         email: advertiser.email,
-        website: advertiser.website || "",
-        country: advertiser.country || "",
         status: advertiser.status,
       })
     }

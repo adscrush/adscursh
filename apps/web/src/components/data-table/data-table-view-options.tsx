@@ -169,7 +169,7 @@ export function DataTableViewOptions<TData>({
   }, [columnOrder, STORAGE_KEY])
 
   React.useEffect(() => {
-    const newDefault = columns.map((col) => ({ newId: col.id }))
+    // const newDefault = columns.map((col) => ({ newId: col.id }))
     const currentIds = columnOrder.filter((id) => columnIds.includes(id))
 
     if (currentIds.length !== columns.length) {

@@ -37,7 +37,7 @@ export function DataTableSettingsOptions<TData>({
     [table]
   )
 
-  const [filters, setFilters] = useQueryState(
+  const [, setFilters] = useQueryState(
     table.options.meta?.queryKeys?.filters ?? "filters",
     getFiltersStateParser<TData>(columns.map((field) => field.id))
       .withDefault([])
@@ -47,7 +47,7 @@ export function DataTableSettingsOptions<TData>({
       })
   )
 
-  const [joinOperator, setJoinOperator] = useQueryState(
+  const [, setJoinOperator] = useQueryState(
     table.options.meta?.queryKeys?.joinOperator ?? "",
     parseAsStringEnum(["and", "or"]).withDefault("and").withOptions({
       clearOnDefault: true,

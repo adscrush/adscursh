@@ -15,7 +15,6 @@ import { cn } from "@adscrush/ui/lib/utils"
 
 export function DataTableResizer<TData>({
   header,
-  table,
 }: {
   header: Header<TData, unknown>
   table: Table<TData>

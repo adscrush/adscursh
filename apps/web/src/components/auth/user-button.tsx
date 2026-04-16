@@ -1,6 +1,11 @@
 "use client"
 
-import { authClient, signOut, useSession } from "@/lib/auth/client"
+import { signOut, useSession } from "@/lib/auth/client"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@adscrush/ui/components/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +18,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@adscrush/ui/components/dropdown-menu"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@adscrush/ui/components/avatar"
 import { Skeleton } from "@adscrush/ui/components/skeleton"
 import { LogOut, Monitor, Moon, Settings, Sun, User } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
 
 export function UserButton() {
   const { data: session, isPending } = useSession()
@@ -48,14 +48,14 @@ export function UserButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex w-full items-center justify-between gap-3 rounded-md border border-border bg-sidebar p-1 pr-2 shadow-[0px_1px_1.5px_0px_rgba(44,54,53,0.03)] outline-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:justify-center">
+        <button className="flex w-full items-center justify-between gap-3 rounded-md border border-border bg-sidebar p-1 pr-2 shadow-[0px_1px_1.5px_0px_rgba(44,54,53,0.03)] outline-none group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           <div className="flex flex-row-reverse items-center gap-2">
             <span className="text-[13px] font-medium tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
               {user.name}
             </span>
             <Avatar className="size-6">
               <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+              <AvatarFallback className="bg-primary/10 text-[10px] text-primary">
                 {user.name?.slice(0, 2).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
@@ -70,7 +70,7 @@ export function UserButton() {
       >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm leading-none font-medium">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
@@ -117,7 +117,7 @@ export function UserButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleSignOut}
-          className="text-destructive focus:text-destructive cursor-pointer"
+          className="cursor-pointer text-destructive focus:text-destructive"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
