@@ -1,3 +1,7 @@
+import { api } from "@/lib/api"
+import { parseApiError } from "@/lib/error"
+import { createAdvertiserSchema } from "@adscrush/shared/validators/advertiser.schema"
+import { Treaty } from "@elysiajs/eden"
 import {
   keepPreviousData,
   queryOptions,
@@ -5,12 +9,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { api } from "@/lib/api"
-import { createAdvertiserSchema } from "@adscrush/shared/validators/advertiser.schema"
 import type { z } from "zod"
-import { Treaty } from "@elysiajs/eden"
 import { GetAdvertisersSchema } from "./validations"
-import { parseApiError } from "@/lib/error"
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 export type Advertiser = Treaty.Data<typeof api.advertisers.get>["data"][number]
@@ -94,7 +94,7 @@ export function useDeleteAdvertiser() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.advertisers({ id, delete: "" }).post({})
+      const response = await api.advertisers({ id }).delete.post({})
       if (!response?.data?.success) {
         throw new Error("Failed to delete advertiser")
       }
@@ -133,13 +133,13 @@ export function useUpdateAdvertiser() {
       id,
       ...payload
     }: { id: string } & Partial<z.infer<typeof createAdvertiserSchema>>) => {
-      const response = await api.advertisers({ id }).post(payload as never)
+      const response = await api.advertisers({ id }).post(payload)
       if (!response?.data?.success) {
         throw new Error(
           (response.data as any).error || "Failed to update advertiser"
         )
       }
-      return response.data.data as Advertiser
+      return response.data.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: advertiserKeys.all })

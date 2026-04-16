@@ -99,7 +99,7 @@ export function useDeleteAffiliate() {
         .affiliates({
           id,
         })
-        .post({})
+        .delete.post({})
 
       if (error) {
         throw new Error(parseApiError(error))

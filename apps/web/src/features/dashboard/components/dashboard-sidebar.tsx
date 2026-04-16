@@ -1,9 +1,8 @@
 "use client"
 
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 
 import { UserButton } from "@/components/auth/user-button"
-import { authClient } from "@/lib/auth/client"
 import {
   Avatar,
   AvatarFallback,
@@ -37,6 +36,7 @@ import {
   TooltipTrigger,
 } from "@adscrush/ui/components/tooltip"
 
+import type { LucideIcon } from "lucide-react"
 import {
   BarChart3,
   Box,
@@ -54,7 +54,6 @@ import {
   Zap,
 } from "lucide-react"
 import Link from "next/link"
-import type { LucideIcon } from "lucide-react"
 
 interface MenuItem {
   title: string
@@ -165,13 +164,7 @@ function NavSection({ items, pathname }: NavSectionProps) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
   const { open, setOpen } = useSidebar()
-
-  const handleLogout = async () => {
-    await authClient.signOut()
-    router.refresh()
-  }
 
   const mainNavItems: MenuItem[] = [
     { title: "Dashboard", url: "/dashboard", icon: Home },

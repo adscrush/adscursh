@@ -277,8 +277,10 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   // column resizing
   const tableId = tableProps.columnResizingTableId || "data-table-default"
-  const { columnSizing, setColumnSizing, resetColumnSizing } =
-    useTableColumnResize(tableId, tableProps.enableColumnResizing)
+  const { columnSizing, setColumnSizing } = useTableColumnResize(
+    tableId,
+    tableProps.enableColumnResizing
+  )
 
   const handleColumnSizingChange = React.useCallback(
     (
