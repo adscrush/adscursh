@@ -4,23 +4,25 @@ import {
   like,
   sql,
   and,
-  type SQL,
   or,
   gte,
   lte,
   desc,
   asc,
+  inArray,
 } from "@adscrush/db/drizzle"
 import { advertisers, employees, users } from "@adscrush/db/schema"
-import { db } from "../../lib/db"
-import { AppError } from "../../utils/errors"
-import { requireAuth } from "../../middleware/auth.middleware"
+import { db } from "~/lib/db"
+import { AppError } from "~/utils/errors"
+import { requireAuth } from "~/middleware/auth.middleware"
 import { listQuerySchema } from "./config"
 import {
   createAdvertiserSchema,
   updateAdvertiserSchema,
+  bulkUpdateStatusSchema,
+  bulkDeleteSchema,
 } from "@adscrush/shared/validators/advertiser.schema"
-import { filterColumns, getColumn } from "@adscrush/shared/lib/filter-columns"
+import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 
 export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .use(requireAuth)
@@ -168,8 +170,8 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
     { body: createAdvertiserSchema }
   )
 
-  // ── PUT /:id ───────────────────────────────────────────────────
-  .put(
+  // ── POST /:id ───────────────────────────────────────────────────
+  .post(
     "/:id",
     async ({ params, body }) => {
       const [advertiser] = await db
@@ -183,8 +185,8 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
     { body: updateAdvertiserSchema }
   )
 
-  // ── DELETE /:id ────────────────────────────────────────────────
-  .delete("/:id", async ({ params }) => {
+  // ── POST /:id/delete ──────────────────────────────────────────────
+  .post("/:id/delete", async ({ params }) => {
     const [deleted] = await db
       .delete(advertisers)
       .where(eq(advertisers.id, params.id))
@@ -192,3 +194,28 @@ export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
     if (!deleted) throw new AppError(404, "Advertiser not found")
     return { success: true, data: { id: deleted.id } }
   })
+
+  // ── POST /bulk-status ─────────────────────────────────────────────
+  .post(
+    "/bulk-status",
+    async ({ body }) => {
+      const { ids, status } = bulkUpdateStatusSchema.parse(body)
+      await db
+        .update(advertisers)
+        .set({ status, updatedAt: new Date() })
+        .where(inArray(advertisers.id, ids))
+      return { success: true }
+    },
+    { body: bulkUpdateStatusSchema }
+  )
+
+  // ── POST /bulk-delete ────────────────────────────────────────────
+  .post(
+    "/bulk-delete",
+    async ({ body }) => {
+      const { ids } = bulkDeleteSchema.parse(body)
+      await db.delete(advertisers).where(inArray(advertisers.id, ids))
+      return { success: true, data: { ids } }
+    },
+    { body: bulkDeleteSchema }
+  )

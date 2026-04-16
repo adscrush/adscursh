@@ -94,7 +94,7 @@ export function useDeleteAdvertiser() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.advertisers({ id }).delete()
+      const response = await api.advertisers({ id, delete: "" }).post({})
       if (!response?.data?.success) {
         throw new Error("Failed to delete advertiser")
       }
@@ -133,7 +133,7 @@ export function useUpdateAdvertiser() {
       id,
       ...payload
     }: { id: string } & Partial<z.infer<typeof createAdvertiserSchema>>) => {
-      const response = await (api.advertisers as any)(id).put(payload)
+      const response = await api.advertisers({ id }).post(payload as never)
       if (!response?.data?.success) {
         throw new Error(
           (response.data as any).error || "Failed to update advertiser"

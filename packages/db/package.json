@@ -9,7 +9,8 @@
     "./schema": "./src/schema/index.ts",
     "./schema/auth": "./src/schema/auth.ts",
     "./drizzle": "./src/drizzle.ts",
-    "./utils": "./src/utils.ts"
+    "./utils": "./src/utils.ts",
+    "./lib/*": "./src/lib/*.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -22,6 +23,9 @@
   },
   "dependencies": {
     "@adscrush/shared": "workspace:*",
+    "@date-fns/tz": "^1.4.1",
+    "@date-fns/utc": "^2.1.1",
+    "date-fns": "^4.1.0",
     "drizzle-orm": "^0.43.1",
     "postgres": "^3.4.5"
   },

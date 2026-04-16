@@ -1,13 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
-import { createEmployeeSchema, type CreateEmployeeInput } from "@adscrush/shared/validators/employee.validator"
-import { updateEmployeeSchema, type UpdateEmployeeInput } from "@adscrush/shared/validators/employee.validator"
+import {
+  createEmployeeSchema,
+  type CreateEmployeeInput,
+} from "@adscrush/shared/validators/employee.validator"
+import {
+  updateEmployeeSchema,
+  type UpdateEmployeeInput,
+} from "@adscrush/shared/validators/employee.validator"
 
 export const employeeKeys = {
   all: ["employees"] as const,
   lists: () => [...employeeKeys.all, "list"] as const,
-  list: (filters: { page: number; limit: number; search?: string; status?: string }) =>
-    [...employeeKeys.lists(), { filters }] as const,
+  list: (filters: {
+    page: number
+    limit: number
+    search?: string
+    status?: string
+  }) => [...employeeKeys.lists(), { filters }] as const,
 }
 
 interface Employee {
@@ -61,7 +71,7 @@ export function useEmployees({
       if (!response.data?.success || !response.data.data) {
         throw new Error("Failed to fetch employees")
       }
-      return response.data as EmployeeListResponse
+      return response.data
     },
   })
 }
@@ -70,7 +80,13 @@ export function useUpdateEmployee() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateEmployeeInput }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: UpdateEmployeeInput
+    }) => {
       const response = await api.employees.put(id, data as any)
       if (!response.data?.success) {
         throw new Error("Failed to update employee")

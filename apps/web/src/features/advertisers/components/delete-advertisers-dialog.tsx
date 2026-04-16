@@ -15,6 +15,7 @@ import {
 import { toast } from "@adscrush/ui/sonner"
 import { useDeleteAdvertiser } from "../queries"
 import type { Advertiser } from "../queries"
+import { useRef } from "react"
 
 interface DeleteAdvertisersDialogProps {
   advertisers: Advertiser[]
@@ -31,6 +32,7 @@ export function DeleteAdvertisersDialog({
 }: DeleteAdvertisersDialogProps &
   Omit<React.ComponentPropsWithoutRef<typeof Dialog>, "children">) {
   const deleteMutation = useDeleteAdvertiser()
+  const closeRef = useRef<HTMLButtonElement>(null)
 
   const handleDelete = async () => {
     try {
@@ -40,7 +42,7 @@ export function DeleteAdvertisersDialog({
         )
       )
       toast.success("Advertiser(s) deleted")
-      onOpenChange?.(false)
+      closeRef.current?.click()
       onSuccess?.()
     } catch {
       toast.error("Failed to delete advertiser(s)")
@@ -50,17 +52,19 @@ export function DeleteAdvertisersDialog({
   return (
     <Dialog onOpenChange={onOpenChange} {...props}>
       {showTrigger && (
-        <DialogTrigger asChild>
-          <Button
-            aria-label="Delete selected"
-            variant="outline"
-            size="sm"
-            className="h-8"
-          >
-            <Trash className="mr-2 size-4" aria-hidden="true" />
-            Delete
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button
+              aria-label="Delete selected"
+              variant="outline"
+              size="sm"
+              className="h-8"
+            >
+              <Trash className="mr-2 size-4" aria-hidden="true" />
+              Delete
+            </Button>
+          }
+        ></DialogTrigger>
       )}
       <DialogContent>
         <DialogHeader>
@@ -86,7 +90,10 @@ export function DeleteAdvertisersDialog({
           these items may be referenced by other resources.
         </div>
         <DialogFooter className="gap-2 sm:space-x-0">
-          <DialogClose render={<Button variant="outline">Cancel</Button>} />
+          <DialogClose
+            ref={closeRef}
+            render={<Button variant="outline">Cancel</Button>}
+          />
           <Button
             aria-label="Delete selected rows"
             variant="destructive"

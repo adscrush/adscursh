@@ -4,16 +4,19 @@ import {
   desc,
   eq,
   gte,
+  inArray,
   like,
   lte,
   or,
   sql,
 } from "@adscrush/db/drizzle"
 import { affiliates, employees, users } from "@adscrush/db/schema"
-import { filterColumns, getColumn } from "@adscrush/shared/lib/filter-columns"
+import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 import {
   createAffiliateSchema,
   updateAffiliateSchema,
+  bulkUpdateStatusSchema as bulkUpdateAffiliateStatusSchema,
+  bulkDeleteSchema as bulkDeleteAffiliateSchema,
 } from "@adscrush/shared/validators/affiliate.validator"
 import Elysia from "elysia"
 import { db } from "~/lib/db"
@@ -167,8 +170,8 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
     { body: createAffiliateSchema }
   )
 
-  // ── PUT /:id ───────────────────────────────────────────────────
-  .put(
+  // ── POST /:id ───────────────────────────────────────────────────
+  .post(
     "/:id",
     async ({ params, body }) => {
       const [affiliate] = await db
@@ -182,8 +185,8 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
     { body: updateAffiliateSchema }
   )
 
-  // ── DELETE /:id ──────────────────────────────────────────────────
-  .delete("/:id", async ({ params }) => {
+  // ── POST /:id/delete ────────────────────────────────────────────
+  .post("/:id/delete", async ({ params }) => {
     const [deleted] = await db
       .delete(affiliates)
       .where(eq(affiliates.id, params.id))
@@ -191,3 +194,28 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
     if (!deleted) throw new AppError(404, "Affiliate not found")
     return { success: true, data: { id: deleted.id } }
   })
+
+  // ── POST /bulk-status ───────────────────────────────────────────
+  .post(
+    "/bulk-status",
+    async ({ body }) => {
+      const { ids, status } = bulkUpdateAffiliateStatusSchema.parse(body)
+      await db
+        .update(affiliates)
+        .set({ status, updatedAt: new Date() })
+        .where(inArray(affiliates.id, ids))
+      return { success: true }
+    },
+    { body: bulkUpdateAffiliateStatusSchema }
+  )
+
+  // ── POST /bulk-delete ───────────────────────────────────────────
+  .post(
+    "/bulk-delete",
+    async ({ body }) => {
+      const { ids } = bulkDeleteAffiliateSchema.parse(body)
+      await db.delete(affiliates).where(inArray(affiliates.id, ids))
+      return { success: true, data: { ids } }
+    },
+    { body: bulkDeleteAffiliateSchema }
+  )

@@ -99,7 +99,7 @@ export function useDeleteAffiliate() {
         .affiliates({
           id,
         })
-        .delete()
+        .post({})
 
       if (error) {
         throw new Error(parseApiError(error))
@@ -148,7 +148,7 @@ export function useUpdateAffiliate() {
         .affiliates({
           id,
         })
-        .put(payload)
+        .post(payload)
 
       if (error) {
         throw new Error(parseApiError(error))

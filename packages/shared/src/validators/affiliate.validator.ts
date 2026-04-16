@@ -19,3 +19,15 @@ export const updateAffiliateSchema = z.object({
 
 export type CreateAffiliateInput = z.infer<typeof createAffiliateSchema>
 export type UpdateAffiliateInput = z.infer<typeof updateAffiliateSchema>
+
+export const bulkUpdateStatusSchema = z.object({
+  ids: z.array(z.string()).min(1),
+  status: z.enum(["active", "inactive", "pending"]),
+})
+
+export const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1),
+})
+
+export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusSchema>
+export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>

@@ -20,7 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@adscrush/ui/components/dropdown-menu"
-import { Advertiser, useUpdateAdvertiser } from "../queries"
+import {
+  Advertiser,
+  useDeleteAdvertiser,
+  useUpdateAdvertiser,
+} from "../queries"
 
 interface AdvertisersTableActionBarProps {
   table: Table<Advertiser>
@@ -31,6 +35,7 @@ export function AdvertisersTableActionBar({
 }: AdvertisersTableActionBarProps) {
   const rows = table.getFilteredSelectedRowModel().rows
   const { mutateAsync: updateAdvertiser } = useUpdateAdvertiser()
+  const { mutateAsync: deleteAdvertiser } = useDeleteAdvertiser()
 
   const onOpenChange = React.useCallback(
     (open: boolean) => {
@@ -42,22 +47,22 @@ export function AdvertisersTableActionBar({
   )
 
   const onAdvertiserUpdate = React.useCallback(
-    (field: "status", value: Advertiser["status"]) => {
-      async function update() {
-        const { error } = await updateAdvertiserStatus({
-          ids: rows.map((row) => row.original.id),
-          [field]: value,
-        })
-
-        if (error) {
-          toast.error(error)
-          return
-        }
+    async (field: "status", value: Advertiser["status"]) => {
+      try {
+        await Promise.all(
+          rows.map((row) =>
+            updateAdvertiser({
+              id: row.original.id,
+              [field]: value,
+            })
+          )
+        )
         toast.success("Advertisers updated")
+      } catch {
+        toast.error("Failed to update advertisers")
       }
-      update()
     },
-    [rows]
+    [rows, updateAdvertiser]
   )
 
   const onAdvertiserExport = React.useCallback(() => {
@@ -67,20 +72,15 @@ export function AdvertisersTableActionBar({
     })
   }, [table])
 
-  const onAdvertiserDelete = React.useCallback(() => {
-    async function remove() {
-      const { error } = await deleteAdvertisers({
-        ids: rows.map((row) => row.original.id),
-      })
-
-      if (error) {
-        toast.error(error)
-        return
-      }
+  const onAdvertiserDelete = React.useCallback(async () => {
+    try {
+      await Promise.all(rows.map((row) => deleteAdvertiser(row.original.id)))
       table.toggleAllRowsSelected(false)
+      toast.success("Advertisers deleted")
+    } catch {
+      toast.error("Failed to delete advertisers")
     }
-    remove()
-  }, [rows, table])
+  }, [rows, table, deleteAdvertiser])
 
   return (
     <ActionBar open={rows.length > 0} onOpenChange={onOpenChange}>

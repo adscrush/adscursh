@@ -30,3 +30,15 @@ export const updateAdvertiserSchema = z.object({
 
 export type CreateAdvertiserInput = z.infer<typeof createAdvertiserSchema>
 export type UpdateAdvertiserInput = z.infer<typeof updateAdvertiserSchema>
+
+export const bulkUpdateStatusSchema = z.object({
+  ids: z.array(z.string()).min(1),
+  status: z.enum(["active", "inactive", "pending"]),
+})
+
+export const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1),
+})
+
+export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusSchema>
+export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>

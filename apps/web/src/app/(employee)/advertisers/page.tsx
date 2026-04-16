@@ -23,14 +23,7 @@ export default async function AdvertisersPage(props: AdvertisersPageProps) {
   const search = searchParamsCache.parse(searchParams)
   const queryClient = new QueryClient()
 
-  await queryClient.ensureQueryData(
-    getAdvertisersQueryOptions({
-      page: search.page,
-      perPage: search.perPage,
-      ...(search.name ? { search: search.name } : {}),
-      ...(search.status.length > 0 ? { status: search.status.join(",") } : {}),
-    })
-  )
+  await queryClient.ensureQueryData(getAdvertisersQueryOptions(search))
 
   return (
     <div className="flex flex-1 flex-col gap-4">
