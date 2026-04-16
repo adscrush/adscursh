@@ -1,6 +1,10 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { employees } from "./employees"
 import { generateId } from "@adscrush/shared/lib/id"
+import {
+  ADVERTISER_STATUS,
+  ADVERTISER_STATUS_VALUES,
+} from "@adscrush/shared/constants/status"
 
 export const advertisers = pgTable("advertisers", {
   id: text("id")
@@ -15,10 +19,10 @@ export const advertisers = pgTable("advertisers", {
     onDelete: "set null",
   }),
   status: text("status", {
-    enum: ["active", "inactive", "pending"],
+    enum: ADVERTISER_STATUS_VALUES,
   })
     .notNull()
-    .default("active"),
+    .default(ADVERTISER_STATUS.ACTIVE),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })

@@ -1,6 +1,10 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { employees } from "./employees"
 import { generateId } from "@adscrush/shared/lib/id"
+import {
+  AFFILIATE_STATUS,
+  AFFILIATE_STATUS_VALUES,
+} from "@adscrush/shared/constants/status"
 
 export const affiliates = pgTable("affiliates", {
   id: text("id")
@@ -13,10 +17,10 @@ export const affiliates = pgTable("affiliates", {
     onDelete: "set null",
   }),
   status: text("status", {
-    enum: ["active", "inactive", "pending"],
+    enum: AFFILIATE_STATUS_VALUES,
   })
     .notNull()
-    .default("active"),
+    .default(AFFILIATE_STATUS.ACTIVE),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })
