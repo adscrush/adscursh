@@ -58,7 +58,7 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
         filterFlag === "advancedFilters" || filterFlag === "commandFilters"
 
       const tableWithJoinedColumns = {
-        ...(employees as any),
+        ...employees,
         name: users.name,
         email: users.email,
         role: users.role,
@@ -112,8 +112,8 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
         sort.length > 0
           ? sort.map((item) =>
               item.desc
-                ? desc(getColumn(tableWithJoinedColumns, item.id as any))
-                : asc(getColumn(tableWithJoinedColumns, item.id as any))
+                ? desc(getColumn(tableWithJoinedColumns, item.id))
+                : asc(getColumn(tableWithJoinedColumns, item.id))
             )
           : [desc(employees.createdAt)]
 
