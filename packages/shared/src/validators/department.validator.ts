@@ -13,3 +13,15 @@ export const updateDepartmentSchema = z.object({
 
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>
 export type UpdateDepartmentInput = z.infer<typeof updateDepartmentSchema>
+
+export const bulkUpdateStatusSchema = z.object({
+  ids: z.array(z.string()).min(1),
+  status: z.enum(["active", "inactive"]),
+})
+
+export const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1),
+})
+
+export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusSchema>
+export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>

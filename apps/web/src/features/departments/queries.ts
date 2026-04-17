@@ -110,3 +110,37 @@ export function useUpdateDepartment() {
     },
   })
 }
+
+export function useBulkUpdateDepartmentStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload: { ids: string[]; status: "active" | "inactive" }) => {
+      const response = await api.departments["bulk-status"].post(payload as never)
+      if (!response?.data?.success) {
+        throw new Error("Failed to update departments status")
+      }
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: departmentKeys.all })
+    },
+  })
+}
+
+export function useBulkDeleteDepartments() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const response = await api.departments["bulk-delete"].post({ ids } as never)
+      if (!response?.data?.success) {
+        throw new Error("Failed to delete departments")
+      }
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: departmentKeys.all })
+    },
+  })
+}

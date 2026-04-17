@@ -4,13 +4,15 @@ import {
   like,
   and,
   or,
+  asc,
+  desc,
   gte,
   lte,
-  desc,
-  asc,
+  inArray,
   sql,
 } from "@adscrush/db/drizzle"
 import { departments } from "@adscrush/db/schema"
+import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 import { db } from "~/lib/db"
 import { AppError } from "~/utils/errors"
 import { requireAuth } from "~/middleware/auth.middleware"
@@ -18,8 +20,9 @@ import { listQuerySchema } from "./config"
 import {
   createDepartmentSchema,
   updateDepartmentSchema,
+  bulkUpdateStatusSchema as bulkUpdateDepartmentStatusSchema,
+  bulkDeleteSchema as bulkDeleteDepartmentSchema,
 } from "@adscrush/shared/validators/department.validator"
-import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 
 export const departmentRoutes = new Elysia({ prefix: "/departments" })
   .use(requireAuth)
@@ -29,9 +32,29 @@ export const departmentRoutes = new Elysia({ prefix: "/departments" })
     "/",
     async ({ query }) => {
       const parsed = listQuerySchema.parse(query)
-      const { page, perPage, name, status, createdAt, sort } = parsed
+      const {
+        page,
+        perPage,
+        filterFlag,
+        name,
+        status,
+        createdAt,
+        joinOperator,
+        sort,
+        filters,
+      } = parsed
 
       const offset = (page - 1) * perPage
+
+      const advancedTable =
+        filterFlag === "advancedFilters" || filterFlag === "commandFilters"
+
+      const advancedWhere = filterColumns({
+        table: departments,
+        filters,
+        joinOperator,
+        database: "postgres",
+      })
 
       const simpleWhere =
         name || status.length > 0 || createdAt.length > 0
@@ -67,6 +90,8 @@ export const departmentRoutes = new Elysia({ prefix: "/departments" })
             )
           : undefined
 
+      const where = advancedTable ? advancedWhere : simpleWhere
+
       const orderBy =
         sort.length > 0
           ? sort.map((item) =>
@@ -87,14 +112,14 @@ export const departmentRoutes = new Elysia({ prefix: "/departments" })
             updatedAt: departments.updatedAt,
           })
           .from(departments)
-          .where(simpleWhere)
+          .where(where)
           .limit(perPage)
           .offset(offset)
           .orderBy(...orderBy),
         db
           .select({ count: sql<number>`count(*)` })
           .from(departments)
-          .where(simpleWhere),
+          .where(where),
       ])
 
       const total = Number(countResult[0]?.count ?? 0)
@@ -158,3 +183,28 @@ export const departmentRoutes = new Elysia({ prefix: "/departments" })
     if (!deleted) throw new AppError(404, "Department not found")
     return { success: true, data: { id: deleted.id } }
   })
+
+  // ── POST /bulk-status ───────────────────────────────────────────
+  .post(
+    "/bulk-status",
+    async ({ body }) => {
+      const { ids, status } = bulkUpdateDepartmentStatusSchema.parse(body)
+      await db
+        .update(departments)
+        .set({ status, updatedAt: new Date() })
+        .where(inArray(departments.id, ids))
+      return { success: true }
+    },
+    { body: bulkUpdateDepartmentStatusSchema }
+  )
+
+  // ── POST /bulk-delete ───────────────────────────────────────────
+  .post(
+    "/bulk-delete",
+    async ({ body }) => {
+      const { ids } = bulkDeleteDepartmentSchema.parse(body)
+      await db.delete(departments).where(inArray(departments.id, ids))
+      return { success: true, data: { ids } }
+    },
+    { body: bulkDeleteDepartmentSchema }
+  )

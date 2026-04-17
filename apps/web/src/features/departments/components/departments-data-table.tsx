@@ -17,6 +17,7 @@ import type { GetDepartmentsSchema } from "../validations"
 import { DeleteDepartmentDialog } from "./delete-department-dialog"
 import { getDepartmentsTableColumns } from "./departments-table-columns"
 import { UpdateDepartmentDialog } from "./update-department-dialog"
+import { DepartmentsTableActionBar } from "./departments-table-action-bar"
 
 interface DepartmentsDataTableProps {
   search: GetDepartmentsSchema
@@ -95,6 +96,8 @@ export function DepartmentsDataTable({ search }: DepartmentsDataTableProps) {
           )}
         </DataTable>
       )}
+
+      <DepartmentsTableActionBar table={table} />
 
       <UpdateDepartmentDialog
         open={rowAction?.variant === "update"}
