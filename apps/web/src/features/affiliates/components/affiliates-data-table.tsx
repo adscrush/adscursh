@@ -27,6 +27,7 @@ import type { GetAffiliatesSchema } from "../validations"
 import { getAffiliatesTableColumns } from "./affiliates-table-columns"
 import { DeleteAffiliatesDialog } from "./delete-affiliates-dialog"
 import { UpdateAffiliateDialog } from "./update-affiliate-dialog"
+import { AffiliatesTableActionBar } from "./affiliates-table-action-bar"
 
 interface AffiliatesDataTableProps {
   search: GetAffiliatesSchema
@@ -133,6 +134,8 @@ export function AffiliatesDataTable({
           )}
         </DataTable>
       )}
+
+      <AffiliatesTableActionBar table={table} />
 
       <UpdateAffiliateDialog
         open={rowAction?.variant === "update"}

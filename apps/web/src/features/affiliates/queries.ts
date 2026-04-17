@@ -185,3 +185,44 @@ export function useEmployees() {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export function useBulkUpdateAffiliateStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload: {
+      ids: string[]
+      status: "active" | "inactive" | "pending"
+    }) => {
+      const { data, error } = await api.affiliates["bulk-status"].post(
+        payload as never
+      )
+      if (error) {
+        throw new Error(parseApiError(error))
+      }
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: affiliateKeys.all })
+    },
+  })
+}
+
+export function useBulkDeleteAffiliates() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data, error } = await api.affiliates["bulk-delete"].post({
+        ids,
+      } as never)
+      if (error) {
+        throw new Error(parseApiError(error))
+      }
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: affiliateKeys.all })
+    },
+  })
+}
