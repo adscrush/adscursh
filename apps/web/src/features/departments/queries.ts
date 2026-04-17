@@ -29,7 +29,23 @@ export function getDepartmentsQueryOptions(params: GetDepartmentsSchema) {
   return queryOptions({
     queryKey: departmentKeys.list(params),
     queryFn: async () => {
-      const { data, error } = await api.departments.get({ query: params })
+      const { data, error } = await api.departments.get({
+        query: {
+          filterFlag: params.filterFlag,
+          name: params.name ?? "",
+          page: params.page,
+          perPage: params.perPage,
+          sort: JSON.stringify(
+            params.sort
+          ) as unknown as GetDepartmentsSchema["sort"],
+          filters: JSON.stringify(
+            params.filters
+          ) as unknown as GetDepartmentsSchema["filters"],
+          joinOperator: params.joinOperator,
+          createdAt: params.createdAt,
+          status: params.status,
+        },
+      })
 
       if (error) {
         throw new Error(parseApiError(error))

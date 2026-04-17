@@ -10,6 +10,11 @@ import { DataTableToolbar } from "@/components/data-table/data-table-toolbar"
 import { useDataTable } from "@/hooks/use-data-table"
 import { DataTableProvider } from "@/providers/data-table-provider"
 import { useFeatureFlags } from "@/providers/feature-flags-provider"
+import {
+  getFiltersStateParser,
+  getSortingStateParser,
+} from "@adscrush/shared/lib/parsers"
+import { parseAsInteger, parseAsStringEnum, useQueryStates } from "nuqs"
 import * as React from "react"
 import type { Department } from "../queries"
 import { useDepartments } from "../queries"
@@ -25,7 +30,29 @@ interface DepartmentsDataTableProps {
 
 export function DepartmentsDataTable({ search }: DepartmentsDataTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags()
-  const { data, isLoading } = useDepartments(search)
+
+  const [states] = useQueryStates({
+    page: parseAsInteger.withDefault(search.page),
+    perPage: parseAsInteger.withDefault(search.perPage),
+    sort: getSortingStateParser<Department>().withDefault([
+      { id: "createdAt", desc: true },
+    ]),
+    filters: getFiltersStateParser().withDefault([]),
+    joinOperator: parseAsStringEnum(["and", "or"]).withDefault(
+      search.joinOperator
+    ),
+  })
+
+  const params = {
+    ...search,
+    page: states.page,
+    perPage: states.perPage,
+    sort: states.sort,
+    filters: states.filters,
+    joinOperator: states.joinOperator,
+  }
+
+  const { data, isLoading } = useDepartments(params)
 
   const [rowAction, setRowAction] = React.useState<{
     row: { original: Department }
@@ -47,6 +74,7 @@ export function DepartmentsDataTable({ search }: DepartmentsDataTableProps) {
     data: data?.data ?? [],
     columns,
     pageCount: data?.pageCount ?? 0,
+    enableAdvancedFilter,
     initialState: {
       sorting: [{ id: "createdAt", desc: true }],
       columnPinning: { right: ["actions"], left: ["select"] },
