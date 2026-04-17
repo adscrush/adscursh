@@ -5,6 +5,7 @@ import env from "./env"
 import { advertiserRoutes } from "./modules/advertisers/module"
 import { affiliateRoutes } from "./modules/affiliates/module"
 import { authRoutes } from "./modules/auth/auth.routes"
+import { departmentRoutes } from "./modules/departments/module"
 import { employeeRoutes } from "./modules/employees/module"
 import { offerRoutes } from "./modules/offers/module"
 import { reportRoutes } from "./modules/reports/module"
@@ -45,6 +46,7 @@ const app = new Elysia({ name: "adscrush-api" })
     app
       .use(authRoutes)
       .use(employeeRoutes)
+      .use(departmentRoutes)
       .use(advertiserRoutes)
       .use(affiliateRoutes)
       .use(offerRoutes)

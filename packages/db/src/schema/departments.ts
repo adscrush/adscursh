@@ -9,7 +9,11 @@ export const departments = pgTable(
       .$defaultFn(() => generateId("dept")),
     name: text("name").notNull().unique(),
     description: text("description"),
-    status: text("status").notNull().default("active"),
+    status: text("status", {
+      enum: ["active", "inactive"],
+    })
+      .notNull()
+      .default("active"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

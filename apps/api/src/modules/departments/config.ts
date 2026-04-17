@@ -1,4 +1,4 @@
-import { departments, Department } from "@adscrush/db/schema"
+import { Department, departments } from "@adscrush/db/schema"
 import {
   getFiltersStateParser,
   getSortingStateParser,
@@ -23,3 +23,5 @@ export const listQuerySchema = z.object({
   createdAt: z.array(z.coerce.number().int().positive()).default([]),
   joinOperator: z.enum(["and", "or"]).default("and"),
 })
+
+export type ListDepartmentsQuerySchema = z.infer<typeof listQuerySchema>
