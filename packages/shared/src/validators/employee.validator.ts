@@ -24,5 +24,16 @@ export const updateEmployeeAccessSchema = z.object({
   advertiserIds: z.array(z.string()).optional(),
 })
 
+export const bulkUpdateStatusSchema = z.object({
+  ids: z.array(z.string()).min(1),
+  status: z.enum(["active", "inactive", "suspended"]),
+})
+
+export const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1),
+})
+
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>
+export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusSchema>
+export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>

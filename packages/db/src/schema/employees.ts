@@ -2,6 +2,10 @@ import { pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core"
 import { users } from "./auth"
 import { departments } from "./departments"
 import { generateId } from "@adscrush/shared/lib/id"
+import {
+  EMPLOYEE_STATUS,
+  EMPLOYEE_STATUS_VALUES,
+} from "@adscrush/shared/constants/status"
 
 export const employees = pgTable(
   "employees",
@@ -14,7 +18,11 @@ export const employees = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     departmentId: text("department_id").references(() => departments.id),
     department: text("department"),
-    status: text("status").notNull().default("active"),
+    status: text("status", {
+      enum: EMPLOYEE_STATUS_VALUES,
+    })
+      .notNull()
+      .default(EMPLOYEE_STATUS.ACTIVE),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

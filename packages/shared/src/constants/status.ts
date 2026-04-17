@@ -113,3 +113,17 @@ export type AffiliateStatus =
   (typeof AFFILIATE_STATUS)[keyof typeof AFFILIATE_STATUS]
 
 export const AFFILIATE_STATUS_VALUES = getEnumValues(AFFILIATE_STATUS)
+
+/* ---------------------------------- */
+/* EMPLOYEE STATUS */
+/* ---------------------------------- */
+
+export const EMPLOYEE_STATUS = createEnum({
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+  SUSPENDED: "suspended",
+})
+
+export const EMPLOYEE_STATUS_VALUES = getEnumValues(EMPLOYEE_STATUS)
+export type EmployeeStatus =
+  (typeof EMPLOYEE_STATUS)[keyof typeof EMPLOYEE_STATUS]

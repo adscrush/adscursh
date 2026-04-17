@@ -1,5 +1,16 @@
 import Elysia from "elysia"
-import { eq, like, sql, and, type SQL } from "@adscrush/db/drizzle"
+import {
+  eq,
+  like,
+  and,
+  or,
+  asc,
+  desc,
+  gte,
+  lte,
+  inArray,
+  sql,
+} from "@adscrush/db/drizzle"
 import {
   employees,
   users,
@@ -7,15 +18,18 @@ import {
   employeeAffiliateAccess,
   employeeAdvertiserAccess,
 } from "@adscrush/db/schema"
-import { db } from "../../lib/db"
-import { AppError } from "../../utils/errors"
-import { auth } from "../../lib/auth"
-import { requireAdmin } from "../../middleware/auth.middleware"
+import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
+import { db } from "~/lib/db"
+import { AppError } from "~/utils/errors"
+import { auth } from "~/lib/auth"
+import { requireAdmin } from "~/middleware/auth.middleware"
 import { listQuerySchema } from "./config"
 import {
   createEmployeeSchema,
   updateEmployeeSchema,
   updateEmployeeAccessSchema,
+  bulkUpdateStatusSchema,
+  bulkDeleteSchema,
 } from "@adscrush/shared/validators/employee.validator"
 
 export const employeeRoutes = new Elysia({ prefix: "/employees" })
@@ -25,21 +39,83 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
   .get(
     "/",
     async ({ query }) => {
+      const parsed = listQuerySchema.parse(query)
       const {
-        page = 1,
-        limit = 20,
-        search,
+        page,
+        perPage,
+        filterFlag,
+        name,
         status,
-        departmentId,
-      } = listQuerySchema.parse(query)
-      const offset = (page - 1) * limit
+        createdAt,
+        joinOperator,
+        sort,
+        filters,
+      } = parsed
 
-      const conditions: SQL[] = []
-      if (search) conditions.push(like(users.name, `%${search}%`))
-      if (status) conditions.push(eq(employees.status, status))
-      if (departmentId)
-        conditions.push(eq(employees.departmentId, departmentId))
-      const where = conditions.length > 0 ? and(...conditions) : undefined
+      const offset = (page - 1) * perPage
+
+      const advancedTable =
+        filterFlag === "advancedFilters" || filterFlag === "commandFilters"
+
+      const tableWithJoinedColumns = {
+        ...(employees as any),
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        departmentName: departments.name,
+      }
+
+      const advancedWhere = filterColumns({
+        table: tableWithJoinedColumns,
+        filters,
+        joinOperator,
+        database: "postgres",
+      })
+
+      const simpleWhere =
+        name || status.length > 0 || createdAt.length > 0
+          ? and(
+              name ? like(users.name, `%${name}%`) : undefined,
+              status.length > 0
+                ? or(...status.map((s) => eq(employees.status, s)))
+                : undefined,
+              createdAt.length > 0
+                ? and(
+                    createdAt[0]
+                      ? gte(
+                          employees.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[0])
+                            d.setHours(0, 0, 0, 0)
+                            return d
+                          })()
+                        )
+                      : undefined,
+                    createdAt[1]
+                      ? lte(
+                          employees.createdAt,
+                          (() => {
+                            const d = new Date(createdAt[1])
+                            d.setHours(23, 59, 59, 999)
+                            return d
+                          })()
+                        )
+                      : undefined
+                  )
+                : undefined
+            )
+          : undefined
+
+      const where = advancedTable ? advancedWhere : simpleWhere
+
+      const orderBy =
+        sort.length > 0
+          ? sort.map((item) =>
+              item.desc
+                ? desc(getColumn(tableWithJoinedColumns, item.id as any))
+                : asc(getColumn(tableWithJoinedColumns, item.id as any))
+            )
+          : [desc(employees.createdAt)]
 
       const [items, countResult] = await Promise.all([
         db
@@ -50,6 +126,7 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
             department: employees.department,
             status: employees.status,
             createdAt: employees.createdAt,
+            updatedAt: employees.updatedAt,
             name: users.name,
             email: users.email,
             role: users.role,
@@ -60,9 +137,9 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
           .innerJoin(users, eq(employees.userId, users.id))
           .leftJoin(departments, eq(employees.departmentId, departments.id))
           .where(where)
-          .limit(limit)
+          .limit(perPage)
           .offset(offset)
-          .orderBy(employees.createdAt),
+          .orderBy(...orderBy),
         db
           .select({ count: sql<number>`count(*)` })
           .from(employees)
@@ -74,7 +151,12 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
       return {
         success: true,
         data: items,
-        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        meta: {
+          page,
+          perPage,
+          total,
+          totalPages: Math.ceil(total / perPage),
+        },
       }
     },
     { query: listQuerySchema }
@@ -162,6 +244,17 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
     { body: updateEmployeeSchema }
   )
 
+  // ── POST /:id/delete ──────────────────────────────────────────────
+  .post("/:id/delete", async ({ params }) => {
+    const [deleted] = await db
+      .update(employees)
+      .set({ status: "inactive", updatedAt: new Date() })
+      .where(eq(employees.id, params.id))
+      .returning()
+    if (!deleted) throw new AppError(404, "Employee not found")
+    return { success: true, data: { id: deleted.id } }
+  })
+
   // ── POST /:id/access ────────────────────────────────────────────
   .post(
     "/:id/access",
@@ -195,4 +288,29 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
       return { success: true }
     },
     { body: updateEmployeeAccessSchema }
+  )
+
+  // ── POST /bulk-status ───────────────────────────────────────────
+  .post(
+    "/bulk-status",
+    async ({ body }) => {
+      const { ids, status } = bulkUpdateStatusSchema.parse(body)
+      await db
+        .update(employees)
+        .set({ status, updatedAt: new Date() })
+        .where(inArray(employees.id, ids))
+      return { success: true }
+    },
+    { body: bulkUpdateStatusSchema }
+  )
+
+  // ── POST /bulk-delete ───────────────────────────────────────────
+  .post(
+    "/bulk-delete",
+    async ({ body }) => {
+      const { ids } = bulkDeleteSchema.parse(body)
+      await db.delete(employees).where(inArray(employees.id, ids))
+      return { success: true, data: { ids } }
+    },
+    { body: bulkDeleteSchema }
   )
