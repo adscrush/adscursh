@@ -15,18 +15,18 @@ import type {
 } from "@adscrush/shared/types/data-table"
 import * as React from "react"
 
-import { useAffiliates } from "../queries"
-import type { Affiliate } from "../queries"
-import type { GetAffiliatesSchema } from "../validations"
-import { getAffiliatesTableColumns } from "./affiliates-table-columns"
-import { UpdateAffiliateDialog } from "./update-affiliate-dialog"
-import { DeleteAffiliatesDialog } from "./delete-affiliates-dialog"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs"
 import {
   getFiltersStateParser,
   getSortingStateParser,
 } from "@adscrush/shared/lib/parsers"
+import { parseAsInteger, parseAsStringEnum, useQueryStates } from "nuqs"
+import type { Affiliate } from "../queries"
+import { useAffiliates } from "../queries"
+import type { GetAffiliatesSchema } from "../validations"
+import { getAffiliatesTableColumns } from "./affiliates-table-columns"
+import { DeleteAffiliatesDialog } from "./delete-affiliates-dialog"
+import { UpdateAffiliateDialog } from "./update-affiliate-dialog"
 
 interface AffiliatesDataTableProps {
   search: GetAffiliatesSchema
@@ -39,37 +39,27 @@ export function AffiliatesDataTable({
 }: AffiliatesDataTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags()
 
+  const [states] = useQueryStates({
+    page: parseAsInteger.withDefault(search.page),
+    perPage: parseAsInteger.withDefault(search.perPage),
+    sort: getSortingStateParser<
+      Omit<Affiliate, "accountManager">
+    >().withDefault([{ id: "createdAt", desc: true }]),
+    filters: getFiltersStateParser().withDefault([]),
+    joinOperator: parseAsStringEnum(["and", "or"]).withDefault(
+      search.joinOperator
+    ),
+  })
+
   // These stay in sync with live URL params (set by useDataTable)
-  const pageState = useQueryState(
-    queryKeys?.page ?? "page",
-    parseAsInteger.withDefault(search.page)
-  )
-  const perPageState = useQueryState(
-    queryKeys?.perPage ?? "perPage",
-    parseAsInteger.withDefault(search.perPage)
-  )
-  const [sorting] = useQueryState(
-    queryKeys?.sort ?? "sort",
-    getSortingStateParser<Omit<Affiliate, "accountManager">>().withDefault([
-      { id: "createdAt", desc: true },
-    ])
-  )
-  const [filters] = useQueryState(
-    queryKeys?.filters ?? "filters",
-    getFiltersStateParser().withDefault([])
-  )
-  const [joinOperator] = useQueryState(
-    queryKeys?.joinOperator ?? "joinOperator",
-    parseAsString.withDefault(search.joinOperator)
-  )
 
   const params = {
     ...search,
-    page: pageState[0],
-    perPage: perPageState[0] ?? perPageState[1],
-    sort: sorting ?? [{ id: "createdAt", desc: true }],
-    filters: filters ?? [],
-    joinOperator: (joinOperator ?? "and") as "and" | "or",
+    page: states.page,
+    perPage: states.perPage,
+    sort: states.sort,
+    filters: states.filters,
+    joinOperator: states.joinOperator,
   }
 
   const { data, isLoading } = useAffiliates(params)

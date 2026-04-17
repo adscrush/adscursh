@@ -15,19 +15,19 @@ import type {
 } from "@adscrush/shared/types/data-table"
 import * as React from "react"
 
-import { useAdvertisers } from "../queries"
-import type { Advertiser } from "../queries"
-import type { GetAdvertisersSchema } from "../validations"
-import { getAdvertisersTableColumns } from "./advertisers-table-columns"
-import { UpdateAdvertiserDialog } from "./update-advertiser-dialog"
-import { DeleteAdvertisersDialog } from "./delete-advertisers-dialog"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs"
 import {
   getFiltersStateParser,
   getSortingStateParser,
 } from "@adscrush/shared/lib/parsers"
+import { parseAsInteger, parseAsStringEnum, useQueryStates } from "nuqs"
+import type { Advertiser } from "../queries"
+import { useAdvertisers } from "../queries"
+import type { GetAdvertisersSchema } from "../validations"
 import { AdvertisersTableActionBar } from "./advertiser-table-action-bar"
+import { getAdvertisersTableColumns } from "./advertisers-table-columns"
+import { DeleteAdvertisersDialog } from "./delete-advertisers-dialog"
+import { UpdateAdvertiserDialog } from "./update-advertiser-dialog"
 
 interface AdvertisersDataTableProps {
   search: GetAdvertisersSchema
@@ -40,37 +40,25 @@ export function AdvertisersDataTable({
 }: AdvertisersDataTableProps) {
   const { enableAdvancedFilter, filterFlag } = useFeatureFlags()
 
-  // These stay in sync with live URL params (set by useDataTable)
-  const pageState = useQueryState(
-    queryKeys?.page ?? "page",
-    parseAsInteger.withDefault(search.page)
-  )
-  const perPageState = useQueryState(
-    queryKeys?.perPage ?? "perPage",
-    parseAsInteger.withDefault(search.perPage)
-  )
-  const [sorting] = useQueryState(
-    queryKeys?.sort ?? "sort",
-    getSortingStateParser<Omit<Advertiser, "accountManager">>().withDefault([
-      { id: "createdAt", desc: true },
-    ])
-  )
-  const [filters] = useQueryState(
-    queryKeys?.filters ?? "filters",
-    getFiltersStateParser().withDefault([])
-  )
-  const [joinOperator] = useQueryState(
-    queryKeys?.joinOperator ?? "joinOperator",
-    parseAsString.withDefault(search.joinOperator)
-  )
+  const [states] = useQueryStates({
+    page: parseAsInteger.withDefault(search.page),
+    perPage: parseAsInteger.withDefault(search.perPage),
+    sort: getSortingStateParser<
+      Omit<Advertiser, "accountManager">
+    >().withDefault([{ id: "createdAt", desc: true }]),
+    filters: getFiltersStateParser().withDefault([]),
+    joinOperator: parseAsStringEnum(["and", "or"]).withDefault(
+      search.joinOperator
+    ),
+  })
 
   const params = {
     ...search,
-    page: pageState[0],
-    perPage: perPageState[0] ?? perPageState[1],
-    sort: sorting ?? [{ id: "createdAt", desc: true }],
-    filters: filters ?? [],
-    joinOperator: (joinOperator ?? "and") as "and" | "or",
+    page: states.page,
+    perPage: states.perPage,
+    sort: states.sort ?? [{ id: "createdAt", desc: true }],
+    filters: states.filters ?? [],
+    joinOperator: (states.joinOperator ?? "and") as "and" | "or",
   }
 
   const { data, isLoading } = useAdvertisers(params)

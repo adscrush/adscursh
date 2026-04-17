@@ -200,7 +200,10 @@ export function DashboardSidebar() {
     {
       title: "Employees",
       icon: UserCog,
-      items: [{ title: "All Employees", url: "/employees" }],
+      items: [
+        { title: "All Employees", url: "/employees" },
+        { title: "Departments", url: "/departments" },
+      ],
     },
   ]
 
