@@ -1,4 +1,5 @@
 export * from "./auth"
+export * from "./departments"
 export * from "./employees"
 export * from "./advertisers"
 export * from "./affiliates"

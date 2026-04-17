@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core"
 import { users } from "./auth"
+import { departments } from "./departments"
 import { generateId } from "@adscrush/shared/lib/id"
 
 export const employees = pgTable(
@@ -11,6 +12,7 @@ export const employees = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    departmentId: text("department_id").references(() => departments.id),
     department: text("department"),
     status: text("status").notNull().default("active"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -47,7 +49,11 @@ export const employeeAdvertiserAccess = pgTable(
 
 export type Employee = typeof employees.$inferSelect
 export type NewEmployee = typeof employees.$inferInsert
-export type EmployeeAffiliateAccess = typeof employeeAffiliateAccess.$inferSelect
-export type NewEmployeeAffiliateAccess = typeof employeeAffiliateAccess.$inferInsert
-export type EmployeeAdvertiserAccess = typeof employeeAdvertiserAccess.$inferSelect
-export type NewEmployeeAdvertiserAccess = typeof employeeAdvertiserAccess.$inferInsert
+export type EmployeeAffiliateAccess =
+  typeof employeeAffiliateAccess.$inferSelect
+export type NewEmployeeAffiliateAccess =
+  typeof employeeAffiliateAccess.$inferInsert
+export type EmployeeAdvertiserAccess =
+  typeof employeeAdvertiserAccess.$inferSelect
+export type NewEmployeeAdvertiserAccess =
+  typeof employeeAdvertiserAccess.$inferInsert

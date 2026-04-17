@@ -5,4 +5,5 @@ export const listQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(200).optional(),
   search: z.string().optional(),
   status: z.string().optional(),
+  departmentId: z.string().optional(),
 })

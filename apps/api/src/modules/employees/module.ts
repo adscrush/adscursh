@@ -3,6 +3,7 @@ import { eq, like, sql, and, type SQL } from "@adscrush/db/drizzle"
 import {
   employees,
   users,
+  departments,
   employeeAffiliateAccess,
   employeeAdvertiserAccess,
 } from "@adscrush/db/schema"
@@ -29,12 +30,15 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
         limit = 20,
         search,
         status,
+        departmentId,
       } = listQuerySchema.parse(query)
       const offset = (page - 1) * limit
 
       const conditions: SQL[] = []
       if (search) conditions.push(like(users.name, `%${search}%`))
       if (status) conditions.push(eq(employees.status, status))
+      if (departmentId)
+        conditions.push(eq(employees.departmentId, departmentId))
       const where = conditions.length > 0 ? and(...conditions) : undefined
 
       const [items, countResult] = await Promise.all([
@@ -42,6 +46,7 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
           .select({
             id: employees.id,
             userId: employees.userId,
+            departmentId: employees.departmentId,
             department: employees.department,
             status: employees.status,
             createdAt: employees.createdAt,
@@ -49,9 +54,11 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
             email: users.email,
             role: users.role,
             image: users.image,
+            departmentName: departments.name,
           })
           .from(employees)
           .innerJoin(users, eq(employees.userId, users.id))
+          .leftJoin(departments, eq(employees.departmentId, departments.id))
           .where(where)
           .limit(limit)
           .offset(offset)
@@ -133,7 +140,7 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
 
       const [employee] = await db
         .insert(employees)
-        .values({ userId, department: body.department })
+        .values({ userId, departmentId: body.departmentId })
         .returning()
       return { success: true, data: employee, status: 201 }
     },
@@ -164,14 +171,12 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
           .delete(employeeAffiliateAccess)
           .where(eq(employeeAffiliateAccess.employeeId, params.id))
         if (body.affiliateIds.length > 0) {
-          await db
-            .insert(employeeAffiliateAccess)
-            .values(
-              body.affiliateIds.map((affiliateId) => ({
-                employeeId: params.id,
-                affiliateId,
-              }))
-            )
+          await db.insert(employeeAffiliateAccess).values(
+            body.affiliateIds.map((affiliateId) => ({
+              employeeId: params.id,
+              affiliateId,
+            }))
+          )
         }
       }
       if (body.advertiserIds !== undefined) {
@@ -179,14 +184,12 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
           .delete(employeeAdvertiserAccess)
           .where(eq(employeeAdvertiserAccess.employeeId, params.id))
         if (body.advertiserIds.length > 0) {
-          await db
-            .insert(employeeAdvertiserAccess)
-            .values(
-              body.advertiserIds.map((advertiserId) => ({
-                employeeId: params.id,
-                advertiserId,
-              }))
-            )
+          await db.insert(employeeAdvertiserAccess).values(
+            body.advertiserIds.map((advertiserId) => ({
+              employeeId: params.id,
+              advertiserId,
+            }))
+          )
         }
       }
       return { success: true }

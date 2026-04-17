@@ -4,11 +4,13 @@ export const createEmployeeSchema = z.object({
   name: z.string().min(1),
   email: z.email(),
   password: z.string().min(8),
+  departmentId: z.string().optional(),
   department: z.string().optional(),
   role: z.enum(["admin", "employee"]).default("employee").nonoptional(),
 })
 
 export const updateEmployeeSchema = z.object({
+  departmentId: z.string().optional(),
   department: z.string().optional(),
   status: z.enum(["active", "inactive", "suspended"]).optional(),
 })
