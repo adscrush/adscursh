@@ -1,19 +1,23 @@
 "use client"
 
-import React from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { ADVERTISER_STATUS } from "@adscrush/shared/constants/status"
 import { updateAdvertiserSchema } from "@adscrush/shared/validators/advertiser.schema"
-import type { z } from "zod"
 import { Button } from "@adscrush/ui/components/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@adscrush/ui/components/dialog"
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
+} from "@adscrush/ui/components/field"
 import { Input } from "@adscrush/ui/components/input"
 import {
   Select,
@@ -22,11 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@adscrush/ui/components/select"
-import { Field, FieldLabel } from "@adscrush/ui/components/field"
-import { IconLoader2 } from "@tabler/icons-react"
 import { toast } from "@adscrush/ui/sonner"
-import { useUpdateAdvertiser } from "../queries"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { IconLoader2 } from "@tabler/icons-react"
+import React from "react"
+import { Controller, useForm } from "react-hook-form"
+import type { z } from "zod"
 import type { Advertiser } from "../queries"
+import { useUpdateAdvertiser } from "../queries"
 
 const editSchema = updateAdvertiserSchema.partial()
 
@@ -46,14 +53,7 @@ export function UpdateAdvertiserDialog({
 }: UpdateAdvertiserDialogProps) {
   const updateMutation = useUpdateAdvertiser()
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<EditAdvertiserInput>({
+  const { control, handleSubmit, reset } = useForm<EditAdvertiserInput>({
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: advertiser?.name || "",
@@ -82,7 +82,10 @@ export function UpdateAdvertiserDialog({
       {
         onSuccess: () => {
           toast.success("Advertiser updated")
-          onOpenChange?.(false)
+          onOpenChange?.(false, {
+            source: "programmatic",
+            event: undefined,
+          } as any)
         },
         onError: (error) => {
           toast.error(error.message)
@@ -105,68 +108,121 @@ export function UpdateAdvertiserDialog({
           className="flex flex-col gap-4 pt-4"
         >
           <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Name</FieldLabel>
-              <Input {...register("name")} />
-              {errors.name && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.name.message}
-                </p>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field orientation="vertical" data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
               )}
-            </Field>
-            <Field>
-              <FieldLabel>Company</FieldLabel>
-              <Input {...register("companyName")} />
-            </Field>
+            />
+            <Controller
+              name="companyName"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Company</FieldLabel>
+                  <FieldContent>
+                    <Input {...field} id={field.name} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Email</FieldLabel>
-              <Input type="email" {...register("email")} />
-              {errors.email && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.email.message}
-                </p>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field orientation="vertical" data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      {...field}
+                      type="email"
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
               )}
-            </Field>
-            <Field>
-              <FieldLabel>Website</FieldLabel>
-              <Input {...register("website")} />
-            </Field>
+            />
+            <Controller
+              name="website"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Website</FieldLabel>
+                  <FieldContent>
+                    <Input {...field} id={field.name} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Country</FieldLabel>
-              <Input {...register("country")} />
-            </Field>
-            <Field>
-              <FieldLabel>Status</FieldLabel>
-              <Select
-                value={watch("status") || advertiser?.status || "active"}
-                onValueChange={(val) =>
-                  setValue("status", val as "active" | "inactive" | "pending")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+            <Controller
+              name="country"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Country</FieldLabel>
+                  <FieldContent>
+                    <Input {...field} id={field.name} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+            <Controller
+              name="status"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel>Status</FieldLabel>
+                  <Select
+                    value={field.value || "active"}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(ADVERTISER_STATUS).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange?.(false)}
-              disabled={isLoading}
-              type="button"
-            >
-              Cancel
-            </Button>
+            <DialogClose
+              render={
+                <Button variant="outline" disabled={isLoading} type="button">
+                  Cancel
+                </Button>
+              }
+            />
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>

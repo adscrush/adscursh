@@ -90,7 +90,7 @@ export function AddAffiliateDialog({
     setValue,
     watch,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = form
 
   const currentStatus = watch("status")

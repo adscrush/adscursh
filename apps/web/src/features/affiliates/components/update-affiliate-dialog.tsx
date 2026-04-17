@@ -1,19 +1,23 @@
 "use client"
 
-import React from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { AFFILIATE_STATUS } from "@adscrush/shared/constants/status"
 import { updateAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
-import type { z } from "zod"
 import { Button } from "@adscrush/ui/components/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@adscrush/ui/components/dialog"
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
+} from "@adscrush/ui/components/field"
 import { Input } from "@adscrush/ui/components/input"
 import {
   Select,
@@ -22,11 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@adscrush/ui/components/select"
-import { Field, FieldLabel } from "@adscrush/ui/components/field"
-import { IconLoader2 } from "@tabler/icons-react"
 import { toast } from "@adscrush/ui/sonner"
-import { useUpdateAffiliate } from "../queries"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { IconLoader2 } from "@tabler/icons-react"
+import React from "react"
+import { Controller, useForm } from "react-hook-form"
+import type { z } from "zod"
 import type { Affiliate } from "../queries"
+import { useUpdateAffiliate } from "../queries"
 
 const editSchema = updateAffiliateSchema.partial()
 
@@ -46,14 +53,7 @@ export function UpdateAffiliateDialog({
 }: UpdateAffiliateDialogProps) {
   const updateMutation = useUpdateAffiliate()
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<EditAffiliateInput>({
+  const { control, handleSubmit, reset } = useForm<EditAffiliateInput>({
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: affiliate?.name || "",
@@ -82,7 +82,10 @@ export function UpdateAffiliateDialog({
       {
         onSuccess: () => {
           toast.success("Affiliate updated")
-          onOpenChange(false)
+          onOpenChange?.(false, {
+            source: "programmatic",
+            event: undefined,
+          } as any)
         },
         onError: (error) => {
           toast.error(error.message)
@@ -105,60 +108,98 @@ export function UpdateAffiliateDialog({
           className="flex flex-col gap-4 pt-4"
         >
           <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Name</FieldLabel>
-              <Input {...register("name")} />
-              {errors.name && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.name.message}
-                </p>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field orientation="vertical" data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
               )}
-            </Field>
-            <Field>
-              <FieldLabel>Company</FieldLabel>
-              <Input {...register("companyName")} />
-            </Field>
+            />
+            <Controller
+              name="companyName"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Company</FieldLabel>
+                  <FieldContent>
+                    <Input {...field} id={field.name} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Email</FieldLabel>
-              <Input type="email" {...register("email")} />
-              {errors.email && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.email.message}
-                </p>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field orientation="vertical" data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      {...field}
+                      type="email"
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
               )}
-            </Field>
+            />
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <Field>
-              <FieldLabel>Status</FieldLabel>
-              <Select
-                value={watch("status") || affiliate?.status || "active"}
-                onValueChange={(val) =>
-                  setValue("status", val as "active" | "inactive" | "pending")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel>Status</FieldLabel>
+                  <Select
+                    value={field.value || "active"}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(AFFILIATE_STATUS).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-              type="button"
-            >
-              Cancel
-            </Button>
+            <DialogClose
+              render={
+                <Button variant="outline" disabled={isLoading} type="button">
+                  Cancel
+                </Button>
+              }
+            />
+
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
