@@ -1,23 +1,10 @@
 "use client"
 
+import { EmployeeSelect } from "@/features/employees/components/employee-select"
 import { AFFILIATE_STATUS } from "@adscrush/shared/constants/status"
 import type { CreateAffiliateInput } from "@adscrush/shared/validators/affiliate.validator"
 import { createAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@adscrush/ui/components/avatar"
 import { Button } from "@adscrush/ui/components/button"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxTrigger,
-} from "@adscrush/ui/components/combobox"
 import {
   Dialog,
   DialogContent,
@@ -44,10 +31,10 @@ import {
 } from "@adscrush/ui/components/select"
 import { toast } from "@adscrush/ui/sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { IconSelector, IconKey, IconLoader2 } from "@tabler/icons-react"
+import { IconKey, IconLoader2 } from "@tabler/icons-react"
 import React, { useState } from "react"
 import { Controller, useForm, type SubmitHandler } from "react-hook-form"
-import { useCreateAffiliate, useEmployees } from "../queries"
+import { useCreateAffiliate } from "../queries"
 
 function generatePassword(): string {
   const chars =
@@ -68,10 +55,8 @@ export function AddAffiliateDialog({
   onOpenChange,
   onCreated,
 }: AddAffiliateDialogProps) {
-  const ref = React.useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const createMutation = useCreateAffiliate()
-  const { data: employees = [], isLoading: loadingEmployees } = useEmployees()
 
   const form = useForm<CreateAffiliateInput>({
     resolver: zodResolver(createAffiliateSchema),
@@ -94,7 +79,6 @@ export function AddAffiliateDialog({
   } = form
 
   const currentStatus = watch("status")
-  const currentAccountManagerId = watch("accountManagerId")
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
@@ -255,10 +239,6 @@ export function AddAffiliateDialog({
               name="accountManagerId"
               control={form.control}
               render={({ field, fieldState }) => {
-                const selectedEmp = employees.find(
-                  (e) => e.id === currentAccountManagerId
-                )
-
                 return (
                   <Field
                     orientation="vertical"
@@ -268,95 +248,12 @@ export function AddAffiliateDialog({
                       Account Manager
                     </FieldLabel>
                     <FieldContent>
-                      <Combobox
-                        autoHighlight
-                        items={employees}
-                        value={selectedEmp ?? null}
-                        itemToStringValue={(emp) => emp.name}
-                        onValueChange={(emp) =>
-                          setValue("accountManagerId", emp?.id ?? "")
-                        }
-                        disabled={loadingEmployees}
-                      >
-                        <ComboboxTrigger
-                          render={
-                            <Button
-                              variant="outline"
-                              className="w-full justify-between font-normal"
-                              disabled={loadingEmployees}
-                            >
-                              {selectedEmp ? (
-                                <div className="flex min-w-0 items-center gap-2">
-                                  <Avatar className="size-5 shrink-0">
-                                    {selectedEmp.image ? (
-                                      <AvatarImage
-                                        src={selectedEmp.image}
-                                        alt={selectedEmp.name}
-                                      />
-                                    ) : null}
-                                    <AvatarFallback className="text-[0.5rem]">
-                                      {selectedEmp.name
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")
-                                        .toUpperCase()
-                                        .slice(0, 2)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="truncate">
-                                    {selectedEmp.name}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="truncate text-muted-foreground">
-                                  Select account manager...
-                                </span>
-                              )}
-                              <IconSelector className="ml-2 size-3.5 shrink-0 text-muted-foreground" />
-                            </Button>
-                          }
-                        />
-                        <ComboboxContent className="min-w-0" container={ref}>
-                          <div className="w-full p-1.5">
-                            <ComboboxInput
-                              className="min-w-0 rounded-md"
-                              placeholder="Search account manager..."
-                              showTrigger={false}
-                              showClear={false}
-                            />
-                          </div>
-                          <ComboboxEmpty>No results found.</ComboboxEmpty>
-                          <ComboboxList>
-                            {(emp: {
-                              id: string
-                              name: string
-                              avatarUrl?: string
-                            }) => (
-                              <ComboboxItem key={emp.id} value={emp}>
-                                <div className="flex min-w-0 items-center gap-2">
-                                  <Avatar className="size-5 shrink-0">
-                                    {emp.avatarUrl ? (
-                                      <AvatarImage
-                                        src={emp.avatarUrl}
-                                        alt={emp.name}
-                                      />
-                                    ) : null}
-                                    <AvatarFallback className="text-[0.5rem]">
-                                      {emp.name
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")
-                                        .toUpperCase()
-                                        .slice(0, 2)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="truncate">{emp.name}</span>
-                                </div>
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                        </ComboboxContent>
-                      </Combobox>
+                      <EmployeeSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting}
+                      />
+
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
