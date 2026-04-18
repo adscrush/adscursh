@@ -47,7 +47,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { IconSelector, IconKey, IconLoader2 } from "@tabler/icons-react"
 import React, { useState } from "react"
 import { Controller, useForm, type SubmitHandler } from "react-hook-form"
-import { useCreateAdvertiser, useEmployees } from "../queries"
+import { useCreateAdvertiser } from "../queries"
+import { useEmployeeSearch } from "@/features/employees/queries"
 
 function generatePassword(): string {
   const chars =
@@ -71,7 +72,8 @@ export function AddAdvertiserDialog({
   const ref = React.useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const createMutation = useCreateAdvertiser()
-  const { data: employees = [], isLoading: loadingEmployees } = useEmployees()
+  const { data: employees = [], isLoading: loadingEmployees } =
+    useEmployeeSearch("")
 
   const form = useForm<CreateAdvertiserInput>({
     resolver: zodResolver(createAdvertiserSchema),

@@ -146,23 +146,3 @@ export function useUpdateAdvertiser() {
     },
   })
 }
-
-export function useEmployees() {
-  return useQuery({
-    queryKey: advertiserKeys.employeeList(),
-    queryFn: async () => {
-      const response = await api.employees.get({ query: { limit: 100 } })
-      if (!response.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to fetch employees"
-        )
-      }
-      return response.data.data as {
-        id: string
-        name: string
-        image: string | null
-      }[]
-    },
-    staleTime: 5 * 60 * 1000,
-  })
-}
