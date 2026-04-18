@@ -24,7 +24,6 @@ export const affiliateKeys = {
     params: Omit<GetAffiliatesSchema, "filterFlag"> & { filterFlag?: string }
   ) => [...affiliateKeys.lists(), { params }] as const,
   statusCounts: () => [...affiliateKeys.all, "status-counts"] as const,
-  employeeList: () => [...affiliateKeys.all, "employees"] as const,
 }
 
 /* ── Query Options Factories ──────────────────────────────────────── */
@@ -166,25 +165,6 @@ export function useUpdateAffiliate() {
   })
 }
 
-export function useEmployees() {
-  return useQuery({
-    queryKey: affiliateKeys.employeeList(),
-    queryFn: async () => {
-      const { data, error } = await api.employees.get({ query: { limit: 100 } })
-
-      if (error) {
-        throw new Error(parseApiError(error))
-      }
-
-      if (!data || !data.success) {
-        throw new Error("Failed to fetch employees")
-      }
-
-      return data.data
-    },
-    staleTime: 5 * 60 * 1000,
-  })
-}
 
 export function useBulkUpdateAffiliateStatus() {
   const queryClient = useQueryClient()

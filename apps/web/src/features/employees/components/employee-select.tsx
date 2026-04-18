@@ -153,9 +153,9 @@ export function EmployeeSelect({
                   <span className="truncate text-xs font-medium">
                     {emp.name}
                   </span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  {/* <span className="truncate text-xs text-muted-foreground">
                     {emp.email}
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </ComboboxItem>

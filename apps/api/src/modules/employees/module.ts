@@ -31,6 +31,7 @@ import {
   bulkUpdateStatusSchema,
   bulkDeleteSchema,
 } from "@adscrush/shared/validators/employee.validator"
+import z from "zod"
 
 export const employeeRoutes = new Elysia({ prefix: "/employees" })
   .use(requireAdmin)
@@ -160,6 +161,42 @@ export const employeeRoutes = new Elysia({ prefix: "/employees" })
       }
     },
     { query: listQuerySchema }
+  )
+
+  // ── GET /search ────────────────────────────────────────────────
+  .get(
+    "/search",
+    async ({ query: { q } }) => {
+      const items = await db
+        .select({
+          id: employees.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+        })
+        .from(employees)
+        .innerJoin(users, eq(employees.userId, users.id))
+        .where(
+          q
+            ? or(
+                like(users.name, `%${q}%`),
+                like(users.email, `%${q}%`),
+                like(users.id, `%${q}%`)
+              )
+            : undefined
+        )
+        .limit(20)
+
+      return {
+        success: true,
+        data: items,
+      }
+    },
+    {
+      query: z.object({
+        q: z.string().optional().default(""),
+      }),
+    }
   )
 
   // ── GET /:id ───────────────────────────────────────────────────

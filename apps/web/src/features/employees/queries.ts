@@ -164,3 +164,35 @@ export function useBulkDeleteEmployees() {
     },
   })
 }
+
+export function useEmployeeSearch(q: string) {
+  return useQuery({
+    queryKey: [...employeeKeys.all, "search", q],
+    queryFn: async () => {
+      const { data, error } = await api.employees.get({
+        query: {
+          filterFlag: "commandFilters",
+          name: q,
+          page: 1,
+          perPage: 20,
+          sort: [],
+          filters: [],
+          status: [],
+          createdAt: [],
+          joinOperator: "and",
+        },
+      })
+
+      if (error) {
+        throw new Error(parseApiError(error))
+      }
+
+      if (!data || !data.success) {
+        throw new Error("Failed to search employees")
+      }
+
+      return data.data
+    },
+    enabled: q.length >= 0,
+  })
+}

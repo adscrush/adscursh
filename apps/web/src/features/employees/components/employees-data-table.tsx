@@ -17,6 +17,7 @@ import {
 import { parseAsInteger, parseAsStringEnum, useQueryStates } from "nuqs"
 import * as React from "react"
 import type { Employee } from "../queries"
+import type { Employee as EmployeeTypeFromDB } from "@adscrush/db/schema"
 import { useEmployees } from "../queries"
 import type { GetEmployeesSchema } from "../validations"
 import { DeleteEmployeeDialog } from "./delete-employee-dialog"
@@ -34,9 +35,7 @@ export function EmployeesDataTable({ search }: EmployeesDataTableProps) {
   const [states] = useQueryStates({
     page: parseAsInteger.withDefault(search.page),
     perPage: parseAsInteger.withDefault(search.perPage),
-    sort: getSortingStateParser<
-      typeof import("@adscrush/db/schema").employees
-    >().withDefault([{ id: "createdAt", desc: true }]),
+    sort: getSortingStateParser<EmployeeTypeFromDB>().withDefault([]),
     filters: getFiltersStateParser().withDefault([]),
     joinOperator: parseAsStringEnum(["and", "or"]).withDefault(
       search.joinOperator
