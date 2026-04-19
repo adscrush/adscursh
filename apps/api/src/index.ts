@@ -8,6 +8,7 @@ import { authRoutes } from "./modules/auth/auth.routes"
 import { departmentRoutes } from "./modules/departments/module"
 import { employeeRoutes } from "./modules/employees/module"
 import { offerRoutes } from "./modules/offers/module"
+import { categoryRoutes } from "./modules/categories/module"
 import { reportRoutes } from "./modules/reports/module"
 import { errorHandler } from "./middleware/error.middleware"
 import { security } from "./middleware/security.middleware"
@@ -50,6 +51,7 @@ const app = new Elysia({ name: "adscrush-api" })
       .use(advertiserRoutes)
       .use(affiliateRoutes)
       .use(offerRoutes)
+      .use(categoryRoutes)
       .use(reportRoutes)
   )
   .listen(env.PORT)

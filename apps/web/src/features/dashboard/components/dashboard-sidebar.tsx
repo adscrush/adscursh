@@ -246,7 +246,14 @@ export function DashboardSidebar() {
       ],
     },
     { title: "Support", icon: LifeBuoy, url: "/support" },
-    { title: "Settings", icon: Settings, url: "/settings" },
+    {
+      title: "Settings",
+      icon: Settings,
+      items: [
+        { title: "General Settings", url: "/settings" },
+        { title: "Categories", url: "/categories" },
+      ],
+    },
   ]
 
   return (

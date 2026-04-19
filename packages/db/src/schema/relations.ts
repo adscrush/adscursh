@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm"
 import { users } from "./auth"
 import { employees, employeeAffiliateAccess, employeeAdvertiserAccess } from "./employees"
 import { advertisers } from "./advertisers"
+import { categories } from "./categories"
 import { affiliates } from "./affiliates"
 import { offers } from "./offers"
 import { landingPages } from "./landing-pages"
@@ -66,6 +67,10 @@ export const advertisersRelations = relations(
   })
 )
 
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  offers: many(offers),
+}))
+
 export const affiliatesRelations = relations(
   affiliates,
   ({ one, many }) => ({
@@ -81,6 +86,10 @@ export const offersRelations = relations(offers, ({ one, many }) => ({
   advertiser: one(advertisers, {
     fields: [offers.advertiserId],
     references: [advertisers.id],
+  }),
+  category: one(categories, {
+    fields: [offers.categoryId],
+    references: [categories.id],
   }),
   landingPages: many(landingPages),
   offerAffiliates: many(offerAffiliates),
