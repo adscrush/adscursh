@@ -12,17 +12,16 @@ import { useFeatureFlags } from "@/providers/feature-flags-provider"
 import type { QueryKeys } from "@adscrush/shared/types/data-table"
 import * as React from "react"
 
+import { DataTableSearch } from "@/components/data-table/data-table-search"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import {
   getFiltersStateParser,
   getSortingStateParser,
 } from "@adscrush/shared/lib/parsers"
 import { parseAsInteger, parseAsStringEnum, useQueryStates } from "nuqs"
-import type { Offer } from "../queries"
 import { useOffers } from "../queries"
-import type { GetOffersSchema } from "../validations"
+import type { GetOffersSchema, OfferListSortableColumns } from "../validations"
 import { getOffersTableColumns } from "./offers-table-columns"
-import { DataTableSearch } from "@/components/data-table/data-table-search"
 
 interface OffersDataTableProps {
   search: GetOffersSchema
@@ -35,7 +34,7 @@ export function OffersDataTable({ search, queryKeys }: OffersDataTableProps) {
   const [states] = useQueryStates({
     page: parseAsInteger.withDefault(search.page),
     perPage: parseAsInteger.withDefault(search.perPage),
-    sort: getSortingStateParser<Offer>().withDefault([
+    sort: getSortingStateParser<OfferListSortableColumns>().withDefault([
       { id: "createdAt", desc: true },
     ]),
     filters: getFiltersStateParser().withDefault([]),
@@ -90,8 +89,8 @@ export function OffersDataTable({ search, queryKeys }: OffersDataTableProps) {
       ) : (
         <DataTable table={table}>
           {enableAdvancedFilter ? (
-            <DataTableAdvancedToolbar 
-              table={table} 
+            <DataTableAdvancedToolbar
+              table={table}
               resizing={resizing}
               extra={<DataTableSearch isFetching={isFetching} name="search" />}
             >
@@ -114,8 +113,8 @@ export function OffersDataTable({ search, queryKeys }: OffersDataTableProps) {
               )}
             </DataTableAdvancedToolbar>
           ) : (
-            <DataTableToolbar 
-              table={table} 
+            <DataTableToolbar
+              table={table}
               resizing={resizing}
               isFetching={isFetching}
               searchName="search"
@@ -123,7 +122,8 @@ export function OffersDataTable({ search, queryKeys }: OffersDataTableProps) {
               <DataTableSortList table={table} align="end" />
             </DataTableToolbar>
           )}
-        </DataTable>      )}
+        </DataTable>
+      )}
     </DataTableProvider>
   )
 }

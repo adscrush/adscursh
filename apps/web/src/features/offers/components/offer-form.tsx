@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createOfferSchema,
@@ -68,35 +68,25 @@ export function OfferForm({
       privateNote: initialData?.privateNote ?? null,
       startDate: initialData?.startDate ?? null,
       endDate: initialData?.endDate ?? null,
+      landingPages: (initialData as any)?.landingPages?.length
+        ? (initialData as any).landingPages
+        : [
+            { name: "", url: "", weight: 10, status: "active" },
+            { name: "", url: "", weight: 10, status: "active" },
+            { name: "", url: "", weight: 10, status: "active" },
+          ],
     },
   })
 
+  const { fields, append } = useFieldArray({
+    control: form.control,
+    name: "landingPages" as any,
+  })
+
   const [showLandingPages, setShowLandingPages] = React.useState(false)
-  const [landingPages, setLandingPages] = React.useState(
-    Array.from({ length: 3 }, (_, i) => ({
-      id: i + 1,
-      name: "",
-      type: "Landing",
-      url: "",
-      affiliate: "Allow",
-      weight: "10",
-      visibility: "Show",
-    }))
-  )
 
   const addLandingPageRow = () => {
-    setLandingPages([
-      ...landingPages,
-      {
-        id: Date.now(),
-        name: "",
-        type: "Landing",
-        url: "",
-        affiliate: "Allow",
-        weight: "10",
-        visibility: "Show",
-      },
-    ])
+    append({ name: "", url: "", weight: 10, status: "active" })
   }
 
   return (
@@ -237,13 +227,16 @@ export function OfferForm({
                             </tr>
                           </thead>
                           <tbody className="divide-y">
-                            {landingPages.map((lp) => (
+                            {fields.map((field, index) => (
                               <tr
-                                key={lp.id}
+                                key={field.id}
                                 className="bg-transparent transition-colors hover:bg-muted/30"
                               >
                                 <td className="px-2 py-2">
                                   <Input
+                                    {...form.register(
+                                      `landingPages.${index}.name` as any
+                                    )}
                                     className="border-none bg-muted/20 text-xs shadow-none"
                                     placeholder="Name"
                                   />
@@ -262,26 +255,55 @@ export function OfferForm({
                                 </td>
                                 <td className="px-2 py-2">
                                   <Input
+                                    {...form.register(
+                                      `landingPages.${index}.url` as any
+                                    )}
                                     className="border-none bg-muted/20 text-xs shadow-none"
                                     placeholder="URL"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
-                                  <Select defaultValue="Allow">
-                                    <SelectTrigger className="border-none text-[11px] shadow-none">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Allow">
-                                        Allow
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                  <Controller
+                                    name={
+                                      `landingPages.${index}.status` as any
+                                    }
+                                    control={form.control}
+                                    render={({ field }) => (
+                                      <Select
+                                        value={
+                                          field.value === "active"
+                                            ? "Allow"
+                                            : "Deny"
+                                        }
+                                        onValueChange={(val) =>
+                                          field.onChange(
+                                            val === "Allow"
+                                              ? "active"
+                                              : "inactive"
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger className="border-none text-[11px] shadow-none">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="Allow">
+                                            Allow
+                                          </SelectItem>
+                                          <SelectItem value="Deny">
+                                            Deny
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  />
                                 </td>
                                 <td className="px-2 py-2">
                                   <Input
+                                    {...form.register(
+                                      `landingPages.${index}.weight` as any
+                                    )}
                                     className="border-none text-center text-xs shadow-none"
-                                    defaultValue="10"
                                   />
                                 </td>
                               </tr>
@@ -289,6 +311,15 @@ export function OfferForm({
                           </tbody>
                         </table>
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={addLandingPageRow}
+                      >
+                        Add Row
+                      </Button>
                     </div>
                   </div>
                 </div>

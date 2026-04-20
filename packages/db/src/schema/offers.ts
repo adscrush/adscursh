@@ -5,6 +5,7 @@ import { generateId } from "@adscrush/shared/lib/id"
 import {
   OFFER_STATUS,
   OFFER_STATUS_VALUES,
+  OFFER_VISIBILITY_VALUES,
 } from "@adscrush/shared/constants/status"
 
 export const offers = pgTable("offers", {
@@ -28,7 +29,11 @@ export const offers = pgTable("offers", {
     .notNull()
     .default(OFFER_STATUS.ACTIVE),
   // active, inactive, paused, expired
-  visibility: text("visibility").notNull().default("public"), // public, private, exclusive
+  visibility: text("visibility", {
+    enum: OFFER_VISIBILITY_VALUES,
+  })
+    .notNull()
+    .default("public"), // public, private, exclusive
 
   // Revenue (Advertiser Pricing)
   revenueType: text("revenue_type").notNull().default("CPA"), // CPA, CPC, CPL, CPS, etc

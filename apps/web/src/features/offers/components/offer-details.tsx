@@ -1,31 +1,29 @@
 "use client"
 
-import * as React from "react"
-import { useOffer, useUpdateOffer } from "../queries"
+import { CreateOfferInput } from "@adscrush/shared/validators/offer.schema"
+import { Badge } from "@adscrush/ui/components/badge"
+import { Button } from "@adscrush/ui/components/button"
+import { Card, CardContent } from "@adscrush/ui/components/card"
+import { Skeleton } from "@adscrush/ui/components/skeleton"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@adscrush/ui/components/tabs"
-import { Card, CardContent } from "@adscrush/ui/components/card"
+import { toast } from "@adscrush/ui/sonner"
 import {
-  IconHome,
-  IconSettings,
-  IconTarget,
-  IconBrush,
-  IconUsers,
-  IconLink,
   IconDots,
   IconExternalLink,
+  IconHome,
+  IconLink,
+  IconSettings,
+  IconTarget,
+  IconUsers,
 } from "@tabler/icons-react"
-import { Badge } from "@adscrush/ui/components/badge"
-import { Skeleton } from "@adscrush/ui/components/skeleton"
-import { Button } from "@adscrush/ui/components/button"
-import { OfferForm } from "./offer-form"
-import { toast } from "@adscrush/ui/sonner"
-import { CreateOfferInput } from "@adscrush/shared/validators/offer.schema"
+import { useOffer, useUpdateOffer } from "../queries"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
+import { OfferForm } from "./offer-form"
 
 interface OfferDetailsProps {
   id: string
@@ -118,12 +116,7 @@ export function OfferDetails({ id }: OfferDetailsProps) {
           >
             <IconTarget className="size-4" /> TARGETING
           </TabsTrigger>
-          <TabsTrigger
-            value="creatives"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconBrush className="size-4" /> CREATIVES
-          </TabsTrigger>
+
           <TabsTrigger
             value="affiliates"
             className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
@@ -167,13 +160,7 @@ export function OfferDetails({ id }: OfferDetailsProps) {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="creatives">
-            <Card>
-              <CardContent className="pt-6">
-                Creative assets for {offer.name}
-              </CardContent>
-            </Card>
-          </TabsContent>
+
           <TabsContent value="affiliates">
             <OfferAffiliatesTab offer={offer as any} />
           </TabsContent>

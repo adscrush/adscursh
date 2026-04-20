@@ -12,7 +12,9 @@ export const landingPages = pgTable("landing_pages", {
   name: text("name").notNull(),
   url: text("url").notNull(),
   weight: integer("weight").notNull().default(1),
-  status: text("status").notNull().default("active"),
+  status: text("status", { enum: ["active", "inactive"] })
+    .notNull()
+    .default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 

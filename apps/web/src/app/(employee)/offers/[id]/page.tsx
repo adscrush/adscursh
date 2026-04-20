@@ -9,7 +9,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
   const { id } = await params
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4 pb-8">
       <Suspense fallback={<div>Loading offer details...</div>}>
         <OfferDetails id={id} />
       </Suspense>

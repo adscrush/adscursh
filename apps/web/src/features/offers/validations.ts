@@ -11,7 +11,17 @@ import {
   parseAsStringEnum,
 } from "nuqs/server"
 import { OFFER_STATUS_VALUES } from "@adscrush/shared/constants/status"
-import { Offer } from "@adscrush/db/schema"
+import { type Offer } from "./queries"
+
+export type OfferListSortableColumns = Omit<
+  Offer,
+  "advertiser" | "category"
+> & {
+  advertiser: string
+  category: string
+  payout: string
+  revenue: string
+}
 
 export const searchParamsCache = createSearchParamsCache({
   filterFlag: parseAsStringEnum(
@@ -20,7 +30,7 @@ export const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   perPage: parseAsInteger.withDefault(20),
 
-  sort: getSortingStateParser<Offer>().withDefault([
+  sort: getSortingStateParser<OfferListSortableColumns>().withDefault([
     { id: "createdAt", desc: true },
   ]),
   search: parseAsString.withDefault(""),

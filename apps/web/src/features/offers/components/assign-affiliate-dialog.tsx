@@ -71,13 +71,18 @@ export function AssignAffiliateDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button size="sm" className="gap-2">
-            <IconUserPlus className="size-4" /> Assign Affiliate
-          </Button>
-        )}
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <>
+            {children || (
+              <Button size="sm" className="gap-2">
+                <IconUserPlus className="size-4" /> Assign Affiliate
+              </Button>
+            )}
+          </>
+        }
+      />
+
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <DialogHeader>

@@ -1,7 +1,6 @@
 import Elysia from "elysia"
 import {
   eq,
-  like,
   ilike,
   sql,
   and,
@@ -10,6 +9,7 @@ import {
   asc,
   gte,
   lte,
+  inArray,
 } from "@adscrush/db/drizzle"
 import {
   offers,
@@ -49,7 +49,6 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
           search,
           status,
           advertiserId,
-          filterFlag,
           joinOperator,
           sort,
           filters,
@@ -57,9 +56,6 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
         } = parsed
 
         const offset = (page - 1) * perPage
-
-        const advancedTable =
-          filterFlag === "advancedFilters" || filterFlag === "commandFilters"
 
         const tableWithJoinedColumns = {
           ...offers,
@@ -223,8 +219,28 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
   .post(
     "/",
     async ({ body }) => {
-      const [offer] = await db.insert(offers).values(body).returning()
-      return { success: true, data: offer, status: 201 }
+      const { landingPages: lps, ...offerData } = body
+
+      return await db.transaction(async (tx) => {
+        const [offer] = await tx.insert(offers).values(offerData).returning()
+
+        if (lps && lps.length > 0) {
+          const validLps = lps.filter(lp => lp.name && lp.url)
+          if (validLps.length > 0 && offer) {
+            await tx.insert(landingPages).values(
+              validLps.map(lp => ({
+                name: lp.name!,
+                url: lp.url!,
+                weight: lp.weight,
+                status: lp.status,
+                offerId: offer.id,
+              }))
+            )
+          }
+        }
+
+        return { success: true, data: offer, status: 201 }
+      })
     },
     { body: createOfferSchema }
   )
@@ -233,13 +249,80 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
   .post(
     "/:id",
     async ({ params, body }) => {
-      const [offer] = await db
-        .update(offers)
-        .set({ ...body, updatedAt: new Date() })
-        .where(eq(offers.id, params.id))
-        .returning()
-      if (!offer) throw new AppError(404, "Offer not found")
-      return { success: true, data: offer }
+      const { landingPages: lps, ...offerData } = body
+
+      return await db.transaction(async (tx) => {
+        const [offer] = await tx
+          .update(offers)
+          .set({ ...offerData, updatedAt: new Date() })
+          .where(eq(offers.id, params.id))
+          .returning()
+
+        if (!offer) throw new AppError(404, "Offer not found")
+
+        if (lps) {
+          // Sync landing pages
+          const validLps = lps.filter((lp) => lp.name && lp.url)
+
+          if (validLps.length > 0) {
+            // Get existing LP IDs
+            const existingLps = await tx
+              .select({ id: landingPages.id })
+              .from(landingPages)
+              .where(eq(landingPages.offerId, params.id))
+
+            const existingIds = existingLps.map((lp) => lp.id)
+            const incomingIds = validLps
+              .map((lp) => lp.id)
+              .filter(Boolean) as string[]
+
+            // Delete removed LPs
+            const toDelete = existingIds.filter(
+              (id) => !incomingIds.includes(id)
+            )
+            if (toDelete.length > 0) {
+              await tx
+                .delete(landingPages)
+                .where(
+                  and(
+                    eq(landingPages.offerId, params.id),
+                    inArray(landingPages.id, toDelete)
+                  )
+                )
+            }
+
+            // Update or Insert
+            for (const lp of validLps) {
+              if (lp.id) {
+                await tx.update(landingPages)
+                  .set({
+                    name: lp.name!,
+                    url: lp.url!,
+                    weight: lp.weight,
+                    status: lp.status,
+                  })
+                  .where(eq(landingPages.id, lp.id))
+              } else {
+                await tx.insert(landingPages)
+                  .values({
+                    offerId: params.id,
+                    name: lp.name!,
+                    url: lp.url!,
+                    weight: lp.weight,
+                    status: lp.status,
+                  })
+              }
+            }
+          } else {
+            // If empty array, delete all LPs for this offer
+            await tx
+              .delete(landingPages)
+              .where(eq(landingPages.offerId, params.id))
+          }
+        }
+
+        return { success: true, data: offer }
+      })
     },
     { body: updateOfferSchema }
   )
@@ -269,7 +352,13 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
     async ({ params, body }) => {
       const [lp] = await db
         .insert(landingPages)
-        .values({ ...body, offerId: params.id })
+        .values({
+          offerId: params.id,
+          name: body.name!,
+          url: body.url!,
+          weight: body.weight,
+          status: body.status,
+        })
         .returning()
       return { success: true, data: lp, status: 201 }
     },
@@ -281,7 +370,12 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
     async ({ params, body }) => {
       const [lp] = await db
         .update(landingPages)
-        .set(body)
+        .set({
+          name: body.name ?? undefined,
+          url: body.url ?? undefined,
+          weight: body.weight,
+          status: body.status,
+        })
         .where(eq(landingPages.id, params.lpId))
         .returning()
       if (!lp) throw new AppError(404, "Landing page not found")

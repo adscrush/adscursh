@@ -35,6 +35,21 @@ export type OfferStatus = (typeof OFFER_STATUS)[keyof typeof OFFER_STATUS]
 export const OFFER_STATUS_VALUES = getEnumValues(OFFER_STATUS)
 
 /* ---------------------------------- */
+/* OFFER VISIBILITY */
+/* ---------------------------------- */
+
+export const OFFER_VISIBILITY = createEnum({
+  PUBLIC: "public",
+  PRIVATE: "private",
+  EXCLUSIVE: "exclusive",
+})
+
+export type OfferVisibility =
+  (typeof OFFER_VISIBILITY)[keyof typeof OFFER_VISIBILITY]
+
+export const OFFER_VISIBILITY_VALUES = getEnumValues(OFFER_VISIBILITY)
+
+/* ---------------------------------- */
 /* OFFER AFFILIATE STATUS */
 /* ---------------------------------- */
 
