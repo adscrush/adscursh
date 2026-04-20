@@ -1,6 +1,5 @@
 "use client"
 
-import { CreateOfferInput } from "@adscrush/shared/validators/offer.schema"
 import { Badge } from "@adscrush/ui/components/badge"
 import { Button } from "@adscrush/ui/components/button"
 import { Card, CardContent } from "@adscrush/ui/components/card"
@@ -18,11 +17,11 @@ import {
   IconHome,
   IconLink,
   IconSettings,
-  IconTarget,
   IconUsers,
 } from "@tabler/icons-react"
 import { useOffer, useUpdateOffer } from "../queries"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
+import { OfferFallbackTab } from "./offer-fallback-tab"
 import { OfferForm } from "./offer-form"
 
 interface OfferDetailsProps {
@@ -34,7 +33,7 @@ export function OfferDetails({ id }: OfferDetailsProps) {
   const updateOffer = useUpdateOffer()
   const offer = result?.data
 
-  const handleUpdate = async (data: CreateOfferInput) => {
+  const handleUpdate = async (data: any) => {
     try {
       await updateOffer.mutateAsync({ id, data })
       toast.success("Offer updated successfully")
@@ -98,43 +97,39 @@ export function OfferDetails({ id }: OfferDetailsProps) {
           variant="line"
           className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b p-0"
         >
-          <TabsTrigger
-            value="home"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconHome className="size-4" /> HOME
-          </TabsTrigger>
-          <TabsTrigger
-            value="general"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconSettings className="size-4" /> GENERAL
-          </TabsTrigger>
-          <TabsTrigger
-            value="targeting"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconTarget className="size-4" /> TARGETING
-          </TabsTrigger>
+          <div className="flex items-center gap-6">
+            <TabsTrigger
+              value="home"
+              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+            >
+              <IconHome className="size-4" /> HOME
+            </TabsTrigger>
+            <TabsTrigger
+              value="general"
+              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+            >
+              <IconSettings className="size-4" /> GENERAL
+            </TabsTrigger>
 
-          <TabsTrigger
-            value="affiliates"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconUsers className="size-4" /> AFFILIATES
-          </TabsTrigger>
-          <TabsTrigger
-            value="fallback"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconLink className="size-4" /> FALLBACK / INTEGRATION
-          </TabsTrigger>
-          <TabsTrigger
-            value="more"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconDots className="size-4" /> MORE
-          </TabsTrigger>
+            <TabsTrigger
+              value="affiliates"
+              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+            >
+              <IconUsers className="size-4" /> AFFILIATES
+            </TabsTrigger>
+            <TabsTrigger
+              value="fallback"
+              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+            >
+              <IconLink className="size-4" /> FALLBACK / INTEGRATION
+            </TabsTrigger>
+            <TabsTrigger
+              value="more"
+              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+            >
+              <IconDots className="size-4" /> MORE
+            </TabsTrigger>
+          </div>
         </TabsList>
 
         <div className="mt-6">
@@ -153,23 +148,16 @@ export function OfferDetails({ id }: OfferDetailsProps) {
               submitLabel="Save Changes"
             />
           </TabsContent>
-          <TabsContent value="targeting">
-            <Card>
-              <CardContent className="pt-6">
-                Targeting settings for {offer.name}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="affiliates">
             <OfferAffiliatesTab offer={offer as any} />
           </TabsContent>
           <TabsContent value="fallback">
-            <Card>
-              <CardContent className="pt-6">
-                Fallback and Integration settings for {offer.name}
-              </CardContent>
-            </Card>
+            <OfferFallbackTab
+              offer={offer as any}
+              onSubmit={handleUpdate}
+              isPending={updateOffer.isPending}
+            />
           </TabsContent>
           <TabsContent value="more">
             <Card>

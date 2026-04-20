@@ -36,6 +36,9 @@ export const createOfferSchema = z.object({
   fallbackUrl: z.string().optional().nullable(),
   allowMultiConversion: z.boolean().default(false),
 
+  postbackType: z.enum(["pixel", "postback"]).default("pixel"),
+  whitelistPostbackReferralDomain: z.string().optional().nullable(),
+
   // Scheduling
   startDate: z.coerce.date().optional().nullable(),
   endDate: z.coerce.date().optional().nullable(),

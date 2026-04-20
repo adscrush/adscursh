@@ -54,6 +54,14 @@ export const offers = pgTable("offers", {
     .notNull()
     .default(false),
 
+  // Fallback / Integration
+  postbackType: text("postback_type", {
+    enum: ["pixel", "postback"],
+  })
+    .notNull()
+    .default("pixel"), // pixel, postback
+  whitelistPostbackReferralDomain: text("whitelist_postback_referral_domain"),
+
   // Scheduling
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
