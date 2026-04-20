@@ -15,14 +15,19 @@ import { GetOffersSchema } from "./validations"
 /* ── Types ─────────────────────────────────────────────────────────── */
 export type Offer = Treaty.Data<typeof api.offers.get>["data"][number]
 export type Category = Treaty.Data<typeof api.categories.get>["data"][number]
+export type OfferAffiliate = Treaty.Data<
+  typeof api.affiliates.get
+>["data"][number]
 
 /* ── Query Keys ────────────────────────────────────────────────────── */
 
 export const offerKeys = {
   all: ["offers"] as const,
   lists: () => [...offerKeys.all, "list"] as const,
-  list: (params: GetOffersSchema) => [...offerKeys.lists(), { params }] as const,
+  list: (params: GetOffersSchema) =>
+    [...offerKeys.lists(), { params }] as const,
   detail: (id: string) => [...offerKeys.all, "detail", id] as const,
+  affiliates: (id: string) => [...offerKeys.detail(id), "affiliates"] as const,
 }
 
 export const categoryKeys = {
@@ -93,6 +98,66 @@ export function useOffer(id: string) {
   return useQuery(getOfferQueryOptions(id))
 }
 
+export function useOfferAffiliates(id: string) {
+  return useQuery({
+    queryKey: offerKeys.affiliates(id),
+    queryFn: async () => {
+      const { data, error } = await api.offers({ id }).affiliates.get()
+      if (error) throw new Error(parseApiError(error))
+      return data
+    },
+  })
+}
+
+export function useAssignOfferAffiliate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: { affiliateId: string; status?: string }
+    }) => {
+      const response = await api.offers({ id }).affiliates.post(data as any)
+      if (response.error) throw new Error(parseApiError(response.error))
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: offerKeys.affiliates(variables.id),
+      })
+    },
+  })
+}
+
+export function useUpdateOfferAffiliate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      offerId,
+      oaId,
+      data,
+    }: {
+      offerId: string
+      oaId: string
+      data: { status?: string; customPayout?: string; customRevenue?: string }
+    }) => {
+      const response = await api
+        .offers({ id: offerId })
+        .affiliates({ oaId })
+        .post(data as any)
+      if (response.error) throw new Error(parseApiError(response.error))
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: offerKeys.affiliates(variables.offerId),
+      })
+    },
+  })
+}
+
 export function useCategories(params: any = {}) {
   return useQuery(getCategoriesQueryOptions(params))
 }
@@ -114,14 +179,22 @@ export function useCreateOffer() {
 export function useUpdateOffer() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<z.infer<typeof createOfferSchema>> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<z.infer<typeof createOfferSchema>>
+    }) => {
       const response = await api.offers({ id }).post(data as any)
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: offerKeys.all })
-      queryClient.invalidateQueries({ queryKey: offerKeys.detail(variables.id) })
+      queryClient.invalidateQueries({
+        queryKey: offerKeys.detail(variables.id),
+      })
     },
   })
 }
@@ -130,7 +203,7 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.categories[id].delete.post()
+      const response = await api.categories({ id }).delete.post()
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },

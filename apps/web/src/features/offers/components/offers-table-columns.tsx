@@ -73,9 +73,9 @@ export function getOffersTableColumns({
         <DataTableColumnHeader column={column} label="ID" />
       ),
       cell: ({ row }) => (
-        <Link 
+        <Link
           href={`/offers/${row.original.id}`}
-          className="font-mono text-[10px] text-muted-foreground hover:text-primary hover:underline underline-offset-2"
+          className="font-mono text-[10px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
         >
           {row.original.id}
         </Link>
@@ -192,9 +192,7 @@ export function getOffersTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} label="Status" />
       ),
-      cell: ({ row }) => (
-        <OfferStatusBadge status={row.original.status as any} />
-      ),
+      cell: ({ row }) => <OfferStatusBadge status={row.original.status} />,
       enableSorting: true,
       meta: {
         label: "Status",

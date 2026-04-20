@@ -43,12 +43,14 @@ export const getSortingStateParser = <TData = unknown>(
     z
       .array(sortingItemSchema)
       .refine(
-        (items) =>
-          !validKeys || items.every((item) => validKeys.has(item.id)),
+        (items) => !validKeys || items.every((item) => validKeys.has(item.id)),
         { message: "Invalid column id in sort" }
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .transform((items) => items as any as import("../types/data-table").ExtendedColumnSort<TData>[])
+      .transform(
+        (items) =>
+          items as unknown as import("../types/data-table").ExtendedColumnSort<TData>[]
+      )
   )
 }
 
@@ -97,11 +99,13 @@ export const getFiltersStateParser = <TData = unknown>(
     z
       .array(filterItemSchema)
       .refine(
-        (items) =>
-          !validKeys || items.every((item) => validKeys.has(item.id)),
+        (items) => !validKeys || items.every((item) => validKeys.has(item.id)),
         { message: "Invalid column id in filter" }
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .transform((items) => items as any as import("../types/data-table").ExtendedColumnFilter<TData>[])
+      .transform(
+        (items) =>
+          items as unknown as import("../types/data-table").ExtendedColumnFilter<TData>[]
+      )
   )
 }

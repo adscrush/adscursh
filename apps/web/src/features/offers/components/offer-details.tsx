@@ -25,6 +25,7 @@ import { Button } from "@adscrush/ui/components/button"
 import { OfferForm } from "./offer-form"
 import { toast } from "@adscrush/ui/sonner"
 import { CreateOfferInput } from "@adscrush/shared/validators/offer.validator"
+import { OfferAffiliatesTab } from "./offer-affiliates-tab"
 
 interface OfferDetailsProps {
   id: string
@@ -146,23 +147,7 @@ export function OfferDetails({ id }: OfferDetailsProps) {
             </Card>
           </TabsContent>
           <TabsContent value="affiliates">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <IconUsers className="size-5" /> Manage Affiliates
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    Search: <Skeleton className="h-8 w-48" />
-                  </div>
-                </div>
-                <div className="border rounded-md p-8 text-center text-muted-foreground">
-                  Affiliate management table will be implemented here.
-                </div>
-              </CardContent>
-            </Card>
+            <OfferAffiliatesTab offer={offer as any} />
           </TabsContent>
           <TabsContent value="fallback">
             <Card>

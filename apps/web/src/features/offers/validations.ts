@@ -10,8 +10,8 @@ import {
   parseAsString,
   parseAsStringEnum,
 } from "nuqs/server"
-import { Offer } from "@/features/offers/queries"
 import { OFFER_STATUS_VALUES } from "@adscrush/shared/constants/status"
+import { Offer } from "@adscrush/db/schema"
 
 export const searchParamsCache = createSearchParamsCache({
   filterFlag: parseAsStringEnum(
@@ -24,13 +24,13 @@ export const searchParamsCache = createSearchParamsCache({
     { id: "createdAt", desc: true },
   ]),
   search: parseAsString.withDefault(""),
-  status: parseAsArrayOf(
-    parseAsStringEnum(OFFER_STATUS_VALUES)
-  ).withDefault([]),
+  status: parseAsArrayOf(parseAsStringEnum(OFFER_STATUS_VALUES)).withDefault(
+    []
+  ),
 
   createdAt: parseAsArrayOf(parseAsInteger).withDefault([]),
   advertiserId: parseAsString.withDefault(""),
-  
+
   // advanced filter
   filters: getFiltersStateParser().withDefault([]),
   joinOperator: parseAsStringEnum(["and", "or"]).withDefault("and"),

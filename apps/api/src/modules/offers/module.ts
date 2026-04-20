@@ -65,6 +65,8 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
           ...offers,
           advertiser: advertisers.name,
           category: categories.name,
+          payout: offers.defaultPayout,
+          revenue: offers.defaultRevenue,
         }
 
         const advancedWhere = filterColumns({
@@ -112,6 +114,8 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
           sort.length > 0
             ? sort.map((item) => {
                 const column = getColumn(tableWithJoinedColumns, item.id as any)
+                if (!column) return desc(offers.createdAt)
+                
                 const isString = ["name", "advertiser", "category", "id", "status"].includes(item.id)
                 const sortColumn = isString ? sql`lower(${column})` : column
                 
