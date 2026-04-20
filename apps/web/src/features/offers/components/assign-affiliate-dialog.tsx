@@ -30,7 +30,7 @@ import { toast } from "@adscrush/ui/sonner"
 import { IconUserPlus } from "@tabler/icons-react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { assignAffiliateSchema } from "@adscrush/shared/validators/offer.validator"
+import { assignAffiliateSchema } from "@adscrush/shared/validators/offer.schema"
 import type { z } from "zod"
 
 interface AssignAffiliateDialogProps {

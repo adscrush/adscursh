@@ -5,7 +5,7 @@ import { useCreateOffer } from "../queries"
 import { toast } from "@adscrush/ui/sonner"
 import { useRouter } from "next/navigation"
 import { OfferForm } from "./offer-form"
-import { CreateOfferInput } from "@adscrush/shared/validators/offer.validator"
+import { CreateOfferInput } from "@adscrush/shared/validators/offer.schema"
 
 export function CreateOfferWizard() {
   const router = useRouter()
@@ -23,9 +23,9 @@ export function CreateOfferWizard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <OfferForm 
-        onSubmit={onSubmit} 
-        isPending={createOffer.isPending} 
+      <OfferForm
+        onSubmit={onSubmit}
+        isPending={createOffer.isPending}
         submitLabel="Create Offer"
       />
     </div>

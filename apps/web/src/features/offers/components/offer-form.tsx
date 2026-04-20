@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createOfferSchema,
   type CreateOfferInput,
-} from "@adscrush/shared/validators/offer.validator"
+} from "@adscrush/shared/validators/offer.schema"
 import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import {
@@ -471,11 +471,7 @@ export function OfferForm({
       </div>
 
       <div className="flex justify-end gap-4">
-        <Button
-          type="submit"
-          className="gap-2"
-          disabled={isPending}
-        >
+        <Button type="submit" className="gap-2" disabled={isPending}>
           {isPending ? (
             "Saving..."
           ) : (

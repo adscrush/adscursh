@@ -24,7 +24,7 @@ import { Skeleton } from "@adscrush/ui/components/skeleton"
 import { Button } from "@adscrush/ui/components/button"
 import { OfferForm } from "./offer-form"
 import { toast } from "@adscrush/ui/sonner"
-import { CreateOfferInput } from "@adscrush/shared/validators/offer.validator"
+import { CreateOfferInput } from "@adscrush/shared/validators/offer.schema"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
 
 interface OfferDetailsProps {
@@ -79,39 +79,67 @@ export function OfferDetails({ id }: OfferDetailsProps) {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <a href={offer.offerUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                href={offer.offerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Preview <IconExternalLink className="ml-2 size-4" />
               </a>
             </Button>
             <Button size="sm">Options</Button>
           </div>
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Manage and monitor details for {offer.name}
         </p>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList variant="line" className="w-full justify-start border-b rounded-none h-auto p-0 gap-6 overflow-x-auto">
-          <TabsTrigger value="home" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+        <TabsList
+          variant="line"
+          className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b p-0"
+        >
+          <TabsTrigger
+            value="home"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconHome className="size-4" /> HOME
           </TabsTrigger>
-          <TabsTrigger value="general" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="general"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconSettings className="size-4" /> GENERAL
           </TabsTrigger>
-          <TabsTrigger value="targeting" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="targeting"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconTarget className="size-4" /> TARGETING
           </TabsTrigger>
-          <TabsTrigger value="creatives" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="creatives"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconBrush className="size-4" /> CREATIVES
           </TabsTrigger>
-          <TabsTrigger value="affiliates" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="affiliates"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconUsers className="size-4" /> AFFILIATES
           </TabsTrigger>
-          <TabsTrigger value="fallback" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="fallback"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconLink className="size-4" /> FALLBACK / INTEGRATION
           </TabsTrigger>
-          <TabsTrigger value="more" className="data-active:after:opacity-100 py-3 rounded-none bg-transparent">
+          <TabsTrigger
+            value="more"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
             <IconDots className="size-4" /> MORE
           </TabsTrigger>
         </TabsList>
@@ -125,9 +153,9 @@ export function OfferDetails({ id }: OfferDetailsProps) {
             </Card>
           </TabsContent>
           <TabsContent value="general">
-            <OfferForm 
-              initialData={offer as any} 
-              onSubmit={handleUpdate} 
+            <OfferForm
+              initialData={offer}
+              onSubmit={handleUpdate}
               isPending={updateOffer.isPending}
               submitLabel="Save Changes"
             />

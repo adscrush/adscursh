@@ -1,6 +1,10 @@
 import { api } from "@/lib/api"
 import { parseApiError } from "@/lib/error"
-import { createOfferSchema } from "@adscrush/shared/validators/offer.validator"
+import {
+  assignAffiliateSchema,
+  createOfferSchema,
+  updateOfferAffiliateSchema,
+} from "@adscrush/shared/validators/offer.schema"
 import { Treaty } from "@elysiajs/eden"
 import {
   keepPreviousData,
@@ -54,8 +58,8 @@ export function getOffersQueryOptions(params: GetOffersSchema) {
             params.filters
           ) as unknown as GetOffersSchema["filters"],
           joinOperator: params.joinOperator,
-          createdAt: params.createdAt as any,
-          status: params.status as any,
+          createdAt: params.createdAt,
+          status: params.status,
           advertiserId: params.advertiserId,
         },
       })
@@ -117,9 +121,9 @@ export function useAssignOfferAffiliate() {
       data,
     }: {
       id: string
-      data: { affiliateId: string; status?: string }
+      data: z.infer<typeof assignAffiliateSchema>
     }) => {
-      const response = await api.offers({ id }).affiliates.post(data as any)
+      const response = await api.offers({ id }).affiliates.post(data)
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },
@@ -141,12 +145,12 @@ export function useUpdateOfferAffiliate() {
     }: {
       offerId: string
       oaId: string
-      data: { status?: string; customPayout?: string; customRevenue?: string }
+      data: z.infer<typeof updateOfferAffiliateSchema>
     }) => {
       const response = await api
         .offers({ id: offerId })
         .affiliates({ oaId })
-        .post(data as any)
+        .post(data)
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },
@@ -166,7 +170,7 @@ export function useCreateOffer() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (data: z.infer<typeof createOfferSchema>) => {
-      const response = await api.offers.post(data as any)
+      const response = await api.offers.post(data)
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },
@@ -186,7 +190,7 @@ export function useUpdateOffer() {
       id: string
       data: Partial<z.infer<typeof createOfferSchema>>
     }) => {
-      const response = await api.offers({ id }).post(data as any)
+      const response = await api.offers({ id }).post(data)
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },

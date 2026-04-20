@@ -31,7 +31,7 @@ import {
   assignAffiliateSchema,
   updateOfferAffiliateSchema,
   bulkOfferAffiliateSchema,
-} from "@adscrush/shared/validators/offer.validator"
+} from "@adscrush/shared/validators/offer.schema"
 import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 
 export const offerRoutes = new Elysia({ prefix: "/offers" })
@@ -113,12 +113,18 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
         const orderBy =
           sort.length > 0
             ? sort.map((item) => {
-                const column = getColumn(tableWithJoinedColumns, item.id as any)
+                const column = getColumn(tableWithJoinedColumns, item.id)
                 if (!column) return desc(offers.createdAt)
-                
-                const isString = ["name", "advertiser", "category", "id", "status"].includes(item.id)
+
+                const isString = [
+                  "name",
+                  "advertiser",
+                  "category",
+                  "id",
+                  "status",
+                ].includes(item.id)
                 const sortColumn = isString ? sql`lower(${column})` : column
-                
+
                 return item.desc ? desc(sortColumn) : asc(sortColumn)
               })
             : [desc(offers.createdAt)]
@@ -167,7 +173,12 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
         return {
           success: true,
           data: items,
-          meta: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
+          meta: {
+            page,
+            perPage,
+            total,
+            totalPages: Math.ceil(total / perPage),
+          },
         }
       } catch (e: any) {
         console.error("Error in GET /offers:", e)

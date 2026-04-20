@@ -48,7 +48,6 @@ Employee logs in
 → Postback fired to affiliate
 → Reports show clicks, conversions, payout, revenue
 
-
 When these 9 steps work end-to-end, we have a usable product.
 
 ### 1.3 Design Principles
@@ -64,21 +63,21 @@ When these 9 steps work end-to-end, we have a usable product.
 
 ## 2. Tech Stack
 
-| Layer              | Technology              | Why                                           |
-| ------------------ | ----------------------- | --------------------------------------------- |
-| Monorepo           | Turborepo + pnpm        | Fast builds, caching, shared packages         |
-| Tracking Server    | Elysia (Bun)            | Sub-ms routing, perfect for redirect workload |
-| Conversion Server  | Elysia (Bun)            | Same runtime, consistent codebase             |
-| API Server         | Elysia (Bun)            | CRUD backend for dashboard                    |
-| Dashboard          | Next.js (App Router)    | SSR, Server Components, Server Actions        |
-| Database           | PostgreSQL 16           | Partitioning, JSONB, rock-solid               |
-| ORM                | Drizzle                 | Native Bun support, great raw SQL, type-safe  |
-| Cache / Queue      | Redis 7 + BullMQ        | Click caching, rate limiting, job queues      |
-| Auth               | Better Auth             | Elysia + Next.js support, Drizzle adapter     |
-| Web SDK            | Vanilla TypeScript      | Zero deps, <5KB gzipped                       |
-| GeoIP              | MaxMind GeoLite2        | Local lookup, no external API in hot path     |
-| Object Storage     | S3 / R2 (later)         | SDK hosting, exports                          |
-| CDN                | Cloudflare (later)      | SDK distribution                              |
+| Layer             | Technology           | Why                                           |
+| ----------------- | -------------------- | --------------------------------------------- |
+| Monorepo          | Turborepo + pnpm     | Fast builds, caching, shared packages         |
+| Tracking Server   | Elysia (Bun)         | Sub-ms routing, perfect for redirect workload |
+| Conversion Server | Elysia (Bun)         | Same runtime, consistent codebase             |
+| API Server        | Elysia (Bun)         | CRUD backend for dashboard                    |
+| Dashboard         | Next.js (App Router) | SSR, Server Components, Server Actions        |
+| Database          | PostgreSQL 16        | Partitioning, JSONB, rock-solid               |
+| ORM               | Drizzle              | Native Bun support, great raw SQL, type-safe  |
+| Cache / Queue     | Redis 7 + BullMQ     | Click caching, rate limiting, job queues      |
+| Auth              | Better Auth          | Elysia + Next.js support, Drizzle adapter     |
+| Web SDK           | Vanilla TypeScript   | Zero deps, <5KB gzipped                       |
+| GeoIP             | MaxMind GeoLite2     | Local lookup, no external API in hot path     |
+| Object Storage    | S3 / R2 (later)      | SDK hosting, exports                          |
+| CDN               | Cloudflare (later)   | SDK distribution                              |
 
 ### Runtime Versions
 
@@ -87,7 +86,6 @@ Node.js >= 22 (for Next.js)
 pnpm >= 9.15
 PostgreSQL 16
 Redis 7
-
 
 ---
 
@@ -276,7 +274,7 @@ adscrush/
 │ │ │ │ ├── conversion.types.ts
 │ │ │ │ └── index.ts
 │ │ │ ├── validators/
-│ │ │ │ ├── offer.validator.ts
+│ │ │ │ ├── offer.schema.ts
 │ │ │ │ ├── affiliate.validator.ts
 │ │ │ │ └── auth.validator.ts
 │ │ │ ├── constants/
@@ -332,7 +330,6 @@ adscrush/
 ├── .gitignore
 └── README.md
 
-
 ### Package Dependency Graph
 
 @adscrush/config ← no deps (leaf)
@@ -356,7 +353,6 @@ worker
 
 @adscrush/sdk-web ← STANDALONE (no internal deps)
 
-
 ### Package Scope
 
 @adscrush/tracking apps/tracking
@@ -370,7 +366,6 @@ worker
 @adscrush/sdk-web packages/sdk-web
 @adscrush/ui packages/ui
 @adscrush/config packages/config
-
 
 ---
 
@@ -398,7 +393,6 @@ AFFILIATE (external — future portal)
 ├── Can view their own clicks, conversions, reports
 ├── Can see their tracking URLs
 └── For now: admin/employee manages on their behalf
-
 
 ### 4.2 Permission System (Simple but Scalable)
 
@@ -443,7 +437,6 @@ Settings
 settings:view
 settings:edit
 
-
 **How it scales:** When we add targeting, we add `offers:manage_targeting`.
 When we add fraud detection, we add `fraud:view`, `fraud:manage`. When we add
 billing, we add `billing:view`, `billing:manage`. No schema changes needed —
@@ -469,7 +462,6 @@ AFFILIATE (future)
 → WHERE affiliate_id = current_user.affiliate_id
 → Offers: only where offer_affiliates.status = 'approved'
 
-
 ### 4.4 Onboarding Flow (Current)
 
 MVP flow (admin-driven):
@@ -484,7 +476,6 @@ Admin/Employee does everything through the dashboard
 Advertiser portal = Phase 2+
 Affiliate portal = Phase 2+
 But auth system supports their login from day 1
-
 
 ---
 
@@ -660,7 +651,6 @@ But auth system supports their login from day 1
 │ │
 └──────────────────────────────────────────────────────────────┘
 
-
 ### 5.2 High-Volume Tables (Raw SQL, Partitioned)
 
 ┌──────────────────────────────────────────────────────────────┐
@@ -763,7 +753,6 @@ But auth system supports their login from day 1
 │ │
 └──────────────────────────────────────────────────────────────┘
 
-
 ### 5.3 Redis Key Schema
 
 Offer cache (hot path — used during click redirect)
@@ -780,7 +769,6 @@ cap:total:{offer_id} → INT no TTL
 
 Deduplication
 conv:dedup:{click_id}:{event} → "1" TTL: 30d
-
 
 ---
 
@@ -801,7 +789,6 @@ AUTH-10 Advertiser/affiliate can log in (basic portal) P1
 AUTH-11 Password reset P1
 AUTH-12 Email verification P2
 
-
 ### 6.2 Employee Management
 
 EMP-01 CRUD employees (admin only) P0
@@ -814,8 +801,8 @@ EMP-07 Employee detail page (profile + assignments) P0
 EMP-08 Permission presets (Full, Read-Only, Custom) P1
 EMP-09 Clone permissions from another employee P2
 
-
 ### 6.3 Advertiser Management
+
 ADV-01 Create advertiser (name, email, password, company) P0
 ADV-02 Assign account manager (employee) P0
 ADV-03 Advertiser list page (searchable, filterable) P0
@@ -823,7 +810,6 @@ ADV-04 Advertiser detail page P0
 ADV-05 Advertiser status (active/inactive/pending) P0
 ADV-06 Edit advertiser profile P0
 ADV-07 "Send credentials to user" toggle on create P1
-
 
 ### 6.4 Affiliate Management
 
@@ -836,7 +822,6 @@ AFF-06 Pending affiliates view P0
 AFF-07 Edit affiliate profile P0
 AFF-08 "Send credentials to user" toggle on create P1
 AFF-09 Affiliate postback URL management P0
-
 
 ### 6.5 Offer Management
 
@@ -856,8 +841,8 @@ OFR-13 Conversion hold period P1
 OFR-14 Postback type setting (pixel/s2s/iframe) P0
 OFR-15 Custom payout per affiliate per offer P0
 
-
 ### 6.6 Tracking URL Generator
+
 TRK-01 Modal: select offer + affiliate → generate URL P0
 TRK-02 Click URL with all parameters P0
 TRK-03 Landing page mode selector (Random, lp1, lp2...) P0
@@ -868,8 +853,8 @@ TRK-06 Show multiple URLs if multiple landing pages P0
 TRK-07 Impression URL toggle P1
 TRK-08 QR Code toggle P2
 
-
 ### 6.7 Click Tracking
+
 CLK-01 GET /c endpoint — click tracking with 302 redirect P0
 CLK-02 Generate click_id (UUID v7) P0
 CLK-03 Validate offer active + affiliate approved P0
@@ -884,8 +869,8 @@ CLK-11 Uniqueness detection (same IP + offer in 24h) P1
 CLK-12 Response time < 20ms (p99) P0
 CLK-13 GET /i endpoint — impression tracking (1x1 pixel) P1
 
-
 ### 6.8 Conversion Tracking
+
 CNV-01 POST /conversion/track (SDK) P0
 CNV-02 GET /conversion/pixel (1x1 image) P0
 CNV-03 GET /postback (S2S inbound) P0
@@ -899,8 +884,8 @@ CNV-10 Conversion status (approved, pending, rejected, hold) P0
 CNV-11 Queue conversion for async DB write P0
 CNV-12 Response time < 50ms P0
 
-
 ### 6.9 Web SDK
+
 SDK-01 initializeUrlParam(paramName) — capture click_id P0
 SDK-02 Persist click_id in cookie + localStorage P0
 SDK-03 Configurable cookie domain and expiry P0
@@ -913,8 +898,8 @@ SDK-09 Debug mode P1
 SDK-10 Never break host page (all errors caught) P0
 SDK-11 Auto-generated integration snippets in dashboard P0
 
-
 ### 6.10 Postback System
+
 PBK-01 CRUD postback URLs per affiliate P0
 PBK-02 Global (all offers) or per-offer postback P0
 PBK-03 Macro replacement ({click_id}, {payout}, {aff_click_id},P0
@@ -925,8 +910,8 @@ PBK-06 Postback log (URL, response code, status, attempts) P0
 PBK-07 Postback log viewer in dashboard P0
 PBK-08 Manual re-fire from dashboard P1
 
-
 ### 6.11 Reports
+
 RPT-01 Dashboard overview page (MTD stats with sparklines) P0
 RPT-02 Stats: clicks, conversions, revenue, payout, profit P0
 RPT-03 Performance report — group by: date, offer, affiliate P0
@@ -940,12 +925,12 @@ RPT-10 CSV export P1
 RPT-11 Scoped reports per role (see section 4.3) P0
 RPT-12 Report query < 500ms for 30-day range P0
 
-
 ---
 
 ## 7. System Architecture
 
 ### 7.1 Request Flow
+
 AFFILIATE CLICK FLOW:
 ─────────────────────
 
@@ -1004,8 +989,8 @@ Postback processor:
 → Logs result in postback_logs
 → On failure: retries with exponential backoff
 
-
 ### 7.2 Service Communication
+
 ┌─────────────────────────────────────────────────────────────┐
 │ │
 │ Dashboard (Next.js) │
@@ -1059,20 +1044,20 @@ Postback processor:
 │ │
 └─────────────────────────────────────────────────────────────┘
 
-
 ---
 
 ## 8. API Design
 
 ### 8.1 Auth Endpoints
+
 POST /api/auth/sign-in → email + password login
 POST /api/auth/sign-out → logout
 GET /api/auth/session → get current session
 POST /api/auth/forget-password → send reset email (P1)
 POST /api/auth/reset-password → reset with token (P1)
 
-
 ### 8.2 Employee Endpoints (admin only)
+
 GET /api/employees → list employees
 POST /api/employees → create employee
 GET /api/employees/:id → get employee detail
@@ -1088,23 +1073,23 @@ PUT /api/employees/:id/affiliates → set assigned affiliates
 GET /api/employees/:id/advertisers → get assigned advertisers
 PUT /api/employees/:id/advertisers → set assigned advertisers
 
-
 ### 8.3 Advertiser Endpoints
+
 GET /api/advertisers → list (scoped by role)
 POST /api/advertisers → create (admin/employee)
 GET /api/advertisers/:id → detail
 PUT /api/advertisers/:id → update
 
-
 ### 8.4 Affiliate Endpoints
+
 GET /api/affiliates → list (scoped by role)
 POST /api/affiliates → create (admin/employee)
 GET /api/affiliates/:id → detail
 PUT /api/affiliates/:id → update
 GET /api/affiliates/pending → pending affiliates
 
-
 ### 8.5 Offer Endpoints
+
 GET /api/offers → list (scoped by role)
 POST /api/offers → create
 GET /api/offers/:id → detail
@@ -1128,8 +1113,8 @@ Tracking URL
 GET /api/offers/:id/tracking-url → generate tracking URL
 ?affiliate_id=X&mode=random&params[]=aff_click_id&params[]=sub_aff_id
 
-
 ### 8.6 Postback Endpoints
+
 GET /api/postback-urls → list (scoped)
 POST /api/postback-urls → create
 PUT /api/postback-urls/:id → update
@@ -1138,8 +1123,8 @@ DELETE /api/postback-urls/:id → delete
 GET /api/postback-logs → list logs (filterable)
 POST /api/postback-logs/:id/retry → manual re-fire
 
-
 ### 8.7 Report Endpoints
+
 GET /api/reports/overview → dashboard stats (MTD)
 GET /api/reports/performance → grouped report
 ?date_from=X&date_to=X&group_by=date,offer&offer_id=X&affiliate_id=X
@@ -1147,8 +1132,8 @@ GET /api/reports/clicks → click log (paginated)
 GET /api/reports/conversions → conversion log (paginated)
 GET /api/reports/export → CSV download (P1)
 
-
 ### 8.9 Tracking Endpoints (public, no auth)
+
 GET /c → click redirect
 ?o={offer_id}&m={merchant_id}&a={affiliate_id}
 &aff_click_id=X&sub_aff_id=X&aff_sub1=X...&mo=r
@@ -1159,20 +1144,18 @@ GET /s → smart link redirect
 GET /i → impression pixel (P1)
 ?o={offer_id}&a={affiliate_id}
 
-
 ### 8.10 Conversion Endpoints (public, no user auth)
 
 POST /conversion/track → SDK conversion (JSON body)
 GET /conversion/pixel → pixel tracking (1x1 gif)
 GET /postback → S2S inbound postback
 
-
-
 ---
 
 ## 9. Dashboard Pages
 
 ### 9.1 Sidebar Navigation
+
 ADMIN/EMPLOYEE VIEW:
 ──────────────────────────
 📊 Dashboard → /
@@ -1209,8 +1192,8 @@ ADVERTISER VIEW (future):
 🔌 Integration / SDK → /integration
 👤 Profile → /profile
 
-
 ### 9.2 Page Specifications
+
 DASHBOARD OVERVIEW (/)
 ──────────────────────
 Top row: MTD stat cards with sparkline charts
@@ -1356,7 +1339,6 @@ Detail page:
 ├── Permission categories (expandable sections)
 └── Individual permission checkboxes
 
-
 ---
 
 ## 10. SDK Specification
@@ -1364,10 +1346,11 @@ Detail page:
 ### 10.1 Integration Code (Auto-Generated)
 
 Header (all pages):
+
 ```html
 <script src="https://cdn.adscrush.com/sdk/v1/tracker.min.js"></script>
 <script>
-    window.AdscrushSDK.initializeUrlParam('click_id');
+  window.AdscrushSDK.initializeUrlParam("click_id")
 </script>
 ```
 
@@ -1376,57 +1359,58 @@ Thank you page:
 ```html
 <script src="https://cdn.adscrush.com/sdk/v1/tracker.min.js"></script>
 <script>
-    window.AdscrushSDK.trackConversion({
-        domain: 'conv.adscrush.com',
-        accountId: '{auto_filled}',
-        offerId: '{auto_filled}',
-        postbackType: 'api',
-        allowMultiConversion: false,
-        conversionData: {
-            event: 'purchase',
-            payout: '',
-            sale: '',
-            currency: 'USD',
-            adv_sub1: '',
-            adv_sub2: '',
-            adv_sub3: '',
-            adv_sub4: '',
-            adv_sub5: '',
-        }
-    });
+  window.AdscrushSDK.trackConversion({
+    domain: "conv.adscrush.com",
+    accountId: "{auto_filled}",
+    offerId: "{auto_filled}",
+    postbackType: "api",
+    allowMultiConversion: false,
+    conversionData: {
+      event: "purchase",
+      payout: "",
+      sale: "",
+      currency: "USD",
+      adv_sub1: "",
+      adv_sub2: "",
+      adv_sub3: "",
+      adv_sub4: "",
+      adv_sub5: "",
+    },
+  })
 </script>
 ```
 
 10.2 SDK Behavior
 
 initializeUrlParam(paramName):
-  1. Read paramName from current URL query string
-  2. If found:
-     → Store in cookie (_ac_cid, 30 days, configurable domain)
-     → Store in localStorage (_ac_cid)
-  3. If not found:
-     → Try to recover from cookie
-     → Try to recover from localStorage
-  4. Store in memory for trackConversion call
+
+1. Read paramName from current URL query string
+2. If found:
+   → Store in cookie (\_ac_cid, 30 days, configurable domain)
+   → Store in localStorage (\_ac_cid)
+3. If not found:
+   → Try to recover from cookie
+   → Try to recover from localStorage
+4. Store in memory for trackConversion call
 
 trackConversion(config):
-  1. Get click_id from memory / cookie / localStorage
-  2. Client-side dedup check (localStorage flag)
-  3. Fire conversion via configured method:
-     → 'api':    POST to domain/conversion/track
-     → 'pixel':  Image request to domain/conversion/pixel
-     → 'iframe': Hidden iframe to domain/conversion/iframe
-  4. Mark conversion as sent (localStorage)
-  5. Return promise with result
-  6. All errors caught — never breaks host page
 
+1. Get click_id from memory / cookie / localStorage
+2. Client-side dedup check (localStorage flag)
+3. Fire conversion via configured method:
+   → 'api': POST to domain/conversion/track
+   → 'pixel': Image request to domain/conversion/pixel
+   → 'iframe': Hidden iframe to domain/conversion/iframe
+4. Mark conversion as sent (localStorage)
+5. Return promise with result
+6. All errors caught — never breaks host page
 
 # 10.3 Build Output
 
 packages/sdk-web/dist/
-├── tracker.js           ← IIFE (for <script> tag)
-├── tracker.min.js       ← IIFE minified (<5KB gzipped)
-├── tracker.esm.js       ← ESM (for bundlers)
-├── tracker.cjs.js       ← CommonJS (for Node)
+├── tracker.js ← IIFE (for <script> tag)
+├── tracker.min.js ← IIFE minified (<5KB gzipped)
+├── tracker.esm.js ← ESM (for bundlers)
+├── tracker.cjs.js ← CommonJS (for Node)
 └── types/
-    └── index.d.ts       ← TypeScript declarations
+└── index.d.ts ← TypeScript declarations
