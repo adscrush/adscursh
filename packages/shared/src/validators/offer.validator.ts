@@ -1,19 +1,32 @@
 import { z } from "zod"
 
 export const createOfferSchema = z.object({
-  name: z.string().min(1),
-  advertiserId: z.string().min(1),
-  description: z.string().optional(),
-  offerUrl: z.url(),
-  previewUrl: z.url().optional().or(z.literal("")),
+  name: z.string().min(1, "Offer name is required"),
+  advertiserId: z.string().min(1, "Advertiser is required"),
+  categoryId: z.string().optional().nullable(),
+  logo: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  privateNote: z.string().optional().nullable(),
+  offerUrl: z.string().min(1, "Offer URL is required"),
   status: z.enum(["active", "inactive", "paused", "expired"]).default("active"),
-  payoutType: z.enum(["CPA", "CPC", "CPL", "CPS"]).default("CPA"),
-  defaultPayout: z.string().default("0"),
+  visibility: z.enum(["public", "private", "exclusive"]).default("public"),
+  
+  // Revenue
+  revenueType: z.string().default("CPA"),
   defaultRevenue: z.string().default("0"),
   currency: z.string().default("USD"),
-  targetGeo: z.string().optional(),
-  fallbackUrl: z.url().optional().or(z.literal("")),
+  
+  // Payout
+  payoutType: z.string().default("CPA"),
+  defaultPayout: z.string().default("0"),
+  
+  targetGeo: z.string().optional().nullable(),
+  fallbackUrl: z.string().optional().nullable(),
   allowMultiConversion: z.boolean().default(false),
+  
+  // Scheduling
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
 })
 
 export const updateOfferSchema = createOfferSchema.partial().omit({
@@ -22,8 +35,8 @@ export const updateOfferSchema = createOfferSchema.partial().omit({
 
 export const createLandingPageSchema = z.object({
   name: z.string().min(1),
-  url: z.url(),
-  weight: z.int().min(1).default(1),
+  url: z.string().url(),
+  weight: z.number().int().min(1).default(1),
   status: z.enum(["active", "inactive"]).default("active"),
 })
 

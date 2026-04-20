@@ -1,7 +1,9 @@
 import Elysia from "elysia"
-import { eq, like, sql, and, type SQL } from "@adscrush/db/drizzle"
+import { eq, like, sql, and, desc, or, type SQL } from "@adscrush/db/drizzle"
 import {
   offers,
+  categories,
+  advertisers,
   landingPages,
   offerAffiliates,
   affiliates,
@@ -27,40 +29,57 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
   .get(
     "/",
     async ({ query }) => {
-      const {
-        page = 1,
-        limit = 20,
-        search,
-        status,
-        advertiserId,
-      } = listQuerySchema.parse(query)
-      const offset = (page - 1) * limit
+      try {
+        const {
+          page,
+          limit,
+          search,
+          status,
+          advertiserId,
+        } = listQuerySchema.parse(query)
+        const offset = (page - 1) * limit
 
-      const conditions: SQL[] = []
-      if (search) conditions.push(like(offers.name, `%${search}%`))
-      if (status) conditions.push(eq(offers.status, status))
-      if (advertiserId) conditions.push(eq(offers.advertiserId, advertiserId))
-      const where = conditions.length > 0 ? and(...conditions) : undefined
+        const conditions: SQL[] = []
+        if (search) conditions.push(like(offers.name, `%${search}%`))
+        if (status) conditions.push(eq(offers.status, status))
+        if (advertiserId) conditions.push(eq(offers.advertiserId, advertiserId))
+        const where = conditions.length > 0 ? and(...conditions) : undefined
 
-      const [items, countResult] = await Promise.all([
-        db
-          .select()
-          .from(offers)
-          .where(where)
-          .limit(limit)
-          .offset(offset)
-          .orderBy(offers.createdAt),
-        db
-          .select({ count: sql<number>`count(*)` })
-          .from(offers)
-          .where(where),
-      ])
+        const [items, countResult] = await Promise.all([
+          db
+            .select({
+              id: offers.id,
+              name: offers.name,
+              status: offers.status,
+              advertiserId: offers.advertiserId,
+              advertiserName: advertisers.name,
+              categoryId: offers.categoryId,
+              categoryName: categories.name,
+              createdAt: offers.createdAt,
+              updatedAt: offers.updatedAt,
+            })
+            .from(offers)
+            .leftJoin(advertisers, eq(offers.advertiserId, advertisers.id))
+            .leftJoin(categories, eq(offers.categoryId, categories.id))
+            .where(where)
+            .limit(limit)
+            .offset(offset)
+            .orderBy(desc(offers.createdAt)),
+          db
+            .select({ count: sql<number>`count(*)` })
+            .from(offers)
+            .where(where),
+        ])
 
-      const total = Number(countResult[0]?.count ?? 0)
-      return {
-        success: true,
-        data: items,
-        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        const total = Number(countResult[0]?.count ?? 0)
+        return {
+          success: true,
+          data: items,
+          meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        }
+      } catch (e: any) {
+        console.error("Error in GET /offers:", e)
+        throw e
       }
     },
     { query: listQuerySchema }
@@ -68,19 +87,19 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
 
   // ── GET /:id ───────────────────────────────────────────────────
   .get("/:id", async ({ params }) => {
-    const result = await db
+    const [result] = await db
       .select()
       .from(offers)
       .where(eq(offers.id, params.id))
       .limit(1)
-    if (!result[0]) throw new AppError(404, "Offer not found")
+    if (!result) throw new AppError(404, "Offer not found")
 
     const [lps, oaCount] = await Promise.all([
       db
         .select()
         .from(landingPages)
         .where(eq(landingPages.offerId, params.id))
-        .orderBy(landingPages.createdAt),
+        .orderBy(desc(landingPages.createdAt)),
       db
         .select({ count: sql<number>`count(*)` })
         .from(offerAffiliates)
@@ -90,7 +109,7 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
     return {
       success: true,
       data: {
-        ...result[0],
+        ...result,
         landingPages: lps,
         affiliateCount: Number(oaCount[0]?.count ?? 0),
       },
@@ -122,13 +141,23 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
     { body: updateOfferSchema }
   )
 
+  // ── POST /:id/delete ────────────────────────────────────────────
+  .post("/:id/delete", async ({ params }) => {
+    const [deleted] = await db
+      .delete(offers)
+      .where(eq(offers.id, params.id))
+      .returning()
+    if (!deleted) throw new AppError(404, "Offer not found")
+    return { success: true, data: { id: deleted.id } }
+  })
+
   // ── Landing Pages ──────────────────────────────────────────────
   .get("/:id/landing-pages", async ({ params }) => {
     const lps = await db
       .select()
       .from(landingPages)
       .where(eq(landingPages.offerId, params.id))
-      .orderBy(landingPages.createdAt)
+      .orderBy(desc(landingPages.createdAt))
     return { success: true, data: lps }
   })
 
@@ -180,7 +209,7 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
       .from(offerAffiliates)
       .innerJoin(affiliates, eq(offerAffiliates.affiliateId, affiliates.id))
       .where(eq(offerAffiliates.offerId, params.id))
-      .orderBy(offerAffiliates.createdAt)
+      .orderBy(desc(offerAffiliates.createdAt))
     return { success: true, data }
   })
 

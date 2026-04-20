@@ -1,5 +1,5 @@
 import Elysia from "elysia"
-import { eq, like, sql, and, desc } from "@adscrush/db/drizzle"
+import { eq, like, sql, desc } from "@adscrush/db/drizzle"
 import { categories } from "@adscrush/db/schema"
 import { db } from "~/lib/db"
 import { AppError } from "~/utils/errors"
