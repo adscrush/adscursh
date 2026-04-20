@@ -10,6 +10,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import type { z } from "zod"
+import { GetOffersSchema } from "./validations"
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 export type Offer = Treaty.Data<typeof api.offers.get>["data"][number]
@@ -20,7 +21,7 @@ export type Category = Treaty.Data<typeof api.categories.get>["data"][number]
 export const offerKeys = {
   all: ["offers"] as const,
   lists: () => [...offerKeys.all, "list"] as const,
-  list: (params: any) => [...offerKeys.lists(), { params }] as const,
+  list: (params: GetOffersSchema) => [...offerKeys.lists(), { params }] as const,
   detail: (id: string) => [...offerKeys.all, "detail", id] as const,
 }
 
@@ -31,11 +32,28 @@ export const categoryKeys = {
 
 /* ── Query Options ─────────────────────────────────────────────────── */
 
-export function getOffersQueryOptions(params: any) {
+export function getOffersQueryOptions(params: GetOffersSchema) {
   return queryOptions({
     queryKey: offerKeys.list(params),
     queryFn: async () => {
-      const { data, error } = await api.offers.get({ query: params })
+      const { data, error } = await api.offers.get({
+        query: {
+          filterFlag: params.filterFlag,
+          search: params.search ?? "",
+          page: params.page,
+          perPage: params.perPage,
+          sort: JSON.stringify(
+            params.sort
+          ) as unknown as GetOffersSchema["sort"],
+          filters: JSON.stringify(
+            params.filters
+          ) as unknown as GetOffersSchema["filters"],
+          joinOperator: params.joinOperator,
+          createdAt: params.createdAt as any,
+          status: params.status as any,
+          advertiserId: params.advertiserId,
+        },
+      })
       if (error) throw new Error(parseApiError(error))
       return data
     },
@@ -56,7 +74,7 @@ export function getCategoriesQueryOptions(params: any = {}) {
 
 /* ── Hooks ─────────────────────────────────────────────────────────── */
 
-export function useOffers(params: any) {
+export function useOffers(params: GetOffersSchema) {
   return useQuery(getOffersQueryOptions(params))
 }
 
@@ -82,11 +100,7 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api
-        .categories({
-          id,
-        })
-        .delete.post()
+      const response = await api.categories[id].delete.post()
       if (response.error) throw new Error(parseApiError(response.error))
       return response.data
     },

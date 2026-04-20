@@ -1,5 +1,16 @@
 import Elysia from "elysia"
-import { eq, like, sql, and, desc, or, type SQL } from "@adscrush/db/drizzle"
+import {
+  eq,
+  like,
+  ilike,
+  sql,
+  and,
+  desc,
+  or,
+  asc,
+  gte,
+  lte,
+} from "@adscrush/db/drizzle"
 import {
   offers,
   categories,
@@ -21,6 +32,7 @@ import {
   updateOfferAffiliateSchema,
   bulkOfferAffiliateSchema,
 } from "@adscrush/shared/validators/offer.validator"
+import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
 
 export const offerRoutes = new Elysia({ prefix: "/offers" })
   .use(requireAuth)
@@ -30,44 +42,120 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
     "/",
     async ({ query }) => {
       try {
+        const parsed = listQuerySchema.parse(query)
         const {
           page,
-          limit,
+          perPage,
           search,
           status,
           advertiserId,
-        } = listQuerySchema.parse(query)
-        const offset = (page - 1) * limit
+          filterFlag,
+          joinOperator,
+          sort,
+          filters,
+          createdAt,
+        } = parsed
 
-        const conditions: SQL[] = []
-        if (search) conditions.push(like(offers.name, `%${search}%`))
-        if (status) conditions.push(eq(offers.status, status))
-        if (advertiserId) conditions.push(eq(offers.advertiserId, advertiserId))
-        const where = conditions.length > 0 ? and(...conditions) : undefined
+        const offset = (page - 1) * perPage
+
+        const advancedTable =
+          filterFlag === "advancedFilters" || filterFlag === "commandFilters"
+
+        const tableWithJoinedColumns = {
+          ...offers,
+          advertiser: advertisers.name,
+          category: categories.name,
+        }
+
+        const advancedWhere = filterColumns({
+          table: tableWithJoinedColumns,
+          filters,
+          joinOperator,
+          database: "postgres",
+        })
+
+        const simpleWhere = and(
+          search ? ilike(offers.name, `%${search}%`) : undefined,
+          status.length > 0
+            ? or(...status.map((s) => eq(offers.status, s)))
+            : undefined,
+          advertiserId ? eq(offers.advertiserId, advertiserId) : undefined,
+          createdAt.length > 0
+            ? and(
+                createdAt[0]
+                  ? gte(
+                      offers.createdAt,
+                      (() => {
+                        const d = new Date(createdAt[0])
+                        d.setHours(0, 0, 0, 0)
+                        return d
+                      })()
+                    )
+                  : undefined,
+                createdAt[1]
+                  ? lte(
+                      offers.createdAt,
+                      (() => {
+                        const d = new Date(createdAt[1])
+                        d.setHours(23, 59, 59, 999)
+                        return d
+                      })()
+                    )
+                  : undefined
+              )
+            : undefined
+        )
+
+        const where = and(advancedWhere, simpleWhere)
+
+        const orderBy =
+          sort.length > 0
+            ? sort.map((item) => {
+                const column = getColumn(tableWithJoinedColumns, item.id as any)
+                const isString = ["name", "advertiser", "category", "id", "status"].includes(item.id)
+                const sortColumn = isString ? sql`lower(${column})` : column
+                
+                return item.desc ? desc(sortColumn) : asc(sortColumn)
+              })
+            : [desc(offers.createdAt)]
 
         const [items, countResult] = await Promise.all([
           db
             .select({
               id: offers.id,
               name: offers.name,
+              logo: offers.logo,
               status: offers.status,
               advertiserId: offers.advertiserId,
-              advertiserName: advertisers.name,
               categoryId: offers.categoryId,
-              categoryName: categories.name,
+              revenueType: offers.revenueType,
+              defaultRevenue: offers.defaultRevenue,
+              payoutType: offers.payoutType,
+              defaultPayout: offers.defaultPayout,
+              currency: offers.currency,
               createdAt: offers.createdAt,
               updatedAt: offers.updatedAt,
+              advertiser: {
+                id: advertisers.id,
+                name: advertisers.name,
+              },
+              category: {
+                id: categories.id,
+                name: categories.name,
+              },
             })
             .from(offers)
             .leftJoin(advertisers, eq(offers.advertiserId, advertisers.id))
             .leftJoin(categories, eq(offers.categoryId, categories.id))
             .where(where)
-            .limit(limit)
+            .limit(perPage)
             .offset(offset)
-            .orderBy(desc(offers.createdAt)),
+            .orderBy(...orderBy),
           db
             .select({ count: sql<number>`count(*)` })
             .from(offers)
+            .leftJoin(advertisers, eq(offers.advertiserId, advertisers.id))
+            .leftJoin(categories, eq(offers.categoryId, categories.id))
             .where(where),
         ])
 
@@ -75,7 +163,7 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
         return {
           success: true,
           data: items,
-          meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+          meta: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
         }
       } catch (e: any) {
         console.error("Error in GET /offers:", e)

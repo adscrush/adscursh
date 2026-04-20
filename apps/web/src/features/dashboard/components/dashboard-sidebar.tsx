@@ -174,7 +174,6 @@ export function DashboardSidebar() {
       items: [
         { title: "All Offers", url: "/offers" },
         { title: "Create Offer", url: "/offers/new" },
-        { title: "Smart Offers", url: "/offers/smart" },
       ],
     },
     {

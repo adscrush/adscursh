@@ -13,11 +13,13 @@ interface DataTableAdvancedToolbarProps<
 > extends React.ComponentProps<"div"> {
   table: Table<TData>
   resizing?: DataTableResizeOptions
+  extra?: React.ReactNode
 }
 
 export function DataTableAdvancedToolbar<TData>({
   table,
   resizing,
+  extra,
   children,
   className,
   ...props
@@ -34,6 +36,7 @@ export function DataTableAdvancedToolbar<TData>({
     >
       <div className="flex flex-1 flex-wrap items-center gap-2">{children}</div>
       <div className="flex items-center gap-2">
+        {extra && extra}
         <DataTableViewOptions table={table} align="end" />
         <DataTableSettingsOptions
           table={table}

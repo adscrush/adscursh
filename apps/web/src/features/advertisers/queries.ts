@@ -146,3 +146,35 @@ export function useUpdateAdvertiser() {
     },
   })
 }
+
+export function useAdvertiserSearch(q: string) {
+  return useQuery({
+    queryKey: [...advertiserKeys.all, "search", q],
+    queryFn: async () => {
+      const { data, error } = await api.advertisers.get({
+        query: {
+          filterFlag: "commandFilters",
+          name: q,
+          page: 1,
+          perPage: 20,
+          sort: JSON.stringify([]),
+          filters: JSON.stringify([]),
+          status: [],
+          createdAt: [],
+          joinOperator: "and",
+        } as any,
+      })
+
+      if (error) {
+        throw new Error(parseApiError(error))
+      }
+
+      if (!data || !data.success) {
+        throw new Error("Failed to search advertisers")
+      }
+
+      return data.data
+    },
+    enabled: q.length >= 0,
+  })
+}

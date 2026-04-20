@@ -8,6 +8,7 @@ import { DataTableDateFilter } from "@/components/data-table/data-table-date-fil
 import { DataTableFacetedFilter } from "@/components/data-table/data-table-faceted-filter"
 import { DataTableSliderFilter } from "@/components/data-table/data-table-slider-filter"
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options"
+import { DataTableSearch } from "@/components/data-table/data-table-search"
 import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import { cn } from "@adscrush/ui/lib/utils"
@@ -17,11 +18,15 @@ import { DataTableResizeOptions } from "@adscrush/shared/types/data-table"
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>
   resizing?: DataTableResizeOptions
+  isFetching?: boolean
+  searchName?: string
 }
 
 export function DataTableToolbar<TData>({
   table,
   resizing,
+  isFetching,
+  searchName,
   children,
   className,
   ...props
@@ -65,6 +70,9 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <div className="flex items-center gap-2">
+        {searchName && (
+          <DataTableSearch isFetching={isFetching} name={searchName} />
+        )}
         {children}
         <DataTableViewOptions table={table} align="end" />
         <DataTableSettingsOptions

@@ -55,7 +55,9 @@ export function CategorySelect({
     if (!q) return
     try {
       const newCat = await createCategory.mutateAsync({ name: q })
-      onValueChange(newCat.id)
+      if (newCat.data) {
+        onValueChange(newCat.data.id)
+      }
       setQ("")
       toast.success("Category created")
     } catch (e: any) {

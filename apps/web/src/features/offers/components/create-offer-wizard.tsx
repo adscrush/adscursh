@@ -34,14 +34,14 @@ import { CategorySelect } from "./category-select"
 import { useCreateOffer } from "../queries"
 import { toast } from "@adscrush/ui/sonner"
 import { useRouter } from "next/navigation"
-import { IconDeviceFloppy, IconUpload } from "@tabler/icons-react"
+import { IconDeviceFloppy } from "@tabler/icons-react"
 
 export function CreateOfferWizard() {
   const router = useRouter()
   const createOffer = useCreateOffer()
 
   const form = useForm<CreateOfferInput>({
-    resolver: zodResolver(createOfferSchema),
+    resolver: zodResolver(createOfferSchema) as any,
     defaultValues: {
       name: "",
       advertiserId: "",
@@ -54,6 +54,14 @@ export function CreateOfferWizard() {
       payoutType: "CPC",
       defaultPayout: "0",
       offerUrl: "",
+      allowMultiConversion: false,
+      targetGeo: null,
+      fallbackUrl: null,
+      logo: null,
+      description: null,
+      privateNote: null,
+      startDate: null,
+      endDate: null,
     },
   })
 
