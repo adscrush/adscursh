@@ -23,9 +23,45 @@ import { db } from "~/lib/db"
 import { requireAuth } from "~/middleware/auth.middleware"
 import { AppError } from "~/utils/errors"
 import { listQuerySchema } from "./config"
+import z from "zod"
 
 export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .use(requireAuth)
+
+  // ── GET /search ────────────────────────────────────────────────
+  .get(
+    "/search",
+    async ({ query: { q } }) => {
+      const items = await db
+        .select({
+          id: affiliates.id,
+          name: affiliates.name,
+          email: affiliates.email,
+        })
+        .from(affiliates)
+        .where(
+          q
+            ? or(
+                like(affiliates.name, `%${q}%`),
+                like(affiliates.companyName, `%${q}%`),
+                like(affiliates.email, `%${q}%`),
+                like(affiliates.id, `%${q}%`)
+              )
+            : undefined
+        )
+        .limit(20)
+
+      return {
+        success: true,
+        data: items,
+      }
+    },
+    {
+      query: z.object({
+        q: z.string().optional().default(""),
+      }),
+    }
+  )
 
   // ── GET / ──────────────────────────────────────────────────────
   .get(

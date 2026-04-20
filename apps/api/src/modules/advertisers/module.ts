@@ -23,9 +23,45 @@ import {
   bulkDeleteSchema,
 } from "@adscrush/shared/validators/advertiser.schema"
 import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
+import z from "zod"
 
 export const advertiserRoutes = new Elysia({ prefix: "/advertisers" })
   .use(requireAuth)
+
+  // ── GET /search ────────────────────────────────────────────────
+  .get(
+    "/search",
+    async ({ query: { q } }) => {
+      const items = await db
+        .select({
+          id: advertisers.id,
+          name: advertisers.name,
+          email: advertisers.email,
+        })
+        .from(advertisers)
+        .where(
+          q
+            ? or(
+                like(advertisers.name, `%${q}%`),
+                like(advertisers.companyName, `%${q}%`),
+                like(advertisers.email, `%${q}%`),
+                like(advertisers.id, `%${q}%`)
+              )
+            : undefined
+        )
+        .limit(20)
+
+      return {
+        success: true,
+        data: items,
+      }
+    },
+    {
+      query: z.object({
+        q: z.string().optional().default(""),
+      }),
+    }
+  )
 
   // ── GET / ──────────────────────────────────────────────────────
   .get(
