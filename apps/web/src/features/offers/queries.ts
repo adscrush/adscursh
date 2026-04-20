@@ -61,6 +61,17 @@ export function getOffersQueryOptions(params: GetOffersSchema) {
   })
 }
 
+export function getOfferQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: offerKeys.detail(id),
+    queryFn: async () => {
+      const { data, error } = await api.offers({ id }).get()
+      if (error) throw new Error(parseApiError(error))
+      return data
+    },
+  })
+}
+
 export function getCategoriesQueryOptions(params: any = {}) {
   return queryOptions({
     queryKey: categoryKeys.lists(),
@@ -78,6 +89,10 @@ export function useOffers(params: GetOffersSchema) {
   return useQuery(getOffersQueryOptions(params))
 }
 
+export function useOffer(id: string) {
+  return useQuery(getOfferQueryOptions(id))
+}
+
 export function useCategories(params: any = {}) {
   return useQuery(getCategoriesQueryOptions(params))
 }
@@ -92,6 +107,21 @@ export function useCreateOffer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: offerKeys.all })
+    },
+  })
+}
+
+export function useUpdateOffer() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<z.infer<typeof createOfferSchema>> }) => {
+      const response = await api.offers({ id }).post(data as any)
+      if (response.error) throw new Error(parseApiError(response.error))
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: offerKeys.all })
+      queryClient.invalidateQueries({ queryKey: offerKeys.detail(variables.id) })
     },
   })
 }

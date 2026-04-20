@@ -26,6 +26,8 @@ import {
   AvatarImage,
 } from "@adscrush/ui/components/avatar"
 
+import Link from "next/link"
+
 interface GetOffersTableColumnsProps {
   setRowAction: React.Dispatch<
     React.SetStateAction<DataTableRowAction<Offer> | null>
@@ -71,9 +73,12 @@ export function getOffersTableColumns({
         <DataTableColumnHeader column={column} label="ID" />
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <Link 
+          href={`/offers/${row.original.id}`}
+          className="font-mono text-[10px] text-muted-foreground hover:text-primary hover:underline underline-offset-2"
+        >
           {row.original.id}
-        </span>
+        </Link>
       ),
       meta: {
         label: "ID",

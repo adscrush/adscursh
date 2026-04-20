@@ -13,7 +13,7 @@ import {
 import { IconLoader2, IconSelector } from "@tabler/icons-react"
 import { useDebouncedValue } from "@tanstack/react-pacer"
 import * as React from "react"
-import { useAdvertiserSearch } from "@/features/advertisers/queries"
+import { useAdvertiserSearch } from "@/features/search/queries"
 
 interface AdvertiserSelectProps {
   value?: string

@@ -18,7 +18,7 @@ import {
 import { IconLoader2, IconSelector } from "@tabler/icons-react"
 import { useDebouncedValue } from "@tanstack/react-pacer"
 import * as React from "react"
-import { useEmployeeSearch } from "../queries"
+import { useEmployeeSearch } from "@/features/search/queries"
 
 interface EmployeeSelectProps {
   value?: string
