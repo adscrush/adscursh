@@ -3,25 +3,10 @@
 import { CreateOfferInput, UpdateOfferInput } from "@adscrush/shared/validators/offer.schema"
 import { Badge } from "@adscrush/ui/components/badge"
 import { Button } from "@adscrush/ui/components/button"
-import { Card, CardContent } from "@adscrush/ui/components/card"
 import { Skeleton } from "@adscrush/ui/components/skeleton"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@adscrush/ui/components/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@adscrush/ui/components/tabs"
 import { toast } from "@adscrush/ui/sonner"
-import {
-  IconDots,
-  IconExternalLink,
-  IconHome,
-  IconLink,
-  IconSettings,
-  IconTarget,
-  IconUsers,
-  IconVariable,
-} from "@tabler/icons-react"
+import { IconExternalLink, IconHome, IconLink, IconSettings, IconUsers, IconVariable } from "@tabler/icons-react"
 import { useOffer, useUpdateOffer, type OfferDetail } from "../queries"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
 import { OfferFallbackTab } from "./offer-fallback-tab"
@@ -82,20 +67,14 @@ export function OfferDetails({ id }: OfferDetailsProps) {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <a
-                href={offer.offerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={offer.offerUrl} target="_blank" rel="noopener noreferrer">
                 Preview <IconExternalLink className="ml-2 size-4" />
               </a>
             </Button>
             <Button size="sm">Options</Button>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Manage and monitor details for {offer.name}
-        </p>
+        <p className="text-sm text-muted-foreground">Manage and monitor details for {offer.name}</p>
       </div>
 
       <Tabs defaultValue="home" className="w-full">
@@ -103,49 +82,23 @@ export function OfferDetails({ id }: OfferDetailsProps) {
           variant="line"
           className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b p-0"
         >
-          <TabsTrigger
-            value="home"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconHome className="size-4" /> HOME
-          </TabsTrigger>
-          <TabsTrigger
-            value="general"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconSettings className="size-4" /> GENERAL
-          </TabsTrigger>
-          <TabsTrigger
-            value="targeting"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconTarget className="size-4" /> TARGETING
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="affiliates"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconUsers className="size-4" /> AFFILIATES
-          </TabsTrigger>
-          <TabsTrigger
-            value="tokens"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconVariable className="size-4" /> TOKENS
-          </TabsTrigger>
-          <TabsTrigger
-            value="fallback"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconLink className="size-4" /> FALLBACK / INTEGRATION
-          </TabsTrigger>
-          <TabsTrigger
-            value="more"
-            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-          >
-            <IconDots className="size-4" /> MORE
-          </TabsTrigger>
+          <div className="flex justify-center gap-8">
+            <TabsTrigger value="home" className="rounded-none bg-transparent py-3 data-active:after:opacity-100">
+              <IconHome className="size-4" /> HOME
+            </TabsTrigger>
+            <TabsTrigger value="general" className="rounded-none bg-transparent py-3 data-active:after:opacity-100">
+              <IconSettings className="size-4" /> GENERAL
+            </TabsTrigger>
+            <TabsTrigger value="affiliates" className="rounded-none bg-transparent py-3 data-active:after:opacity-100">
+              <IconUsers className="size-4" /> AFFILIATES
+            </TabsTrigger>
+            <TabsTrigger value="tokens" className="rounded-none bg-transparent py-3 data-active:after:opacity-100">
+              <IconVariable className="size-4" /> TOKENS
+            </TabsTrigger>
+            <TabsTrigger value="fallback" className="rounded-none bg-transparent py-3 data-active:after:opacity-100">
+              <IconLink className="size-4" /> FALLBACK / INTEGRATION
+            </TabsTrigger>
+          </div>
         </TabsList>
 
         <div className="mt-6">
@@ -160,13 +113,6 @@ export function OfferDetails({ id }: OfferDetailsProps) {
               submitLabel="Save Changes"
             />
           </TabsContent>
-          <TabsContent value="targeting">
-            <Card>
-              <CardContent className="pt-6">
-                Targeting settings for {offer.name}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="affiliates">
             <OfferAffiliatesTab offer={offer} />
@@ -175,18 +121,7 @@ export function OfferDetails({ id }: OfferDetailsProps) {
             <OfferTokensTab offer={offer} />
           </TabsContent>
           <TabsContent value="fallback">
-            <OfferFallbackTab
-              offer={offer}
-              onSubmit={handleUpdate as any}
-              isPending={updateOffer.isPending}
-            />
-          </TabsContent>
-          <TabsContent value="more">
-            <Card>
-              <CardContent className="pt-6">
-                Additional settings for {offer.name}
-              </CardContent>
-            </Card>
+            <OfferFallbackTab offer={offer} onSubmit={handleUpdate as any} isPending={updateOffer.isPending} />
           </TabsContent>
         </div>
       </Tabs>
