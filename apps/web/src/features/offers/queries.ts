@@ -18,6 +18,9 @@ import { GetOffersSchema } from "./validations"
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 export type Offer = Treaty.Data<typeof api.offers.get>["data"][number]
+export type OfferDetail = NonNullable<
+  Treaty.Data<ReturnType<typeof api.offers>["get"]>["data"]
+>
 export type Category = Treaty.Data<typeof api.categories.get>["data"][number]
 export type OfferAffiliate = Treaty.Data<
   typeof api.affiliates.get

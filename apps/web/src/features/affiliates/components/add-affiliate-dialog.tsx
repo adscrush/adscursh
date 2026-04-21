@@ -58,7 +58,7 @@ export function AddAffiliateDialog({
   const [open, setOpen] = useState(false)
   const createMutation = useCreateAffiliate()
 
-  const form = useForm<CreateAffiliateInput>({
+  const form = useForm({
     resolver: zodResolver(createAffiliateSchema),
     defaultValues: {
       name: "",

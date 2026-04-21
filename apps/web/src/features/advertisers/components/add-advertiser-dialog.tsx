@@ -58,7 +58,7 @@ export function AddAdvertiserDialog({
   const [open, setOpen] = useState(false)
   const createMutation = useCreateAdvertiser()
 
-  const form = useForm<CreateAdvertiserInput>({
+  const form = useForm({
     resolver: zodResolver(createAdvertiserSchema),
     defaultValues: {
       name: "",

@@ -1,12 +1,6 @@
 import { api } from "@/lib/api"
 import { createAffiliateSchema } from "@adscrush/shared/validators/affiliate.validator"
-import {
-  keepPreviousData,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { z } from "zod"
 
 import type { GetAffiliatesSchema } from "./validations"
@@ -20,9 +14,8 @@ export type Affiliate = Treaty.Data<typeof api.affiliates.get>["data"][number]
 export const affiliateKeys = {
   all: ["affiliates"] as const,
   lists: () => [...affiliateKeys.all, "list"] as const,
-  list: (
-    params: Omit<GetAffiliatesSchema, "filterFlag"> & { filterFlag?: string }
-  ) => [...affiliateKeys.lists(), { params }] as const,
+  list: (params: Omit<GetAffiliatesSchema, "filterFlag"> & { filterFlag?: string }) =>
+    [...affiliateKeys.lists(), { params }] as const,
   statusCounts: () => [...affiliateKeys.all, "status-counts"] as const,
 }
 
@@ -38,12 +31,8 @@ export function getAffiliatesQueryOptions(params: GetAffiliatesSchema) {
           name: params.name ?? "",
           page: params.page,
           perPage: params.perPage,
-          sort: JSON.stringify(
-            params.sort
-          ) as unknown as GetAffiliatesSchema["sort"],
-          filters: JSON.stringify(
-            params.filters
-          ) as unknown as GetAffiliatesSchema["filters"],
+          sort: JSON.stringify(params.sort) as unknown as GetAffiliatesSchema["sort"],
+          filters: JSON.stringify(params.filters) as unknown as GetAffiliatesSchema["filters"],
           joinOperator: params.joinOperator,
           createdAt: params.createdAt,
           status: params.status,
@@ -139,10 +128,7 @@ export function useUpdateAffiliate() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...payload
-    }: { id: string } & Partial<z.infer<typeof createAffiliateSchema>>) => {
+    mutationFn: async ({ id, ...payload }: { id: string } & Partial<z.infer<typeof createAffiliateSchema>>) => {
       const { data, error } = await api
         .affiliates({
           id,
@@ -165,18 +151,12 @@ export function useUpdateAffiliate() {
   })
 }
 
-
 export function useBulkUpdateAffiliateStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (payload: {
-      ids: string[]
-      status: "active" | "inactive" | "pending"
-    }) => {
-      const { data, error } = await api.affiliates["bulk-status"].post(
-        payload as never
-      )
+    mutationFn: async (payload: { ids: string[]; status: "active" | "inactive" | "pending" }) => {
+      const { data, error } = await api.affiliates["bulk-status"].post(payload)
       if (error) {
         throw new Error(parseApiError(error))
       }
@@ -195,7 +175,7 @@ export function useBulkDeleteAffiliates() {
     mutationFn: async (ids: string[]) => {
       const { data, error } = await api.affiliates["bulk-delete"].post({
         ids,
-      } as never)
+      })
       if (error) {
         throw new Error(parseApiError(error))
       }

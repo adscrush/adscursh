@@ -31,7 +31,7 @@ export function SignInForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<SignInForm>({
+  } = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",

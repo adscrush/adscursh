@@ -1,5 +1,6 @@
 "use client"
 
+import { CreateOfferInput, UpdateOfferInput } from "@adscrush/shared/validators/offer.schema"
 import { Badge } from "@adscrush/ui/components/badge"
 import { Button } from "@adscrush/ui/components/button"
 import { Card, CardContent } from "@adscrush/ui/components/card"
@@ -17,12 +18,14 @@ import {
   IconHome,
   IconLink,
   IconSettings,
+  IconTarget,
   IconUsers,
 } from "@tabler/icons-react"
-import { useOffer, useUpdateOffer } from "../queries"
+import { useOffer, useUpdateOffer, type OfferDetail } from "../queries"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
 import { OfferFallbackTab } from "./offer-fallback-tab"
 import { OfferForm } from "./offer-form"
+import { OfferHomeTab } from "./offer-home-tab"
 
 interface OfferDetailsProps {
   id: string
@@ -31,14 +34,15 @@ interface OfferDetailsProps {
 export function OfferDetails({ id }: OfferDetailsProps) {
   const { data: result, isLoading } = useOffer(id)
   const updateOffer = useUpdateOffer()
-  const offer = result?.data
+  const offer = result?.data as OfferDetail | undefined
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: CreateOfferInput | UpdateOfferInput) => {
     try {
       await updateOffer.mutateAsync({ id, data })
       toast.success("Offer updated successfully")
-    } catch (e: any) {
-      toast.error(e.message || "Failed to update offer")
+    } catch (e: unknown) {
+      const error = e as Error
+      toast.error(error.message || "Failed to update offer")
     }
   }
 
@@ -92,70 +96,77 @@ export function OfferDetails({ id }: OfferDetailsProps) {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs defaultValue="home" className="w-full">
         <TabsList
           variant="line"
           className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b p-0"
         >
-          <div className="flex items-center gap-6">
-            <TabsTrigger
-              value="home"
-              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-            >
-              <IconHome className="size-4" /> HOME
-            </TabsTrigger>
-            <TabsTrigger
-              value="general"
-              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-            >
-              <IconSettings className="size-4" /> GENERAL
-            </TabsTrigger>
+          <TabsTrigger
+            value="home"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconHome className="size-4" /> HOME
+          </TabsTrigger>
+          <TabsTrigger
+            value="general"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconSettings className="size-4" /> GENERAL
+          </TabsTrigger>
+          <TabsTrigger
+            value="targeting"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconTarget className="size-4" /> TARGETING
+          </TabsTrigger>
 
-            <TabsTrigger
-              value="affiliates"
-              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-            >
-              <IconUsers className="size-4" /> AFFILIATES
-            </TabsTrigger>
-            <TabsTrigger
-              value="fallback"
-              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-            >
-              <IconLink className="size-4" /> FALLBACK / INTEGRATION
-            </TabsTrigger>
-            <TabsTrigger
-              value="more"
-              className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
-            >
-              <IconDots className="size-4" /> MORE
-            </TabsTrigger>
-          </div>
+          <TabsTrigger
+            value="affiliates"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconUsers className="size-4" /> AFFILIATES
+          </TabsTrigger>
+          <TabsTrigger
+            value="fallback"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconLink className="size-4" /> FALLBACK / INTEGRATION
+          </TabsTrigger>
+          <TabsTrigger
+            value="more"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconDots className="size-4" /> MORE
+          </TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
           <TabsContent value="home">
-            <Card>
-              <CardContent className="pt-6">
-                Home content for {offer.name}
-              </CardContent>
-            </Card>
+            <OfferHomeTab offer={offer} />
           </TabsContent>
           <TabsContent value="general">
             <OfferForm
               initialData={offer}
-              onSubmit={handleUpdate}
+              onSubmit={handleUpdate as any}
               isPending={updateOffer.isPending}
               submitLabel="Save Changes"
             />
           </TabsContent>
+          <TabsContent value="targeting">
+            <Card>
+              <CardContent className="pt-6">
+                Targeting settings for {offer.name}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="affiliates">
-            <OfferAffiliatesTab offer={offer as any} />
+            <OfferAffiliatesTab offer={offer} />
           </TabsContent>
           <TabsContent value="fallback">
             <OfferFallbackTab
-              offer={offer as any}
-              onSubmit={handleUpdate}
+              offer={offer}
+              onSubmit={handleUpdate as any}
               isPending={updateOffer.isPending}
             />
           </TabsContent>

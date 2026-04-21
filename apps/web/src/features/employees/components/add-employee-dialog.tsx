@@ -1,5 +1,7 @@
 "use client"
 
+import { useDepartments } from "@/features/departments/queries"
+import type { GetDepartmentsSchema } from "@/features/departments/validations"
 import type { CreateEmployeeInput } from "@adscrush/shared/validators/employee.validator"
 import { createEmployeeSchema } from "@adscrush/shared/validators/employee.validator"
 import { Button } from "@adscrush/ui/components/button"
@@ -14,14 +16,6 @@ import {
 } from "@adscrush/ui/components/dialog"
 import { Field, FieldError, FieldLabel } from "@adscrush/ui/components/field"
 import { Input } from "@adscrush/ui/components/input"
-import { toast } from "@adscrush/ui/sonner"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { IconLoader2 } from "@tabler/icons-react"
-import React, { useState } from "react"
-import { Controller, useForm, type SubmitHandler } from "react-hook-form"
-import { useCreateEmployee } from "../queries"
-import { useDepartments } from "@/features/departments/queries"
-import type { GetDepartmentsSchema } from "@/features/departments/validations"
 import {
   Select,
   SelectContent,
@@ -29,6 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@adscrush/ui/components/select"
+import { toast } from "@adscrush/ui/sonner"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { IconLoader2 } from "@tabler/icons-react"
+import React, { useState } from "react"
+import { Controller, useForm, type SubmitHandler } from "react-hook-form"
+import { useCreateEmployee } from "../queries"
 
 interface AddEmployeeDialogProps {
   children?: React.ReactElement
@@ -57,7 +57,7 @@ export function AddEmployeeDialog({
   const { data: departmentsResult } = useDepartments(departmentParams)
   const departments = departmentsResult?.data ?? []
 
-  const form = useForm<CreateEmployeeInput>({
+  const form = useForm({
     resolver: zodResolver(createEmployeeSchema),
     defaultValues: {
       name: "",

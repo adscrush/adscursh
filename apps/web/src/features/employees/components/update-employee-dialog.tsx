@@ -1,6 +1,7 @@
 "use client"
 
-import type { Employee } from "../queries"
+import { useDepartments } from "@/features/departments/queries"
+import type { GetDepartmentsSchema } from "@/features/departments/validations"
 import type { UpdateEmployeeInput } from "@adscrush/shared/validators/employee.validator"
 import { updateEmployeeSchema } from "@adscrush/shared/validators/employee.validator"
 import { Button } from "@adscrush/ui/components/button"
@@ -13,14 +14,6 @@ import {
   DialogTitle,
 } from "@adscrush/ui/components/dialog"
 import { Field, FieldError, FieldLabel } from "@adscrush/ui/components/field"
-import { toast } from "@adscrush/ui/sonner"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { IconLoader2 } from "@tabler/icons-react"
-import { useEffect } from "react"
-import { Controller, useForm, type SubmitHandler } from "react-hook-form"
-import { useUpdateEmployee } from "../queries"
-import { useDepartments } from "@/features/departments/queries"
-import type { GetDepartmentsSchema } from "@/features/departments/validations"
 import {
   Select,
   SelectContent,
@@ -28,6 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@adscrush/ui/components/select"
+import { toast } from "@adscrush/ui/sonner"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { IconLoader2 } from "@tabler/icons-react"
+import { useEffect } from "react"
+import { Controller, useForm, type SubmitHandler } from "react-hook-form"
+import type { Employee } from "../queries"
+import { useUpdateEmployee } from "../queries"
 
 interface UpdateEmployeeDialogProps {
   open: boolean
@@ -55,11 +55,11 @@ export function UpdateEmployeeDialog({
   const { data: departmentsResult } = useDepartments(departmentParams)
   const departments = departmentsResult?.data ?? []
 
-  const form = useForm<UpdateEmployeeInput>({
+  const form = useForm({
     resolver: zodResolver(updateEmployeeSchema),
     defaultValues: {
       departmentId: undefined,
-      status: "active" as const,
+      status: "active",
     },
   })
 

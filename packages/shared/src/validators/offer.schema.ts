@@ -20,8 +20,8 @@ export const createOfferSchema = z.object({
   description: z.string().optional().nullable(),
   privateNote: z.string().optional().nullable(),
   offerUrl: z.string().min(1, "Offer URL is required"),
-  status: z.enum(OFFER_STATUS_VALUES).default("active"),
-  visibility: z.enum(OFFER_VISIBILITY_VALUES).default("public"),
+  status: z.enum(OFFER_STATUS_VALUES).default("active").nonoptional(),
+  visibility: z.enum(OFFER_VISIBILITY_VALUES).default("public").nonoptional(),
 
   // Revenue
   revenueType: z.string().default("CPA"),
@@ -36,7 +36,7 @@ export const createOfferSchema = z.object({
   fallbackUrl: z.string().optional().nullable(),
   allowMultiConversion: z.boolean().default(false),
 
-  postbackType: z.enum(["pixel", "postback"]).default("pixel"),
+  postbackType: z.enum(["pixel", "postback"]).default("pixel").nonoptional(),
   whitelistPostbackReferralDomain: z.string().optional().nullable(),
 
   // Scheduling

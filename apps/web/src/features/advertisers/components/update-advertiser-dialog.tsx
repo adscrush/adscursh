@@ -53,7 +53,7 @@ export function UpdateAdvertiserDialog({
 }: UpdateAdvertiserDialogProps) {
   const updateMutation = useUpdateAdvertiser()
 
-  const { control, handleSubmit, reset } = useForm<EditAdvertiserInput>({
+  const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: advertiser?.name || "",

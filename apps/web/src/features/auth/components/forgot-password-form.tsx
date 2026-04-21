@@ -28,7 +28,7 @@ export function ForgotPasswordForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ForgotPasswordForm>({
+  } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
@@ -39,7 +39,9 @@ export function ForgotPasswordForm() {
     try {
       const { error } = await requestPasswordReset({
         email: data.email,
-        redirectTo: getCallbackURL(`/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`),
+        redirectTo: getCallbackURL(
+          `/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`
+        ),
       })
 
       if (error) {
@@ -60,7 +62,9 @@ export function ForgotPasswordForm() {
     try {
       const { error } = await requestPasswordReset({
         email: sentEmail,
-        redirectTo: getCallbackURL(`/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`),
+        redirectTo: getCallbackURL(
+          `/auth/reset-password?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`
+        ),
       })
 
       if (error) {

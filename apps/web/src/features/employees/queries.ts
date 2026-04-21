@@ -1,17 +1,8 @@
 import { api } from "@/lib/api"
 import { parseApiError } from "@/lib/error"
-import {
-  createEmployeeSchema,
-  updateEmployeeSchema,
-} from "@adscrush/shared/validators/employee.validator"
+import { createEmployeeSchema, updateEmployeeSchema } from "@adscrush/shared/validators/employee.validator"
 import { Treaty } from "@elysiajs/eden"
-import {
-  keepPreviousData,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { z } from "zod"
 import { GetEmployeesSchema } from "./validations"
 
@@ -21,9 +12,8 @@ export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>
 export const employeeKeys = {
   all: ["employees"] as const,
   lists: () => [...employeeKeys.all, "list"] as const,
-  list: (
-    params: Omit<GetEmployeesSchema, "filterFlag"> & { filterFlag?: string }
-  ) => [...employeeKeys.lists(), { params }] as const,
+  list: (params: Omit<GetEmployeesSchema, "filterFlag"> & { filterFlag?: string }) =>
+    [...employeeKeys.lists(), { params }] as const,
 }
 
 export function getEmployeesQueryOptions(params: GetEmployeesSchema) {
@@ -36,12 +26,8 @@ export function getEmployeesQueryOptions(params: GetEmployeesSchema) {
           name: params.name ?? "",
           page: params.page,
           perPage: params.perPage,
-          sort: JSON.stringify(
-            params.sort
-          ) as unknown as GetEmployeesSchema["sort"],
-          filters: JSON.stringify(
-            params.filters
-          ) as unknown as GetEmployeesSchema["filters"],
+          sort: JSON.stringify(params.sort) as unknown as GetEmployeesSchema["sort"],
+          filters: JSON.stringify(params.filters) as unknown as GetEmployeesSchema["filters"],
           joinOperator: params.joinOperator,
           createdAt: params.createdAt,
           status: params.status,
@@ -92,11 +78,9 @@ export function useCreateEmployee() {
 
   return useMutation({
     mutationFn: async (data: z.infer<typeof createEmployeeSchema>) => {
-      const response = await api.employees.post(data as never)
+      const response = await api.employees.post(data)
       if (!response.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to create employee"
-        )
+        throw new Error((response.data as any).error || "Failed to create employee")
       }
       return response.data.data
     },
@@ -110,15 +94,10 @@ export function useUpdateEmployee() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...payload
-    }: { id: string } & Partial<z.infer<typeof updateEmployeeSchema>>) => {
+    mutationFn: async ({ id, ...payload }: { id: string } & Partial<z.infer<typeof updateEmployeeSchema>>) => {
       const response = await api.employees({ id }).post(payload)
       if (!response?.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to update employee"
-        )
+        throw new Error((response.data as any).error || "Failed to update employee")
       }
       return response.data.data
     },
@@ -132,11 +111,8 @@ export function useBulkUpdateEmployeeStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (payload: {
-      ids: string[]
-      status: "active" | "inactive" | "suspended"
-    }) => {
-      const response = await api.employees["bulk-status"].post(payload as never)
+    mutationFn: async (payload: { ids: string[]; status: "active" | "inactive" | "suspended" }) => {
+      const response = await api.employees["bulk-status"].post(payload)
       if (!response?.data?.success) {
         throw new Error("Failed to update employees status")
       }

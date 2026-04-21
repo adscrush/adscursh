@@ -8,7 +8,7 @@ export const createDepartmentSchema = z.object({
 export const updateDepartmentSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(["active", "inactive"]).optional(),
+  status: z.enum(["active", "inactive"]).optional().default("active"),
 })
 
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>

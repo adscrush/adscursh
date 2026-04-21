@@ -40,7 +40,7 @@ export function AddDepartmentDialog({
   const [open, setOpen] = useState(false)
   const createMutation = useCreateDepartment()
 
-  const form = useForm<CreateDepartmentInput>({
+  const form = useForm({
     resolver: zodResolver(createDepartmentSchema),
     defaultValues: {
       name: "",

@@ -1,6 +1,7 @@
 "use client"
 
-import * as React from "react"
+import { assignAffiliateSchema } from "@adscrush/shared/validators/offer.schema"
+import { Button } from "@adscrush/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@adscrush/ui/components/dialog"
-import { Button } from "@adscrush/ui/components/button"
 import {
   Field,
   FieldContent,
@@ -24,14 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@adscrush/ui/components/select"
-import { AffiliateSelect } from "./affiliate-select"
-import { useAssignOfferAffiliate } from "../queries"
 import { toast } from "@adscrush/ui/sonner"
-import { IconUserPlus } from "@tabler/icons-react"
-import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { assignAffiliateSchema } from "@adscrush/shared/validators/offer.schema"
+import { IconUserPlus } from "@tabler/icons-react"
+import * as React from "react"
+import { Controller, useForm } from "react-hook-form"
 import type { z } from "zod"
+import { useAssignOfferAffiliate } from "../queries"
+import { AffiliateSelect } from "./affiliate-select"
 
 interface AssignAffiliateDialogProps {
   offerId: string
@@ -47,7 +47,7 @@ export function AssignAffiliateDialog({
   const [open, setOpen] = React.useState(false)
   const assignMutation = useAssignOfferAffiliate()
 
-  const form = useForm<AssignFormValues>({
+  const form = useForm({
     resolver: zodResolver(assignAffiliateSchema),
     defaultValues: {
       affiliateId: "",

@@ -1,10 +1,15 @@
 "use client"
 
+import { getCallbackURL, resetPassword } from "@/lib/auth/client"
+import { getPasswordStrength } from "@adscrush/shared/utils/password"
+import {
+  resetPasswordSchema,
+  type ResetPasswordForm,
+} from "@adscrush/shared/validators/auth.schema"
 import { Button } from "@adscrush/ui/components/button"
 import { Input } from "@adscrush/ui/components/input"
 import { Label } from "@adscrush/ui/components/label"
-import { getCallbackURL, resetPassword } from "@/lib/auth/client"
-import { getPasswordStrength } from "@adscrush/shared/utils/password"
+import { toast } from "@adscrush/ui/sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   AlertCircleIcon,
@@ -17,12 +22,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "@adscrush/ui/sonner"
 import { AuthLayout } from "./auth-layout"
-import {
-  resetPasswordSchema,
-  type ResetPasswordForm,
-} from "@adscrush/shared/validators/auth.schema"
 
 export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -38,7 +38,7 @@ export function ResetPasswordForm() {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<ResetPasswordForm>({
+  } = useForm({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",

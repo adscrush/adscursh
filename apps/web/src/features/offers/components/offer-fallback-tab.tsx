@@ -1,6 +1,5 @@
 "use client"
 
-import { Offer } from "@adscrush/db/schema"
 import {
   updateOfferSchema,
   type UpdateOfferInput,
@@ -22,11 +21,12 @@ import {
 } from "@adscrush/ui/components/select"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { IconDeviceFloppy } from "@tabler/icons-react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, type SubmitHandler } from "react-hook-form"
+import { OfferDetail } from "../queries"
 
 interface OfferFallbackTabProps {
-  offer: Offer
-  onSubmit: (data: UpdateOfferInput) => Promise<void>
+  offer: OfferDetail
+  onSubmit: SubmitHandler<UpdateOfferInput>
   isPending: boolean
 }
 
@@ -35,10 +35,10 @@ export function OfferFallbackTab({
   onSubmit,
   isPending,
 }: OfferFallbackTabProps) {
-  const form = useForm<UpdateOfferInput>({
-    resolver: zodResolver(updateOfferSchema) as any,
+  const form = useForm({
+    resolver: zodResolver(updateOfferSchema),
     defaultValues: {
-      postbackType: (offer.postbackType as any) ?? "pixel",
+      postbackType: (offer.postbackType as "pixel" | "postback") ?? "pixel",
       whitelistPostbackReferralDomain:
         offer.whitelistPostbackReferralDomain ?? "",
     },

@@ -1,7 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { useForm, Controller, useFieldArray } from "react-hook-form"
+import {
+  useForm,
+  Controller,
+  useFieldArray,
+  type SubmitHandler,
+} from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createOfferSchema,
@@ -35,7 +40,7 @@ import { IconDeviceFloppy } from "@tabler/icons-react"
 
 interface OfferFormProps {
   initialData?: Partial<CreateOfferInput>
-  onSubmit: (data: CreateOfferInput) => Promise<void>
+  onSubmit: SubmitHandler<CreateOfferInput>
   isPending: boolean
   submitLabel?: string
 }
@@ -46,14 +51,18 @@ export function OfferForm({
   isPending,
   submitLabel = "Save Changes",
 }: OfferFormProps) {
-  const form = useForm<CreateOfferInput>({
-    resolver: zodResolver(createOfferSchema) as any,
+  const form = useForm({
+    resolver: zodResolver(createOfferSchema),
     defaultValues: {
       name: initialData?.name ?? "",
       advertiserId: initialData?.advertiserId ?? "",
       categoryId: initialData?.categoryId ?? null,
-      status: initialData?.status ?? "active",
-      visibility: initialData?.visibility ?? "public",
+      status:
+        (initialData?.status as "active" | "inactive" | "paused" | "expired") ??
+        "active",
+      visibility:
+        (initialData?.visibility as "public" | "private" | "exclusive") ??
+        "public",
       revenueType: initialData?.revenueType ?? "CPC",
       defaultRevenue: initialData?.defaultRevenue ?? "0",
       currency: initialData?.currency ?? "INR",
@@ -68,19 +77,23 @@ export function OfferForm({
       privateNote: initialData?.privateNote ?? null,
       startDate: initialData?.startDate ?? null,
       endDate: initialData?.endDate ?? null,
-      landingPages: (initialData as any)?.landingPages?.length
-        ? (initialData as any).landingPages
+      postbackType:
+        (initialData?.postbackType as "pixel" | "postback") ?? "pixel",
+      whitelistPostbackReferralDomain:
+        initialData?.whitelistPostbackReferralDomain ?? null,
+      landingPages: initialData?.landingPages?.length
+        ? initialData.landingPages
         : [
-            { name: "", url: "", weight: 10, status: "active" },
-            { name: "", url: "", weight: 10, status: "active" },
-            { name: "", url: "", weight: 10, status: "active" },
+            { name: "", url: "", weight: 10, status: "active" as const },
+            { name: "", url: "", weight: 10, status: "active" as const },
+            { name: "", url: "", weight: 10, status: "active" as const },
           ],
     },
   })
 
   const { fields, append } = useFieldArray({
     control: form.control,
-    name: "landingPages" as any,
+    name: "landingPages",
   })
 
   const [showLandingPages, setShowLandingPages] = React.useState(false)
@@ -235,7 +248,7 @@ export function OfferForm({
                                 <td className="px-2 py-2">
                                   <Input
                                     {...form.register(
-                                      `landingPages.${index}.name` as any
+                                      `landingPages.${index}.name`
                                     )}
                                     className="border-none bg-muted/20 text-xs shadow-none"
                                     placeholder="Name"
@@ -256,7 +269,7 @@ export function OfferForm({
                                 <td className="px-2 py-2">
                                   <Input
                                     {...form.register(
-                                      `landingPages.${index}.url` as any
+                                      `landingPages.${index}.url`
                                     )}
                                     className="border-none bg-muted/20 text-xs shadow-none"
                                     placeholder="URL"
@@ -264,9 +277,7 @@ export function OfferForm({
                                 </td>
                                 <td className="px-2 py-2">
                                   <Controller
-                                    name={
-                                      `landingPages.${index}.status` as any
-                                    }
+                                    name={`landingPages.${index}.status`}
                                     control={form.control}
                                     render={({ field }) => (
                                       <Select
@@ -301,7 +312,7 @@ export function OfferForm({
                                 <td className="px-2 py-2">
                                   <Input
                                     {...form.register(
-                                      `landingPages.${index}.weight` as any
+                                      `landingPages.${index}.weight`
                                     )}
                                     className="border-none text-center text-xs shadow-none"
                                   />
@@ -351,6 +362,7 @@ export function OfferForm({
                             <SelectItem value="active">Approve</SelectItem>
                             <SelectItem value="inactive">Inactive</SelectItem>
                             <SelectItem value="paused">Paused</SelectItem>
+                            <SelectItem value="expired">Expired</SelectItem>
                           </SelectContent>
                         </Select>
                       </FieldContent>

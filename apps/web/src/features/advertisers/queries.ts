@@ -2,13 +2,7 @@ import { api } from "@/lib/api"
 import { parseApiError } from "@/lib/error"
 import { createAdvertiserSchema } from "@adscrush/shared/validators/advertiser.schema"
 import { Treaty } from "@elysiajs/eden"
-import {
-  keepPreviousData,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { z } from "zod"
 import { GetAdvertisersSchema } from "./validations"
 
@@ -20,9 +14,8 @@ export type Advertiser = Treaty.Data<typeof api.advertisers.get>["data"][number]
 export const advertiserKeys = {
   all: ["advertisers"] as const,
   lists: () => [...advertiserKeys.all, "list"] as const,
-  list: (
-    params: Omit<GetAdvertisersSchema, "filterFlag"> & { filterFlag?: string }
-  ) => [...advertiserKeys.lists(), { params }] as const,
+  list: (params: Omit<GetAdvertisersSchema, "filterFlag"> & { filterFlag?: string }) =>
+    [...advertiserKeys.lists(), { params }] as const,
   statusCounts: () => [...advertiserKeys.all, "status-counts"] as const,
   employeeList: () => [...advertiserKeys.all, "employees"] as const,
 }
@@ -39,12 +32,8 @@ export function getAdvertisersQueryOptions(params: GetAdvertisersSchema) {
           name: params.name ?? "",
           page: params.page,
           perPage: params.perPage,
-          sort: JSON.stringify(
-            params.sort
-          ) as unknown as GetAdvertisersSchema["sort"],
-          filters: JSON.stringify(
-            params.filters
-          ) as unknown as GetAdvertisersSchema["filters"],
+          sort: JSON.stringify(params.sort) as unknown as GetAdvertisersSchema["sort"],
+          filters: JSON.stringify(params.filters) as unknown as GetAdvertisersSchema["filters"],
           joinOperator: params.joinOperator,
           createdAt: params.createdAt,
           status: params.status,
@@ -111,11 +100,9 @@ export function useCreateAdvertiser() {
 
   return useMutation({
     mutationFn: async (data: z.infer<typeof createAdvertiserSchema>) => {
-      const response = await api.advertisers.post(data as never)
+      const response = await api.advertisers.post(data)
       if (!response.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to create advertiser"
-        )
+        throw new Error((response.data as any).error || "Failed to create advertiser")
       }
       return response.data.data
     },
@@ -129,15 +116,10 @@ export function useUpdateAdvertiser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...payload
-    }: { id: string } & Partial<z.infer<typeof createAdvertiserSchema>>) => {
+    mutationFn: async ({ id, ...payload }: { id: string } & Partial<z.infer<typeof createAdvertiserSchema>>) => {
       const response = await api.advertisers({ id }).post(payload)
       if (!response?.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to update advertiser"
-        )
+        throw new Error((response.data as any).error || "Failed to update advertiser")
       }
       return response.data.data
     },

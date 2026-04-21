@@ -1,17 +1,8 @@
 import { api } from "@/lib/api"
 import { parseApiError } from "@/lib/error"
-import {
-  createDepartmentSchema,
-  updateDepartmentSchema,
-} from "@adscrush/shared/validators/department.validator"
+import { createDepartmentSchema, updateDepartmentSchema } from "@adscrush/shared/validators/department.validator"
 import { Treaty } from "@elysiajs/eden"
-import {
-  keepPreviousData,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { z } from "zod"
 import { GetDepartmentsSchema } from "./validations"
 
@@ -20,9 +11,8 @@ export type Department = Treaty.Data<typeof api.departments.get>["data"][number]
 export const departmentKeys = {
   all: ["departments"] as const,
   lists: () => [...departmentKeys.all, "list"] as const,
-  list: (
-    params: Omit<GetDepartmentsSchema, "filterFlag"> & { filterFlag?: string }
-  ) => [...departmentKeys.lists(), { params }] as const,
+  list: (params: Omit<GetDepartmentsSchema, "filterFlag"> & { filterFlag?: string }) =>
+    [...departmentKeys.lists(), { params }] as const,
 }
 
 export function getDepartmentsQueryOptions(params: GetDepartmentsSchema) {
@@ -35,12 +25,8 @@ export function getDepartmentsQueryOptions(params: GetDepartmentsSchema) {
           name: params.name ?? "",
           page: params.page,
           perPage: params.perPage,
-          sort: JSON.stringify(
-            params.sort
-          ) as unknown as GetDepartmentsSchema["sort"],
-          filters: JSON.stringify(
-            params.filters
-          ) as unknown as GetDepartmentsSchema["filters"],
+          sort: JSON.stringify(params.sort) as unknown as GetDepartmentsSchema["sort"],
+          filters: JSON.stringify(params.filters) as unknown as GetDepartmentsSchema["filters"],
           joinOperator: params.joinOperator,
           createdAt: params.createdAt,
           status: params.status,
@@ -91,11 +77,9 @@ export function useCreateDepartment() {
 
   return useMutation({
     mutationFn: async (data: z.infer<typeof createDepartmentSchema>) => {
-      const response = await api.departments.post(data as never)
+      const response = await api.departments.post(data)
       if (!response.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to create department"
-        )
+        throw new Error((response.data as any).error || "Failed to create department")
       }
       return response.data.data
     },
@@ -109,15 +93,10 @@ export function useUpdateDepartment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...payload
-    }: { id: string } & Partial<z.infer<typeof updateDepartmentSchema>>) => {
+    mutationFn: async ({ id, ...payload }: { id: string } & z.infer<typeof updateDepartmentSchema>) => {
       const response = await api.departments({ id }).post(payload)
       if (!response?.data?.success) {
-        throw new Error(
-          (response.data as any).error || "Failed to update department"
-        )
+        throw new Error((response.data as any).error || "Failed to update department")
       }
       return response.data.data
     },
@@ -132,7 +111,7 @@ export function useBulkUpdateDepartmentStatus() {
 
   return useMutation({
     mutationFn: async (payload: { ids: string[]; status: "active" | "inactive" }) => {
-      const response = await api.departments["bulk-status"].post(payload as never)
+      const response = await api.departments["bulk-status"].post(payload)
       if (!response?.data?.success) {
         throw new Error("Failed to update departments status")
       }
@@ -149,7 +128,7 @@ export function useBulkDeleteDepartments() {
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
-      const response = await api.departments["bulk-delete"].post({ ids } as never)
+      const response = await api.departments["bulk-delete"].post({ ids })
       if (!response?.data?.success) {
         throw new Error("Failed to delete departments")
       }

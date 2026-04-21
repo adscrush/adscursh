@@ -38,7 +38,7 @@ export function MagicLinkForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<MagicLinkRequestForm>({
+  } = useForm({
     resolver: zodResolver(magicLinkRequestSchema),
     defaultValues: {
       email: "",

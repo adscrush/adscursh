@@ -34,9 +34,7 @@ import type { z } from "zod"
 import type { Department } from "../queries"
 import { useUpdateDepartment } from "../queries"
 
-const editSchema = updateDepartmentSchema.partial()
-
-type EditDepartmentInput = z.infer<typeof editSchema>
+type EditDepartmentInput = z.infer<typeof updateDepartmentSchema>
 
 interface UpdateDepartmentDialogProps extends Omit<
   React.ComponentPropsWithoutRef<typeof Dialog>,
@@ -52,12 +50,12 @@ export function UpdateDepartmentDialog({
 }: UpdateDepartmentDialogProps) {
   const updateMutation = useUpdateDepartment()
 
-  const { control, handleSubmit, reset } = useForm<EditDepartmentInput>({
-    resolver: zodResolver(editSchema),
+  const { control, handleSubmit, reset } = useForm({
+    resolver: zodResolver(updateDepartmentSchema),
     defaultValues: {
       name: department?.name || "",
       description: department?.description || "",
-      status: (department?.status as "active" | "inactive") || "active",
+      status: department?.status || "active",
     },
   })
 

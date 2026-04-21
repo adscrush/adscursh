@@ -187,8 +187,43 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
   // ── GET /:id ───────────────────────────────────────────────────
   .get("/:id", async ({ params }) => {
     const [result] = await db
-      .select()
+      .select({
+        id: offers.id,
+        name: offers.name,
+        advertiserId: offers.advertiserId,
+        categoryId: offers.categoryId,
+        logo: offers.logo,
+        description: offers.description,
+        privateNote: offers.privateNote,
+        offerUrl: offers.offerUrl,
+        status: offers.status,
+        visibility: offers.visibility,
+        revenueType: offers.revenueType,
+        defaultRevenue: offers.defaultRevenue,
+        currency: offers.currency,
+        payoutType: offers.payoutType,
+        defaultPayout: offers.defaultPayout,
+        targetGeo: offers.targetGeo,
+        fallbackUrl: offers.fallbackUrl,
+        allowMultiConversion: offers.allowMultiConversion,
+        postbackType: offers.postbackType,
+        whitelistPostbackReferralDomain: offers.whitelistPostbackReferralDomain,
+        startDate: offers.startDate,
+        endDate: offers.endDate,
+        createdAt: offers.createdAt,
+        updatedAt: offers.updatedAt,
+        advertiser: {
+          id: advertisers.id,
+          name: advertisers.name,
+        },
+        category: {
+          id: categories.id,
+          name: categories.name,
+        },
+      })
       .from(offers)
+      .leftJoin(advertisers, eq(offers.advertiserId, advertisers.id))
+      .leftJoin(categories, eq(offers.categoryId, categories.id))
       .where(eq(offers.id, params.id))
       .limit(1)
     if (!result) throw new AppError(404, "Offer not found")

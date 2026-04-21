@@ -40,7 +40,7 @@ export function AddCategoryDialog({ children }: AddCategoryDialogProps) {
   const [open, setOpen] = React.useState(false)
   const createCategory = useCreateCategory()
 
-  const form = useForm<CreateCategoryInput>({
+  const form = useForm({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
       name: "",

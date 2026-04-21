@@ -32,18 +32,27 @@ import {
 import { useDebouncedValue } from "@tanstack/react-pacer"
 import * as React from "react"
 import {
-  Offer,
   useAssignOfferAffiliate,
   useOfferAffiliates,
   useUpdateOfferAffiliate,
+  type OfferDetail,
 } from "../queries"
 import { OfferAffiliateTrackingDialog } from "./offer-affiliate-tracking-dialog"
 
 interface OfferAffiliatesTabProps {
-  offer: Offer
+  offer: OfferDetail
 }
 
 type ViewMode = "all" | "pending" | "approved" | "rejected" | "assigned"
+
+interface DisplayItem {
+  id: string
+  affiliateId: string
+  affiliateName: string
+  affiliateEmail: string
+  status: string
+  oaId?: string
+}
 
 export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
   const [view, setView] = React.useState<ViewMode>("all")
@@ -56,7 +65,6 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
     (state) => ({ isPending: state.isPending })
   )
 
-  // Fetch all affiliates (system-wide) for the "All" view
   const {
     data: allAffiliatesResult,
     isLoading: isAllLoading,
@@ -69,9 +77,10 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
     sort: [{ id: "createdAt", desc: true }],
     filters: [],
     joinOperator: "and",
-  } as any)
+    filterFlag: "commandFilters",
+    createdAt: [],
+  })
 
-  // Fetch only assigned affiliates for this offer
   const {
     data: assignedResult,
     isLoading: isAssignedLoading,
@@ -87,11 +96,11 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
   const stats = React.useMemo(() => {
     return {
       all: allAffiliatesResult?.meta?.total ?? 0,
-      pending: assignedAffiliates.filter((a: any) => a.status === "pending")
+      pending: assignedAffiliates.filter((a) => a.status === "pending")
         .length,
-      approved: assignedAffiliates.filter((a: any) => a.status === "approved")
+      approved: assignedAffiliates.filter((a) => a.status === "approved")
         .length,
-      rejected: assignedAffiliates.filter((a: any) => a.status === "rejected")
+      rejected: assignedAffiliates.filter((a) => a.status === "rejected")
         .length,
     }
   }, [assignedAffiliates, allAffiliatesResult])
@@ -101,14 +110,15 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
     (view === "all" ? isAllFetching : isAssignedFetching) ||
     debouncer.state.isPending
 
-  const displayList = React.useMemo(() => {
+  const displayList = React.useMemo((): DisplayItem[] => {
     if (view === "all") {
-      return (allAffiliatesResult?.data ?? []).map((aff: any) => {
+      return (allAffiliatesResult?.data ?? []).map((aff) => {
         const assigned = assignedAffiliates.find(
-          (a: any) => a.affiliateId === aff.id
+          (a) => a.affiliateId === aff.id
         )
         return {
-          ...aff,
+          id: aff.id,
+          affiliateId: aff.id,
           affiliateName: aff.name,
           affiliateEmail: aff.email,
           status: assigned?.status ?? "not_assigned",
@@ -119,15 +129,24 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
 
     let filtered = assignedAffiliates
     if (view === "pending")
-      filtered = assignedAffiliates.filter((a: any) => a.status === "pending")
+      filtered = assignedAffiliates.filter((a) => a.status === "pending")
     if (view === "approved")
-      filtered = assignedAffiliates.filter((a: any) => a.status === "approved")
+      filtered = assignedAffiliates.filter((a) => a.status === "approved")
     if (view === "rejected")
-      filtered = assignedAffiliates.filter((a: any) => a.status === "rejected")
+      filtered = assignedAffiliates.filter((a) => a.status === "rejected")
+
+    const items: DisplayItem[] = filtered.map(a => ({
+      id: a.id,
+      affiliateId: a.affiliateId,
+      affiliateName: a.affiliateName || "",
+      affiliateEmail: a.affiliateEmail || "",
+      status: a.status,
+      oaId: a.id
+    }))
 
     if (debouncedSearch) {
-      filtered = filtered.filter(
-        (a: any) =>
+      return items.filter(
+        (a) =>
           a.affiliateName
             ?.toLowerCase()
             .includes(debouncedSearch.toLowerCase()) ||
@@ -136,7 +155,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
             .includes(debouncedSearch.toLowerCase())
       )
     }
-    return filtered
+    return items
   }, [view, allAffiliatesResult, assignedAffiliates, debouncedSearch])
 
   return (
@@ -193,7 +212,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
             ) : (
               <div className="space-y-4">
                 <div className="divide-y overflow-hidden rounded-md border">
-                  {displayList.map((item: any) => (
+                  {displayList.map((item) => (
                     <AffiliateRow
                       key={item.id}
                       item={item}
@@ -201,7 +220,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                       onAssign={() =>
                         assignAffiliate.mutateAsync({
                           id: offer.id,
-                          data: { affiliateId: item.id, status: "approved" },
+                          data: { affiliateId: item.affiliateId, status: "approved" },
                         })
                       }
                       onUpdate={(data) =>
@@ -232,7 +251,6 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
         </Card>
       </div>
 
-      {/* Right Sidebar Stats */}
       <div className="space-y-6">
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
@@ -448,10 +466,10 @@ function AffiliateRow({
   onAssign,
   onUpdate,
 }: {
-  item: any
-  offer: Offer
-  onAssign?: () => Promise<any>
-  onUpdate: (data: any) => Promise<any>
+  item: DisplayItem
+  offer: OfferDetail
+  onAssign?: () => Promise<unknown>
+  onUpdate: (data: { status: "approved" | "rejected" | "pending" }) => Promise<unknown>
 }) {
   return (
     <div className="flex items-center justify-between bg-card p-3 transition-colors hover:bg-muted/30">
@@ -459,7 +477,7 @@ function AffiliateRow({
         <div className="flex size-9 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-[11px] font-bold text-primary shadow-sm">
           {item.affiliateName
             ?.split(" ")
-            .map((n: string) => n[0])
+            .map((n) => n[0])
             .join("")
             .slice(0, 2)
             .toUpperCase()}
@@ -468,7 +486,7 @@ function AffiliateRow({
           <div className="flex items-center gap-2">
             <p className="text-xs font-bold">{item.affiliateName}</p>
             <span className="rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
-              ID: {item.affiliateId || item.id}
+              ID: {item.affiliateId}
             </span>
           </div>
           <p className="flex items-center gap-1 text-[10px] text-muted-foreground">

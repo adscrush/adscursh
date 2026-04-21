@@ -30,7 +30,7 @@ export function SignUpForm() {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<SignUpForm>({
+  } = useForm({
     resolver: zodResolver(
       signUpBaseSchema.pick({ name: true, email: true, password: true })
     ),

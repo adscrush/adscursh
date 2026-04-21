@@ -20,11 +20,16 @@ import {
   IconTarget,
 } from "@tabler/icons-react"
 import * as React from "react"
-import { Offer } from "../queries"
+import { OfferDetail } from "../queries"
+
+interface AffiliateInfo {
+  affiliateId: string
+  affiliateName: string
+}
 
 interface OfferAffiliateTrackingDialogProps {
-  offer: Offer
-  affiliate: any
+  offer: OfferDetail
+  affiliate: AffiliateInfo
   children: React.ReactNode
 }
 

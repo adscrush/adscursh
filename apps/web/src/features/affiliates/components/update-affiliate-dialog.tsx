@@ -53,7 +53,7 @@ export function UpdateAffiliateDialog({
 }: UpdateAffiliateDialogProps) {
   const updateMutation = useUpdateAffiliate()
 
-  const { control, handleSubmit, reset } = useForm<EditAffiliateInput>({
+  const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: affiliate?.name || "",
