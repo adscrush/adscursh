@@ -1,19 +1,13 @@
 "use client"
 
-import { Popover, PopoverContent, PopoverTrigger } from "@adscrush/ui/components/popover"
+import { URL_TOKENS } from "@adscrush/shared/constants/tokens"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@adscrush/ui/components/popover"
 import { cn } from "@adscrush/ui/lib/utils"
 import * as React from "react"
-
-const TOKENS = [
-  { label: "Transaction ID", value: "{tid}" },
-  { label: "Click ID", value: "{clickid}" },
-  { label: "Affiliate ID", value: "{aff_id}" },
-  { label: "Sub 1", value: "{sub1}" },
-  { label: "Sub 2", value: "{sub2}" },
-  { label: "Sub 3", value: "{sub3}" },
-  { label: "Source", value: "{source}" },
-  { label: "Campaign", value: "{campaign}" },
-]
 
 interface TokenSelectorProps {
   onSelect: (token: string) => void
@@ -33,12 +27,15 @@ export function TokenSelector({ onSelect, className }: TokenSelectorProps) {
             className
           )}
         >
-          <span className="flex size-3.5 items-center justify-center rounded-xs border text-[10px]">+</span> Add Token
+          <span className="flex size-3.5 items-center justify-center rounded-xs border text-[10px]">
+            +
+          </span>{" "}
+          Add Token
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-1" align="start">
         <div className="flex flex-col gap-0.5">
-          {TOKENS.map((token) => (
+          {URL_TOKENS.map((token) => (
             <button
               key={token.value}
               type="button"
@@ -49,7 +46,9 @@ export function TokenSelector({ onSelect, className }: TokenSelectorProps) {
               }}
             >
               <span>{token.label}</span>
-              <span className="font-mono text-muted-foreground">{token.value}</span>
+              <span className="font-mono text-muted-foreground">
+                {token.value}
+              </span>
             </button>
           ))}
         </div>

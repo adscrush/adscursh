@@ -1,5 +1,6 @@
 "use client"
 
+import { STANDARD_TRACKING_TOKENS } from "@adscrush/shared/constants/tokens"
 import { Badge } from "@adscrush/ui/components/badge"
 import { Button } from "@adscrush/ui/components/button"
 import {
@@ -143,16 +144,14 @@ export function OfferAffiliateTrackingDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-            <TokenInput
-              label="aff_click_id"
-              placeholder="{replace_it}"
-              checked
-            />
-            <TokenInput label="sub_aff_id" placeholder="{replace_it}" checked />
-            <TokenInput label="aff_sub1" placeholder="{replace_it}" />
-            <TokenInput label="aff_sub2" placeholder="{replace_it}" />
-            <TokenInput label="aff_sub3" placeholder="{replace_it}" />
-            <TokenInput label="aff_sub4" placeholder="{replace_it}" />
+            {STANDARD_TRACKING_TOKENS.slice(0, 6).map((token) => (
+              <TokenInput
+                key={token.label}
+                label={token.label}
+                placeholder={token.placeholder}
+                checked={["aff_click_id", "sub_aff_id"].includes(token.label)}
+              />
+            ))}
           </div>
         </div>
       </DialogContent>
