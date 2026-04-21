@@ -37,6 +37,7 @@ import { Card, CardContent } from "@adscrush/ui/components/card"
 import { AdvertiserSelect } from "./advertiser-select"
 import { CategorySelect } from "./category-select"
 import { IconDeviceFloppy } from "@tabler/icons-react"
+import { TokenSelector } from "./token-selector"
 
 interface OfferFormProps {
   initialData?: Partial<CreateOfferInput>
@@ -98,8 +99,35 @@ export function OfferForm({
 
   const [showLandingPages, setShowLandingPages] = React.useState(false)
 
+  const [activeField, setActiveField] = React.useState<{
+    onChange: (val: string) => void
+    element: HTMLTextAreaElement | HTMLInputElement | null
+  } | null>(null)
+
   const addLandingPageRow = () => {
     append({ name: "", url: "", weight: 10, status: "active" })
+  }
+
+  const insertToken = (
+    value: string,
+    onChange: (val: string) => void,
+    element: HTMLTextAreaElement | HTMLInputElement | null
+  ) => {
+    if (!element) return
+
+    const currentValue = element.value
+    const start = element.selectionStart || 0
+    const end = element.selectionEnd || 0
+    const newValue =
+      currentValue.substring(0, start) + value + currentValue.substring(end)
+
+    onChange(newValue)
+
+    // Set cursor position after the inserted token
+    setTimeout(() => {
+      element.focus()
+      element.setSelectionRange(start + value.length, start + value.length)
+    }, 0)
   }
 
   return (
@@ -197,6 +225,16 @@ export function OfferForm({
                           rows={4}
                           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           placeholder="https://..."
+                          ref={(el) => {
+                            field.ref(el)
+                            ;(field as any).element = el
+                          }}
+                          onFocus={() =>
+                            setActiveField({
+                              onChange: field.onChange,
+                              element: (field as any).element,
+                            })
+                          }
                         />
                         <FieldError />
                       </div>
@@ -214,6 +252,16 @@ export function OfferForm({
                             </span>{" "}
                             Landing Page
                           </button>
+
+                          <TokenSelector
+                            onSelect={(token) => {
+                              const target = activeField || {
+                                onChange: field.onChange,
+                                element: (field as any).element,
+                              }
+                              insertToken(token, target.onChange, target.element)
+                            }}
+                          />
                         </div>
                       </div>
                     </FieldContent>
@@ -267,12 +315,27 @@ export function OfferForm({
                                   </Select>
                                 </td>
                                 <td className="px-2 py-2">
-                                  <Input
-                                    {...form.register(
-                                      `landingPages.${index}.url`
+                                  <Controller
+                                    name={`landingPages.${index}.url`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                      <Input
+                                        {...field}
+                                        value={field.value ?? ""}
+                                        className="border-none bg-muted/20 text-xs shadow-none"
+                                        placeholder="URL"
+                                        ref={(el) => {
+                                          field.ref(el)
+                                          ;(field as any).element = el
+                                        }}
+                                        onFocus={() =>
+                                          setActiveField({
+                                            onChange: field.onChange,
+                                            element: (field as any).element,
+                                          })
+                                        }
+                                      />
                                     )}
-                                    className="border-none bg-muted/20 text-xs shadow-none"
-                                    placeholder="URL"
                                   />
                                 </td>
                                 <td className="px-2 py-2">

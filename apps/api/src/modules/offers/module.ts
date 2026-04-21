@@ -437,6 +437,7 @@ export const offerRoutes = new Elysia({ prefix: "/offers" })
         createdAt: offerAffiliates.createdAt,
         affiliateName: affiliates.name,
         affiliateEmail: affiliates.email,
+        affiliateCompanyName: affiliates.companyName,
       })
       .from(offerAffiliates)
       .innerJoin(affiliates, eq(offerAffiliates.affiliateId, affiliates.id))

@@ -20,12 +20,14 @@ import {
   IconSettings,
   IconTarget,
   IconUsers,
+  IconVariable,
 } from "@tabler/icons-react"
 import { useOffer, useUpdateOffer, type OfferDetail } from "../queries"
 import { OfferAffiliatesTab } from "./offer-affiliates-tab"
 import { OfferFallbackTab } from "./offer-fallback-tab"
 import { OfferForm } from "./offer-form"
 import { OfferHomeTab } from "./offer-home-tab"
+import { OfferTokensTab } from "./offer-tokens-tab"
 
 interface OfferDetailsProps {
   id: string
@@ -127,6 +129,12 @@ export function OfferDetails({ id }: OfferDetailsProps) {
             <IconUsers className="size-4" /> AFFILIATES
           </TabsTrigger>
           <TabsTrigger
+            value="tokens"
+            className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
+          >
+            <IconVariable className="size-4" /> TOKENS
+          </TabsTrigger>
+          <TabsTrigger
             value="fallback"
             className="rounded-none bg-transparent py-3 data-active:after:opacity-100"
           >
@@ -162,6 +170,9 @@ export function OfferDetails({ id }: OfferDetailsProps) {
 
           <TabsContent value="affiliates">
             <OfferAffiliatesTab offer={offer} />
+          </TabsContent>
+          <TabsContent value="tokens">
+            <OfferTokensTab offer={offer} />
           </TabsContent>
           <TabsContent value="fallback">
             <OfferFallbackTab

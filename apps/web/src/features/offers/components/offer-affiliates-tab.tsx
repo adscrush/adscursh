@@ -3,12 +3,7 @@
 import { useAffiliates } from "@/features/affiliates/queries"
 import { Badge } from "@adscrush/ui/components/badge"
 import { Button } from "@adscrush/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@adscrush/ui/components/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@adscrush/ui/components/card"
 import { Input } from "@adscrush/ui/components/input"
 import {
   Pagination,
@@ -21,22 +16,10 @@ import {
 } from "@adscrush/ui/components/pagination"
 import { Skeleton } from "@adscrush/ui/components/skeleton"
 import { cn } from "@adscrush/ui/lib/utils"
-import {
-  IconChartBar,
-  IconRefresh,
-  IconSearch,
-  IconShare,
-  IconUserPlus,
-  IconUsers,
-} from "@tabler/icons-react"
+import { IconChartBar, IconRefresh, IconSearch, IconShare, IconUserPlus, IconUsers } from "@tabler/icons-react"
 import { useDebouncedValue } from "@tanstack/react-pacer"
 import * as React from "react"
-import {
-  useAssignOfferAffiliate,
-  useOfferAffiliates,
-  useUpdateOfferAffiliate,
-  type OfferDetail,
-} from "../queries"
+import { useAssignOfferAffiliate, useOfferAffiliates, useUpdateOfferAffiliate, type OfferDetail } from "../queries"
 import { OfferAffiliateTrackingDialog } from "./offer-affiliate-tracking-dialog"
 
 interface OfferAffiliatesTabProps {
@@ -50,6 +33,7 @@ interface DisplayItem {
   affiliateId: string
   affiliateName: string
   affiliateEmail: string
+  affiliateCompany?: string | null
   status: string
   oaId?: string
 }
@@ -59,11 +43,9 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
   const [page, setPage] = React.useState(1)
   const [search, setSearch] = React.useState("")
 
-  const [debouncedSearch, debouncer] = useDebouncedValue(
-    search,
-    { wait: 300 },
-    (state) => ({ isPending: state.isPending })
-  )
+  const [debouncedSearch, debouncer] = useDebouncedValue(search, { wait: 300 }, (state) => ({
+    isPending: state.isPending,
+  }))
 
   const {
     data: allAffiliatesResult,
@@ -96,65 +78,59 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
   const stats = React.useMemo(() => {
     return {
       all: allAffiliatesResult?.meta?.total ?? 0,
-      pending: assignedAffiliates.filter((a) => a.status === "pending")
-        .length,
-      approved: assignedAffiliates.filter((a) => a.status === "approved")
-        .length,
-      rejected: assignedAffiliates.filter((a) => a.status === "rejected")
-        .length,
+      pending: assignedAffiliates.filter((a) => a.status === "pending").length,
+      approved: assignedAffiliates.filter((a) => a.status === "approved").length,
+      rejected: assignedAffiliates.filter((a) => a.status === "rejected").length,
     }
   }, [assignedAffiliates, allAffiliatesResult])
 
   const isLoading = view === "all" ? isAllLoading : isAssignedLoading
-  const isFetching =
-    (view === "all" ? isAllFetching : isAssignedFetching) ||
-    debouncer.state.isPending
+  const isFetching = (view === "all" ? isAllFetching : isAssignedFetching) || debouncer.state.isPending
 
   const displayList = React.useMemo((): DisplayItem[] => {
+    let items: DisplayItem[] = []
+
     if (view === "all") {
-      return (allAffiliatesResult?.data ?? []).map((aff) => {
-        const assigned = assignedAffiliates.find(
-          (a) => a.affiliateId === aff.id
-        )
+      items = (allAffiliatesResult?.data ?? []).map((aff) => {
+        const assigned = assignedAffiliates.find((a) => a.affiliateId === aff.id)
         return {
           id: aff.id,
           affiliateId: aff.id,
           affiliateName: aff.name,
           affiliateEmail: aff.email,
+          affiliateCompany: aff.companyName,
           status: assigned?.status ?? "not_assigned",
           oaId: assigned?.id,
         }
       })
+    } else {
+      let filtered = assignedAffiliates
+      if (view === "pending") filtered = assignedAffiliates.filter((a) => a.status === "pending")
+      if (view === "approved") filtered = assignedAffiliates.filter((a) => a.status === "approved")
+      if (view === "rejected") filtered = assignedAffiliates.filter((a) => a.status === "rejected")
+
+      items = filtered.map((a) => ({
+        id: a.id,
+        affiliateId: a.affiliateId,
+        affiliateName: a.affiliateName || "",
+        affiliateEmail: a.affiliateEmail || "",
+        affiliateCompany: a.affiliateCompanyName,
+        status: a.status,
+        oaId: a.id,
+      }))
     }
-
-    let filtered = assignedAffiliates
-    if (view === "pending")
-      filtered = assignedAffiliates.filter((a) => a.status === "pending")
-    if (view === "approved")
-      filtered = assignedAffiliates.filter((a) => a.status === "approved")
-    if (view === "rejected")
-      filtered = assignedAffiliates.filter((a) => a.status === "rejected")
-
-    const items: DisplayItem[] = filtered.map(a => ({
-      id: a.id,
-      affiliateId: a.affiliateId,
-      affiliateName: a.affiliateName || "",
-      affiliateEmail: a.affiliateEmail || "",
-      status: a.status,
-      oaId: a.id
-    }))
 
     if (debouncedSearch) {
+      const s = debouncedSearch.toLowerCase()
       return items.filter(
         (a) =>
-          a.affiliateName
-            ?.toLowerCase()
-            .includes(debouncedSearch.toLowerCase()) ||
-          a.affiliateEmail
-            ?.toLowerCase()
-            .includes(debouncedSearch.toLowerCase())
+          a.affiliateName?.toLowerCase().includes(s) ||
+          a.affiliateEmail?.toLowerCase().includes(s) ||
+          a.affiliateCompany?.toLowerCase().includes(s) ||
+          a.affiliateId?.toLowerCase().includes(s)
       )
     }
+
     return items
   }, [view, allAffiliatesResult, assignedAffiliates, debouncedSearch])
 
@@ -188,14 +164,17 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                   setPage(1)
                 }}
               />
+              {isFetching && (
+                <div className="absolute top-2 right-2 flex size-3 items-center justify-center">
+                  <div className="size-2 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="mb-4">
               <h4 className="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                {view === "all"
-                  ? "All Affiliates"
-                  : `${view} Affiliates`.toUpperCase()}
+                {view === "all" ? "All Affiliates" : `${view} Affiliates`.toUpperCase()}
               </h4>
             </div>
 
@@ -234,17 +213,15 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                   ))}
                 </div>
 
-                {view === "all" &&
-                  allAffiliatesResult?.meta &&
-                  allAffiliatesResult.meta.totalPages > 1 && (
-                    <div className="pt-4">
-                      <PaginationComponent
-                        currentPage={page}
-                        totalPages={allAffiliatesResult.meta.totalPages}
-                        onPageChange={setPage}
-                      />
-                    </div>
-                  )}
+                {view === "all" && allAffiliatesResult?.meta && allAffiliatesResult.meta.totalPages > 1 && (
+                  <div className="pt-4">
+                    <PaginationComponent
+                      currentPage={page}
+                      totalPages={allAffiliatesResult.meta.totalPages}
+                      onPageChange={setPage}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -255,14 +232,12 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-              <IconShare className="size-4 text-primary" /> Affiliate Tracking
-              URL
+              <IconShare className="size-4 text-primary" /> Affiliate Tracking URL
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-[10px] leading-relaxed text-muted-foreground">
-              Quickly access tracking link for any approved affiliate by
-              clicking the share button in the list.
+              Quickly access tracking link for any approved affiliate by clicking the share button in the list.
             </p>
             <Button
               variant="outline"
@@ -290,13 +265,8 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                 )}
                 onClick={() => setView("all")}
               >
-                <span className="font-semibold text-muted-foreground uppercase">
-                  All Affiliates
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="h-5 min-w-5 justify-center"
-                >
+                <span className="font-semibold text-muted-foreground uppercase">All Affiliates</span>
+                <Badge variant="secondary" className="h-5 min-w-5 justify-center">
                   {stats.all}
                 </Badge>
               </div>
@@ -307,13 +277,8 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                 )}
                 onClick={() => setView("assigned")}
               >
-                <span className="text-[10px] font-semibold text-primary uppercase">
-                  Assigned
-                </span>
-                <Badge
-                  variant="outline"
-                  className="h-5 min-w-5 justify-center border-primary/20 text-primary"
-                >
+                <span className="text-[10px] font-semibold text-primary uppercase">Assigned</span>
+                <Badge variant="outline" className="h-5 min-w-5 justify-center border-primary/20 text-primary">
                   {stats.pending + stats.approved + stats.rejected}
                 </Badge>
               </div>
@@ -324,9 +289,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                 )}
                 onClick={() => setView("pending")}
               >
-                <span className="font-semibold text-yellow-600 uppercase">
-                  Pending
-                </span>
+                <span className="font-semibold text-yellow-600 uppercase">Pending</span>
                 <Badge
                   variant="outline"
                   className="h-5 min-w-5 justify-center border-yellow-200 bg-yellow-50/50 text-yellow-600"
@@ -341,9 +304,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                 )}
                 onClick={() => setView("approved")}
               >
-                <span className="font-semibold text-green-600 uppercase">
-                  Approved
-                </span>
+                <span className="font-semibold text-green-600 uppercase">Approved</span>
                 <Badge
                   variant="outline"
                   className="h-5 min-w-5 justify-center border-green-200 bg-green-50/50 text-green-600"
@@ -358,9 +319,7 @@ export function OfferAffiliatesTab({ offer }: OfferAffiliatesTabProps) {
                 )}
                 onClick={() => setView("rejected")}
               >
-                <span className="font-semibold text-red-600 uppercase">
-                  Rejected
-                </span>
+                <span className="font-semibold text-red-600 uppercase">Rejected</span>
                 <Badge
                   variant="outline"
                   className="h-5 min-w-5 justify-center border-red-200 bg-red-50/50 text-red-600"
@@ -385,7 +344,10 @@ function PaginationComponent({
   totalPages: number
   onPageChange: (p: number) => void
 }) {
-  const pages = Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1)
+  const pages = React.useMemo(() => {
+    const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+    return Array.from({ length: Math.min(5, totalPages) }, (_, i) => start + i)
+  }, [currentPage, totalPages])
 
   return (
     <Pagination>
@@ -397,11 +359,7 @@ function PaginationComponent({
               e.preventDefault()
               if (currentPage > 1) onPageChange(currentPage - 1)
             }}
-            className={
-              currentPage === 1
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
           />
         </PaginationItem>
 
@@ -448,11 +406,7 @@ function PaginationComponent({
               e.preventDefault()
               if (currentPage < totalPages) onPageChange(currentPage + 1)
             }}
-            className={
-              currentPage === totalPages
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
           />
         </PaginationItem>
       </PaginationContent>
@@ -485,13 +439,14 @@ function AffiliateRow({
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-2">
             <p className="text-xs font-bold">{item.affiliateName}</p>
+            {item.affiliateCompany && (
+              <span className="text-[10px] text-muted-foreground">({item.affiliateCompany})</span>
+            )}
             <span className="rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
               ID: {item.affiliateId}
             </span>
           </div>
-          <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            {item.affiliateEmail}
-          </p>
+          <p className="flex items-center gap-1 text-[10px] text-muted-foreground">{item.affiliateEmail}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">

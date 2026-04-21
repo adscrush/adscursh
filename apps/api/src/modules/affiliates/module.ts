@@ -1,29 +1,18 @@
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  inArray,
-  like,
-  lte,
-  or,
-  sql,
-} from "@adscrush/db/drizzle"
-import { affiliates, employees, users } from "@adscrush/db/schema"
+import { and, asc, desc, eq, gte, ilike, inArray, like, lte, or, sql } from "@adscrush/db/drizzle"
 import { filterColumns, getColumn } from "@adscrush/db/lib/filter-columns"
+import { affiliates, employees, users } from "@adscrush/db/schema"
 import {
+  bulkDeleteSchema as bulkDeleteAffiliateSchema,
+  bulkUpdateStatusSchema as bulkUpdateAffiliateStatusSchema,
   createAffiliateSchema,
   updateAffiliateSchema,
-  bulkUpdateStatusSchema as bulkUpdateAffiliateStatusSchema,
-  bulkDeleteSchema as bulkDeleteAffiliateSchema,
 } from "@adscrush/shared/validators/affiliate.validator"
 import Elysia from "elysia"
+import z from "zod"
 import { db } from "~/lib/db"
 import { requireAuth } from "~/middleware/auth.middleware"
 import { AppError } from "~/utils/errors"
 import { listQuerySchema } from "./config"
-import z from "zod"
 
 export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
   .use(requireAuth)
@@ -68,22 +57,9 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
     "/",
     async ({ query }) => {
       const parsed = listQuerySchema.parse(query)
-      const {
-        page,
-        perPage,
-        filterFlag,
-        name,
-        status,
-        createdAt,
-        joinOperator,
-        sort,
-        filters,
-      } = parsed
+      const { page, perPage, name, status, createdAt, joinOperator, sort, filters } = parsed
 
       const offset = (page - 1) * perPage
-
-      const advancedTable =
-        filterFlag === "advancedFilters" || filterFlag === "commandFilters"
 
       const advancedWhere = filterColumns({
         table: affiliates,
@@ -95,10 +71,14 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
       const simpleWhere =
         name || status.length > 0 || createdAt.length > 0
           ? and(
-              name ? like(affiliates.name, `%${name}%`) : undefined,
-              status.length > 0
-                ? or(...status.map((s) => eq(affiliates.status, s)))
+              name
+                ? or(
+                    ilike(affiliates.name, `%${name}%`),
+                    ilike(affiliates.companyName, `%${name}%`),
+                    ilike(affiliates.email, `%${name}%`)
+                  )
                 : undefined,
+              status.length > 0 ? or(...status.map((s) => eq(affiliates.status, s))) : undefined,
               createdAt.length > 0
                 ? and(
                     createdAt[0]
@@ -126,15 +106,11 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
             )
           : undefined
 
-      const where = advancedTable ? advancedWhere : simpleWhere
+      const where = and(advancedWhere, simpleWhere)
 
       const orderBy =
         sort.length > 0
-          ? sort.map((item) =>
-              item.desc
-                ? desc(getColumn(affiliates, item.id))
-                : asc(getColumn(affiliates, item.id))
-            )
+          ? sort.map((item) => (item.desc ? desc(getColumn(affiliates, item.id)) : asc(getColumn(affiliates, item.id))))
           : [asc(affiliates.createdAt)]
 
       const [items, countResult] = await Promise.all([
@@ -187,11 +163,7 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
 
   // ── GET /:id ───────────────────────────────────────────────────
   .get("/:id", async ({ params }) => {
-    const [affiliate] = await db
-      .select()
-      .from(affiliates)
-      .where(eq(affiliates.id, params.id))
-      .limit(1)
+    const [affiliate] = await db.select().from(affiliates).where(eq(affiliates.id, params.id)).limit(1)
     if (!affiliate) throw new AppError(404, "Affiliate not found")
     return { success: true, data: affiliate }
   })
@@ -223,10 +195,7 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
 
   // ── POST /:id/delete ────────────────────────────────────────────
   .post("/:id/delete", async ({ params }) => {
-    const [deleted] = await db
-      .delete(affiliates)
-      .where(eq(affiliates.id, params.id))
-      .returning()
+    const [deleted] = await db.delete(affiliates).where(eq(affiliates.id, params.id)).returning()
     if (!deleted) throw new AppError(404, "Affiliate not found")
     return { success: true, data: { id: deleted.id } }
   })
@@ -236,10 +205,7 @@ export const affiliateRoutes = new Elysia({ prefix: "/affiliates" })
     "/bulk-status",
     async ({ body }) => {
       const { ids, status } = bulkUpdateAffiliateStatusSchema.parse(body)
-      await db
-        .update(affiliates)
-        .set({ status, updatedAt: new Date() })
-        .where(inArray(affiliates.id, ids))
+      await db.update(affiliates).set({ status, updatedAt: new Date() }).where(inArray(affiliates.id, ids))
       return { success: true }
     },
     { body: bulkUpdateAffiliateStatusSchema }
