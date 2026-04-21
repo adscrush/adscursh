@@ -452,9 +452,9 @@ function AffiliateRow({
       <div className="flex items-center gap-2">
         {item.status === "not_assigned" ? (
           <Button
-            variant="outline"
+            variant="default"
             size="xs"
-            className="h-7 gap-1.5 border-primary/30 px-3 text-[10px] font-bold text-primary hover:bg-primary/5"
+            className="h-7 gap-1.5 px-3 text-[10px] font-bold shadow-sm"
             onClick={onAssign}
           >
             <IconUserPlus className="size-3" /> Assign Offer
@@ -463,9 +463,9 @@ function AffiliateRow({
           <>
             {item.status !== "approved" && (
               <Button
-                variant="outline"
+                variant="default"
                 size="xs"
-                className="h-7 border-green-200 px-3 text-[10px] font-semibold text-green-600 hover:bg-green-50"
+                className="h-7 bg-green-600 px-3 text-[10px] font-bold text-white hover:bg-green-700"
                 onClick={() => onUpdate({ status: "approved" })}
               >
                 Approve
@@ -473,9 +473,9 @@ function AffiliateRow({
             )}
             {item.status !== "rejected" && (
               <Button
-                variant="outline"
+                variant="destructive"
                 size="xs"
-                className="h-7 border-red-200 px-3 text-[10px] font-semibold text-red-600 hover:bg-red-50"
+                className="h-7 px-3 text-[10px] font-bold"
                 onClick={() => onUpdate({ status: "rejected" })}
               >
                 Reject

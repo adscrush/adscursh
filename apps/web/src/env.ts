@@ -21,9 +21,11 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
     NEXT_PUBLIC_API_URL: z.string().min(1),
+    NEXT_PUBLIC_TRACKING_DOMAIN: z.string().min(1).default("http://localhost:3002"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_TRACKING_DOMAIN: process.env.NEXT_PUBLIC_TRACKING_DOMAIN,
   },
 })
