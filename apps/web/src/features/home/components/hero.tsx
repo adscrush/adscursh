@@ -17,8 +17,11 @@ import {
   Layers,
   Gem,
   Cpu,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react"
 import { Button } from "@adscrush/ui/components/button"
+import { cn } from "@adscrush/ui/lib/utils"
 import { stats, tableRows } from "../data"
 
 type Star = {
@@ -207,50 +210,51 @@ const HeroSection = () => {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 px-3 pb-3 md:grid-cols-4 md:gap-3 md:px-4">
-                          {stats.map((card, idx) => (
-                            <article
-                              key={card.name}
-                              className="min-w-0 overflow-hidden rounded-xl border border-white/[0.06] p-3 shadow-[inset_0_0_40px_rgba(255,255,255,0.06),inset_0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-sm"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex min-w-0 items-center gap-2">
-                                  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] md:size-8">
-                                    {idx % 4 === 0 ? (
-                                      <Layers className="h-4 w-4 text-purple-400" />
-                                    ) : idx % 4 === 1 ? (
-                                      <CircleDollarSign className="h-4 w-4 text-blue-400" />
-                                    ) : idx % 4 === 2 ? (
-                                      <Gem className="h-4 w-4 text-green-400" />
-                                    ) : (
-                                      <Cpu className="h-4 w-4 text-orange-400" />
-                                    )}
-                                  </div>
-                                  <span className="truncate text-[11px] font-medium text-white md:text-xs">
-                                    {card.name}
+                        <div className="mx-3 mb-6 md:mx-4">
+                          <div className="flex w-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm md:flex-row">
+                            {stats.map((card, idx) => (
+                              <div
+                                key={card.name}
+                                className={cn(
+                                  "flex-1 p-4 md:p-5",
+                                  idx !== stats.length - 1 && "border-b border-white/[0.06] md:border-b-0 md:border-r"
+                                )}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">
+                                    {card.label}
                                   </span>
+                                  {idx % 4 === 0 ? (
+                                    <Layers className="h-3 w-3 text-purple-400/50" />
+                                  ) : idx % 4 === 1 ? (
+                                    <CircleDollarSign className="h-3 w-3 text-blue-400/50" />
+                                  ) : idx % 4 === 2 ? (
+                                    <Gem className="h-3 w-3 text-green-400/50" />
+                                  ) : (
+                                    <Cpu className="h-3 w-3 text-orange-400/50" />
+                                  )}
                                 </div>
-                                <button className="hidden shrink-0 text-white/30 transition-colors hover:text-white/60 md:block">
-                                  •••
-                                </button>
-                              </div>
-                              <div className="mt-3 flex min-w-0 flex-col gap-1">
-                                <span className="text-[8px] tracking-wider text-white/40 uppercase md:text-[9px]">
-                                  {card.label}
-                                </span>
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className="text-sm font-semibold tracking-tight whitespace-nowrap text-white md:text-lg">
+                                <div className="mt-2 flex flex-col gap-0.5">
+                                  <h4 className="text-lg font-bold tracking-tight text-white md:text-xl">
                                     {card.value}
-                                  </span>
+                                  </h4>
+                                  <div className="flex items-center gap-1.5">
+                                    {card.up ? (
+                                      <ArrowUpRight className="h-3 w-3 text-emerald-400" />
+                                    ) : (
+                                      <ArrowDownRight className="h-3 w-3 text-rose-400" />
+                                    )}
+                                    <span
+                                      className={`text-[10px] font-semibold ${card.up ? "text-emerald-400" : "text-rose-400"}`}
+                                    >
+                                      {card.change}
+                                    </span>
+                                    <span className="text-[10px] text-white/30">vs Last Month</span>
+                                  </div>
                                 </div>
-                                <span
-                                  className={`text-[8px] font-medium whitespace-nowrap md:text-[10px] ${card.up ? "text-emerald-400" : "text-red-400"}`}
-                                >
-                                  {card.change}
-                                </span>
                               </div>
-                            </article>
-                          ))}
+                            ))}
+                          </div>
                         </div>
 
                         <div className="hidden flex-1 sm:block">

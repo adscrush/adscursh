@@ -1,14 +1,22 @@
-"use client"
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query"
+import { getDashboardAnalyticsQueryOptions } from "@/features/dashboard/queries"
+import { DashboardClient } from "@/features/dashboard/client"
+import type { DashboardPeriod } from "@/features/dashboard/types"
 
-import { PageHeader } from "@/components/common/page-header"
+interface DashboardPageProps {
+  searchParams: Promise<{ period?: string }>
+}
 
-export default function DashboardPage() {
+export default async function DashboardPage(props: DashboardPageProps) {
+  const searchParams = await props.searchParams
+  const period = (searchParams.period as DashboardPeriod) || "1m"
+
+  const queryClient = new QueryClient()
+  await queryClient.ensureQueryData(getDashboardAnalyticsQueryOptions({ period }))
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        description="Overview of your ad network performance"
-      />
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <DashboardClient />
+    </HydrationBoundary>
   )
 }

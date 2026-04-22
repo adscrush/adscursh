@@ -3,25 +3,42 @@
 export function parseApiError(errorPayload: unknown): string {
   if (!errorPayload) return "An unexpected error occurred"
 
-  // If we passed Eden's error object directly containing `.value`
-  const obj = errorPayload as Record<string, unknown>
-  console.log(obj)
-  const data = (obj.status && obj.value ? obj.value : obj) as Record<
-    string,
-    unknown
-  >
+  // Handle Eden error object: { status, value, ... }
+  const obj = errorPayload as Record<string, unknown> | unknown[]
+  let data: unknown
 
-  if (typeof data === "string") return data
-
-  if (data.error) {
-    return String(data.error)
+  if (typeof obj === "object" && obj !== null && !Array.isArray(obj)) {
+    const record = obj as Record<string, unknown>
+    // Eden wraps errors: { status: number, value: {...} }
+    if (record.status !== undefined && record.value !== undefined) {
+      data = record.value
+    } else {
+      data = record
+    }
+  } else {
+    data = obj
   }
 
-  if (data.message) return String(data.message)
+  // If data itself is a string, return it
+  if (typeof data === "string") return data
 
-  // Debug: log the actual error structure to help diagnose issues
-  console.error("API Error payload:", errorPayload)
-  console.error("API Error data:", data)
+  // If data is an array, stringify it
+  if (Array.isArray(data)) return JSON.stringify(data)
 
-  return "An unexpected error occurred"
+  // If data is an object, look for common error fields
+  if (typeof data === "object" && data !== null) {
+    const dataObj = data as Record<string, unknown>
+    if (dataObj.error) return String(dataObj.error)
+    if (dataObj.message) return String(dataObj.message)
+    if (dataObj.details) return String(dataObj.details)
+    // Fallback: stringify the object
+    try {
+      return JSON.stringify(dataObj)
+    } catch {
+      return "An unexpected error occurred"
+    }
+  }
+
+  // For any other type (number, boolean, etc.)
+  return String(data) || "An unexpected error occurred"
 }
