@@ -120,22 +120,19 @@ export function GeographyPanel({ geography, totalConversions }: GeographyPanelPr
               cy={point.y}
               r={0.35}
               fill="currentColor"
-              className="map-dot text-foreground/10"
+              opacity="0.12"
+              style={{ transition: "opacity 300ms ease-out" }}
             />
           ))}
 
           {/* Hotspots / Pins */}
           {geography.slice(0, 5).map((item, i) => {
-            // Using a simple projection for the pins matching the dotted-map coordinates
-            // Dotted map uses a specific internal projection, but we'll approximate 
-            // or just use top conversion points if we have them.
-            // For now, let's mock the hotspots from the image as they look better
             const hotspots = [
               { x: 17.5, y: 10.4, r: 2.8 },
-              { x: 31, y: 7.8, r: 2.2 },
-              { x: 45, y: 14.7, r: 2.0 },
-              { x: 22.5, y: 20.8, r: 1.7 },
-              { x: 56, y: 11.3, r: 1.6 },
+              { x: 31, y: 7.8, r: 2.25 },
+              { x: 45, y: 14.7, r: 2.03 },
+              { x: 22.5, y: 20.8, r: 1.74 },
+              { x: 56, y: 11.3, r: 1.63 },
             ]
             
             const spot = hotspots[i]

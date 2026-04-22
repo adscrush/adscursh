@@ -16,10 +16,14 @@ export async function validateOfferAndAffiliate(
   const [offer] = await db
     .select()
     .from(offers)
-    .where(and(eq(offers.id, offerId), eq(offers.status, "active")))
+    .where(eq(offers.id, offerId))
     .limit(1)
 
-  if (!offer) return { valid: false, error: "Offer not found or inactive" } as const
+  if (!offer) return { valid: false, error: "Offer not found" } as const
+
+  if (offer.status !== "active") {
+    return { valid: false, error: "Offer is inactive", offer } as const
+  }
 
   const [assignment] = await db
     .select()
@@ -34,14 +38,14 @@ export async function validateOfferAndAffiliate(
     .limit(1)
 
   if (!assignment)
-    return { valid: false, error: "Affiliate not assigned or not approved" } as const
+    return { valid: false, error: "Affiliate not assigned or not approved", offer } as const
 
   return { valid: true, offer, assignment } as const
 }
 
 export async function selectLandingPage(
   db: Database,
-  offerId: string,
+  offer: { id: string; offerUrl: string },
   lpId?: string
 ) {
   if (lpId) {
@@ -51,7 +55,7 @@ export async function selectLandingPage(
       .where(
         and(
           eq(landingPages.id, lpId),
-          eq(landingPages.offerId, offerId),
+          eq(landingPages.offerId, offer.id),
           eq(landingPages.status, "active")
         )
       )
@@ -59,27 +63,33 @@ export async function selectLandingPage(
     return lp ?? null
   }
 
-  // Weighted random selection
+  // Pool includes active landing pages + the default offer URL
   const activeLps = await db
     .select()
     .from(landingPages)
     .where(
       and(
-        eq(landingPages.offerId, offerId),
+        eq(landingPages.offerId, offer.id),
         eq(landingPages.status, "active")
       )
     )
 
-  if (activeLps.length === 0) return null
+  // Treat the offer_url itself as a "Default Landing Page" with a weight (e.g., 100 or 1.0)
+  // We'll give it a default weight if not specified, but usually offer_url is the fallback.
+  // User wants it to be part of the selection.
+  const selectionPool = [
+    { id: "default", url: offer.offerUrl, weight: 100 }, // Default offer URL
+    ...activeLps.map(lp => ({ id: lp.id, url: lp.url, weight: lp.weight }))
+  ]
 
-  const totalWeight = activeLps.reduce((sum, lp) => sum + lp.weight, 0)
+  const totalWeight = selectionPool.reduce((sum, item) => sum + item.weight, 0)
   let random = Math.random() * totalWeight
-  for (const lp of activeLps) {
-    random -= lp.weight
-    if (random <= 0) return lp
+  for (const item of selectionPool) {
+    random -= item.weight
+    if (random <= 0) return { id: item.id === "default" ? null : item.id, url: item.url }
   }
 
-  return activeLps[0] ?? null
+  return { id: null, url: offer.offerUrl }
 }
 
 export async function recordClick(db: Database, click: NewClick) {

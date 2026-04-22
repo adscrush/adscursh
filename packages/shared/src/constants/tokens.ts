@@ -23,8 +23,7 @@ export const STANDARD_TRACKING_TOKENS = [
  * These are system-wide placeholders that are replaced during redirect flow
  */
 export const ADDITIONAL_MACROS = [
-  { label: "{click_id}", placeholder: "System Click ID (UUID)" },
-  { label: "{tid}", placeholder: "Transaction ID alias for Click ID" },
+  { label: "{tid}", placeholder: "System Click/Transaction ID (UUID)" },
   { label: "{offer_id}", placeholder: "Offer ID" },
   { label: "{affiliate_id}", placeholder: "Affiliate ID" },
   { label: "{payout}", placeholder: "Payout Amount" },
@@ -39,7 +38,6 @@ export const ADDITIONAL_MACROS = [
  */
 export const URL_TOKENS = [
   { label: "Transaction ID", value: "{tid}" },
-  { label: "Click ID", value: "{clickid}" },
   { label: "Affiliate ID", value: "{aff_id}" },
   { label: "Sub 1", value: "{sub1}" },
   { label: "Sub 2", value: "{sub2}" },

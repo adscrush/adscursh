@@ -1,108 +1,148 @@
-import { Elysia } from "elysia"
+import { Elysia, t } from "elysia"
 import { UAParser } from "ua-parser-js"
 import { createDatabase } from "@adscrush/db"
+import env from "../env"
 import {
   validateOfferAndAffiliate,
   selectLandingPage,
   recordClick,
 } from "../services/click.service.js"
+import { z } from "zod"
 
-const db = createDatabase({ url: process.env["DATABASE_URL"] })
+const db = createDatabase({ url: env.DATABASE_URL })
+
+const ClickQuerySchema = z.object({
+  o: z.string().min(1, "Offer ID is required"),
+  a: z.string().min(1, "Affiliate ID is required"),
+  lp: z.string().optional(),
+  aff_click_id: z.string().optional(),
+  sub_aff_id: z.string().optional(),
+  aff_sub1: z.string().optional(),
+  aff_sub2: z.string().optional(),
+  aff_sub3: z.string().optional(),
+  aff_sub4: z.string().optional(),
+  aff_sub5: z.string().optional(),
+  aff_sub6: z.string().optional(),
+  aff_sub7: z.string().optional(),
+  aff_sub8: z.string().optional(),
+  aff_sub9: z.string().optional(),
+  aff_sub10: z.string().optional(),
+  source: z.string().optional(),
+  campaign: z.string().optional(),
+})
 
 export const clickRoute = new Elysia().get(
   "/c",
-  async ({ query, request, set }) => {
-    const offerId = query.o as string
-    const affiliateId = query.a as string
-
-    if (!offerId || !affiliateId) {
-      set.status = 400
-      return "Missing required parameters: o (offer), a (affiliate)"
+  async ({ query, request, redirect }) => {
+    const result = ClickQuerySchema.safeParse(query)
+    
+    if (!result.success) {
+      console.error("Invalid click parameters:", result.error.format())
+      return { error: "INVALID_PARAMETERS", message: "Missing required parameters o and a" }
     }
 
-    const validation = await validateOfferAndAffiliate(db, offerId, affiliateId)
-    if (!validation.valid) {
-      set.status = 404
-      return validation.error
+    const { o: offerId, a: affiliateId, lp: lpId } = result.data
+
+    try {
+      const validation = await validateOfferAndAffiliate(db, offerId, affiliateId)
+      
+      if (!validation.valid) {
+        console.warn(`Click validation failed: ${validation.error} for offer=${offerId}, aff=${affiliateId}`)
+        
+        // Even if invalid, if we have the offer, redirect to its URL
+        if ('offer' in validation && validation.offer?.offerUrl) {
+           return redirect(validation.offer.offerUrl)
+        }
+        
+        return { error: "VALIDATION_FAILED", message: validation.error }
+      }
+
+      const { offer } = validation
+
+      const selected = await selectLandingPage(
+        db,
+        offer,
+        lpId
+      )
+
+      const redirectBase = selected.url
+      const landingPageId = selected.id
+      const clickId = crypto.randomUUID()
+
+      // Parse User-Agent
+      const userAgent = request.headers.get("user-agent") ?? ""
+      const parser = new UAParser(userAgent)
+      const uaResult = parser.getResult()
+
+      // Get IP
+      const forwarded = request.headers.get("x-forwarded-for")
+      const ipAddress = forwarded
+        ? forwarded.split(",")[0]?.trim()
+        : request.headers.get("x-real-ip") ?? "unknown"
+
+      // Build redirect URL
+      let redirectUrlStr = redirectBase
+
+      // Macro replacement
+      const macros: Record<string, string> = {
+        "{tid}": clickId,
+        "{aff_id}": affiliateId,
+        "{offer_id}": offerId,
+        "{sub1}": result.data.aff_sub1 ?? "",
+        "{sub2}": result.data.aff_sub2 ?? "",
+        "{sub3}": result.data.aff_sub3 ?? "",
+        "{source}": result.data.source ?? "",
+        "{campaign}": result.data.campaign ?? "",
+      }
+
+      Object.entries(macros).forEach(([macro, value]) => {
+        redirectUrlStr = redirectUrlStr.replaceAll(macro, value)
+      })
+
+      // Clean up multiple slashes or other URL issues that might occur during replacement
+      try {
+        // User requested: "only append parameter or token injection if i mention... it should not bydefault inject token"
+        // We will NOT automatically set .searchParams.set("click_id", clickId) here.
+        const finalRedirectUrl = redirectUrlStr
+
+        // Record click (fire and forget for speed)
+        recordClick(db, {
+          id: clickId,
+          offerId,
+          affiliateId,
+          advertiserId: offer.advertiserId,
+          landingPageId: landingPageId,
+          ipAddress: ipAddress ?? null,
+          userAgent: userAgent || null,
+          referer: request.headers.get("referer") ?? null,
+          deviceType: uaResult.device.type ?? "desktop",
+          os: uaResult.os.name ?? null,
+          browser: uaResult.browser.name ?? null,
+          affClickId: result.data.aff_click_id ?? null,
+          subAffId: result.data.sub_aff_id ?? null,
+          affSub1: result.data.aff_sub1 ?? null,
+          affSub2: result.data.aff_sub2 ?? null,
+          affSub3: result.data.aff_sub3 ?? null,
+          affSub4: result.data.aff_sub4 ?? null,
+          affSub5: result.data.aff_sub5 ?? null,
+          affSub6: result.data.aff_sub6 ?? null,
+          affSub7: result.data.aff_sub7 ?? null,
+          affSub8: result.data.aff_sub8 ?? null,
+          affSub9: result.data.aff_sub9 ?? null,
+          affSub10: result.data.aff_sub10 ?? null,
+          source: result.data.source ?? null,
+          campaign: result.data.campaign ?? null,
+          redirectUrl: finalRedirectUrl,
+        }).catch(err => console.error("Failed to record click:", err))
+
+        return redirect(finalRedirectUrl)
+      } catch (urlError) {
+        console.error("Failed to construct final redirect URL:", redirectUrlStr, urlError)
+        return redirect(offer.offerUrl)
+      }
+    } catch (error) {
+      console.error("Critical error in click tracking:", error)
+      return { error: "TRACKING_ERROR", message: "An error occurred during tracking" }
     }
-
-    const landingPage = await selectLandingPage(
-      db,
-      offerId,
-      query.lp as string | undefined
-    )
-
-    // Fallback to offer URL if no landing pages
-    const redirectBase = landingPage?.url ?? validation.offer.offerUrl
-    const clickId = crypto.randomUUID()
-
-    // Parse User-Agent
-    const userAgent = request.headers.get("user-agent") ?? ""
-    const parser = new UAParser(userAgent)
-    const uaResult = parser.getResult()
-
-    // Get IP
-    const forwarded = request.headers.get("x-forwarded-for")
-    const ipAddress = forwarded
-      ? forwarded.split(",")[0]?.trim()
-      : request.headers.get("x-real-ip") ?? "unknown"
-
-    // Build redirect URL
-    let redirectUrlStr = redirectBase
-
-    // Macro replacement
-    const macros: Record<string, string> = {
-      "{tid}": clickId,
-      "{clickid}": clickId,
-      "{aff_id}": affiliateId,
-      "{offer_id}": offerId,
-      "{sub1}": (query.aff_sub1 as string) ?? "",
-      "{sub2}": (query.aff_sub2 as string) ?? "",
-      "{sub3}": (query.aff_sub3 as string) ?? "",
-      "{source}": (query.source as string) ?? "",
-      "{campaign}": (query.campaign as string) ?? "",
-    }
-
-    Object.entries(macros).forEach(([macro, value]) => {
-      redirectUrlStr = redirectUrlStr.replaceAll(macro, value)
-    })
-
-    const redirectUrl = new URL(redirectUrlStr)
-    if (!redirectUrl.searchParams.has("click_id")) {
-      redirectUrl.searchParams.set("click_id", clickId)
-    }
-
-    // Record click (fire and forget for speed, but await for Phase 1 correctness)
-    await recordClick(db, {
-      id: clickId,
-      offerId,
-      affiliateId,
-      advertiserId: validation.offer.advertiserId,
-      landingPageId: landingPage?.id ?? null,
-      ipAddress: ipAddress ?? null,
-      userAgent: userAgent || null,
-      referer: request.headers.get("referer") ?? null,
-      deviceType: uaResult.device.type ?? "desktop",
-      os: uaResult.os.name ?? null,
-      browser: uaResult.browser.name ?? null,
-      affClickId: (query.aff_click_id as string) ?? null,
-      subAffId: (query.sub_aff_id as string) ?? null,
-      affSub1: (query.aff_sub1 as string) ?? null,
-      affSub2: (query.aff_sub2 as string) ?? null,
-      affSub3: (query.aff_sub3 as string) ?? null,
-      affSub4: (query.aff_sub4 as string) ?? null,
-      affSub5: (query.aff_sub5 as string) ?? null,
-      affSub6: (query.aff_sub6 as string) ?? null,
-      affSub7: (query.aff_sub7 as string) ?? null,
-      affSub8: (query.aff_sub8 as string) ?? null,
-      affSub9: (query.aff_sub9 as string) ?? null,
-      affSub10: (query.aff_sub10 as string) ?? null,
-      source: (query.source as string) ?? null,
-      campaign: (query.campaign as string) ?? null,
-      redirectUrl: redirectUrl.toString(),
-    })
-
-    set.redirect = redirectUrl.toString()
-    set.status = 302
   }
 )

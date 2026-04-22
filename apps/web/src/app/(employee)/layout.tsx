@@ -30,7 +30,7 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
         <DashboardSidebar />
         <SidebarInset className="min-h-0 min-w-0">
           <DashboardHeader />
-          <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+          <main className="flex min-h-0 flex-1 flex-col p-6">{children}</main>
         </SidebarInset>
       </SidebarStateProvider>
     </Suspense>
