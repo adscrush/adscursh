@@ -24,6 +24,7 @@ export function ActiveOffersPanel({ offers }: ActiveOffersPanelProps) {
               <th className="px-6 py-3">Category</th>
               <th className="px-6 py-3">Status</th>
               <th className="px-6 py-3">Revenue</th>
+              <th className="px-6 py-3">Clicks</th>
               <th className="px-6 py-3">Conversions</th>
               <th className="px-6 py-3">Last Conv.</th>
             </tr>
@@ -43,6 +44,7 @@ export function ActiveOffersPanel({ offers }: ActiveOffersPanelProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4 font-bold">{formatCurrency(offer.revenue)}</td>
+                  <td className="px-6 py-4 font-medium">{formatCompactNumber(offer.clicks)}</td>
                   <td className="px-6 py-4 font-medium">{formatCompactNumber(offer.conversions)}</td>
                   <td className="px-6 py-4 text-xs text-muted-foreground">
                     {offer.lastConversion ? formatDistanceToNow(new Date(offer.lastConversion), { addSuffix: true }) : "-"}
@@ -51,8 +53,8 @@ export function ActiveOffersPanel({ offers }: ActiveOffersPanelProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                  No active offers found for this period.
+                <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  No active offers found for today.
                 </td>
               </tr>
             )}

@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia"
 import { UAParser } from "ua-parser-js"
+import geoip from "geoip-lite"
 import { createDatabase } from "@adscrush/db"
 import env from "../env"
 import {
@@ -74,11 +75,14 @@ export const clickRoute = new Elysia().get(
       const parser = new UAParser(userAgent)
       const uaResult = parser.getResult()
 
-      // Get IP
+      // Get IP and Geo
       const forwarded = request.headers.get("x-forwarded-for")
       const ipAddress = forwarded
         ? forwarded.split(",")[0]?.trim()
         : request.headers.get("x-real-ip") ?? "unknown"
+      
+      const geo = ipAddress && ipAddress !== "unknown" ? geoip.lookup(ipAddress) : null
+      const countryCode = geo?.country ?? null
 
       // Build redirect URL
       let redirectUrlStr = redirectBase
@@ -113,6 +117,7 @@ export const clickRoute = new Elysia().get(
           advertiserId: offer.advertiserId,
           landingPageId: landingPageId,
           ipAddress: ipAddress ?? null,
+          geoCountry: countryCode,
           userAgent: userAgent || null,
           referer: request.headers.get("referer") ?? null,
           deviceType: uaResult.device.type ?? "desktop",

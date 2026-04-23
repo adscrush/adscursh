@@ -34,7 +34,7 @@ export const conversionLogQuerySchema = z.object({
 })
 
 export const dashboardQuerySchema = z.object({
-  period: z.enum(["1w", "1m", "3m", "custom"]).default("1m"),
+  period: z.enum(["1w", "1m", "3m", "12m", "custom"]).default("1m"),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
 })

@@ -18,6 +18,7 @@ export function PeriodSelector({ period }: { period: DashboardPeriod }) {
         <TabsTrigger value="1w">1w</TabsTrigger>
         <TabsTrigger value="1m">1m</TabsTrigger>
         <TabsTrigger value="3m">3m</TabsTrigger>
+        <TabsTrigger value="12m">12m</TabsTrigger>
       </TabsList>
     </Tabs>
   )

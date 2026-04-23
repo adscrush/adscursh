@@ -21,6 +21,9 @@ function getDateRangeFromPeriod(period: string, customFrom?: string, customTo?: 
     case "3m":
       from = customFrom ? new Date(customFrom) : new Date(now.getTime() - 90 * msPerDay)
       break
+    case "12m":
+      from = customFrom ? new Date(customFrom) : new Date(now.getTime() - 365 * msPerDay)
+      break
     case "custom":
     default:
       from = customFrom ? new Date(customFrom) : new Date(now.getTime() - 30 * msPerDay)
@@ -242,11 +245,22 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
       const { period, dateFrom: customFrom, dateTo: customTo } = dashboardQuerySchema.parse(query)
       const now = new Date()
 
-      // Resolve date range
+      // Resolve date range for charts and general metrics
       const { from: dateFrom, to: dateTo } = getDateRangeFromPeriod(period, customFrom, customTo)
       const { from: prevDateFrom, to: prevDateTo } = getPreviousPeriod(dateFrom, dateTo)
 
-      // ── A) Summary metrics for current period ─────────────────────────────
+      // Resolve "Today" and "Yesterday" for summary cards and active offers list
+      const todayStart = new Date(now)
+      todayStart.setHours(0, 0, 0, 0)
+      const todayEnd = new Date(now)
+      todayEnd.setHours(23, 59, 59, 999)
+
+      const yesterdayStart = new Date(todayStart)
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+      const yesterdayEnd = new Date(todayEnd)
+      yesterdayEnd.setDate(yesterdayEnd.getDate() - 1)
+
+      // ── A) Summary metrics for TODAY (Snapshot) ─────────────────────────────
       const summaryResult = await db
         .select({
           activeOffers: sql<number>`count(DISTINCT ${offers.id})`,
@@ -256,22 +270,23 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
           totalPayout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
         })
         .from(offers)
-        .innerJoin(clicks, eq(clicks.offerId, offers.id))
+        .innerJoin(
+          clicks,
+          and(eq(clicks.offerId, offers.id), gte(clicks.createdAt, todayStart), lte(clicks.createdAt, todayEnd))
+        )
         .leftJoin(
           conversions,
           and(
             eq(conversions.clickId, clicks.id),
-            gte(conversions.createdAt, dateFrom),
-            lte(conversions.createdAt, dateTo)
+            gte(conversions.createdAt, todayStart),
+            lte(conversions.createdAt, todayEnd)
           )
         )
         .where(
           and(
             eq(offers.status, "active"),
             sql`(${offers.startDate} IS NULL OR ${offers.startDate} <= NOW())`,
-            sql`(${offers.endDate} IS NULL OR ${offers.endDate} >= NOW())`,
-            gte(clicks.createdAt, dateFrom),
-            lte(clicks.createdAt, dateTo)
+            sql`(${offers.endDate} IS NULL OR ${offers.endDate} >= NOW())`
           )
         )
 
@@ -283,7 +298,7 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
       const activeOffers = Number(summaryRow.activeOffers ?? 0)
       const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0
 
-      // ── B) Previous period metrics for trends ──────────────────────────────
+      // ── B) Yesterday metrics for trends ──────────────────────────────
       const prevResult = await db
         .select({
           prevRevenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
@@ -292,22 +307,27 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
           prevActiveOffers: sql<number>`count(DISTINCT ${offers.id})`,
         })
         .from(offers)
-        .innerJoin(clicks, eq(clicks.offerId, offers.id))
+        .innerJoin(
+          clicks,
+          and(
+            eq(clicks.offerId, offers.id),
+            gte(clicks.createdAt, yesterdayStart),
+            lte(clicks.createdAt, yesterdayEnd)
+          )
+        )
         .leftJoin(
           conversions,
           and(
             eq(conversions.clickId, clicks.id),
-            gte(conversions.createdAt, prevDateFrom),
-            lte(conversions.createdAt, prevDateTo)
+            gte(conversions.createdAt, yesterdayStart),
+            lte(conversions.createdAt, yesterdayEnd)
           )
         )
         .where(
           and(
             eq(offers.status, "active"),
             sql`(${offers.startDate} IS NULL OR ${offers.startDate} <= NOW())`,
-            sql`(${offers.endDate} IS NULL OR ${offers.endDate} >= NOW())`,
-            gte(clicks.createdAt, prevDateFrom),
-            lte(clicks.createdAt, prevDateTo)
+            sql`(${offers.endDate} IS NULL OR ${offers.endDate} >= NOW())`
           )
         )
 
@@ -323,7 +343,7 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         ? sql<string>`date_trunc('day', ${clicks.createdAt})`
         : sql<string>`date_trunc('month', ${clicks.createdAt})`
 
-      const revenueSeries = await db
+      const rawRevenueSeries = await db
         .select({
           period: groupByExpr,
           revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
@@ -352,6 +372,37 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         )
         .groupBy(groupByExpr)
         .orderBy(groupByExpr)
+
+      // Post-process to ensure we show all 12 months for 12m period
+      let revenueByPeriod = rawRevenueSeries.map((row) => ({
+        period: row.period as string,
+        revenue: Number(row.revenue ?? 0),
+        clicks: Number(row.clicks ?? 0),
+        conversions: Number(row.conversions ?? 0),
+      }))
+
+      if (period === "12m") {
+        const backfilled: typeof revenueByPeriod = []
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+          const iso = d.toISOString().split("T")[0]!
+          const existing = revenueByPeriod.find((r) => {
+            const rDate = new Date(r.period)
+            return rDate.getFullYear() === d.getFullYear() && rDate.getMonth() === d.getMonth()
+          })
+          if (existing) {
+            backfilled.push(existing)
+          } else {
+            backfilled.push({
+              period: iso,
+              revenue: 0,
+              clicks: 0,
+              conversions: 0,
+            })
+          }
+        }
+        revenueByPeriod = backfilled
+      }
 
       // ── D) Customer segments (top 3 categories) ─────────────────────────────
       const segmentsResult = await db
@@ -414,29 +465,32 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         }
       })
 
-      // ── E) Geography (top countries) ────────────────────────────────────────
+      // ── E) Geography (top countries - TODAY) ────────────────────────────────
       const geoResult = await db
         .select({
           countryCode: clicks.geoCountry,
-          total: sql<number>`count(*)`,
+          clicks: sql<number>`count(DISTINCT ${clicks.id})`,
+          conversions: sql<number>`count(DISTINCT ${conversions.id})`,
         })
         .from(clicks)
+        .leftJoin(conversions, eq(clicks.id, conversions.clickId))
         .innerJoin(offers, and(eq(clicks.offerId, offers.id), eq(offers.status, "active")))
         .where(
-          and(gte(clicks.createdAt, dateFrom), lte(clicks.createdAt, dateTo), sql`${clicks.geoCountry} IS NOT NULL`)
+          and(gte(clicks.createdAt, todayStart), lte(clicks.createdAt, todayEnd))
         )
         .groupBy(clicks.geoCountry)
-        .orderBy(desc(sql`count(*)`))
+        .orderBy(desc(sql`count(DISTINCT ${clicks.id})`))
         .limit(15)
 
       const geography = (geoResult as any[]).map((row: any) => ({
-        countryCode: row.countryCode ?? "",
-        total: Number(row.total ?? 0),
-        genderBreakdown: { men: 0, women: 0, other: 0 },
-        lat: 0,
-        lng: 0,
+        countryCode: row.countryCode ?? "unknown",
+        total: Number(row.clicks ?? 0),
+        clicks: Number(row.clicks ?? 0),
+        conversions: Number(row.conversions ?? 0),
         countryName: "",
         flag: "",
+        lat: 0,
+        lng: 0,
       }))
 
       // ── Trend percentages ───────────────────────────────────────────────────
@@ -474,24 +528,35 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         getRevenueForPeriod(365),
       ])
 
-      // ── G) Active Offers List ──────────────────────────────────────────────
+      // ── G) Active Offers List (TODAY) ──────────────────────────────────────────
       const activeOffersList = await db
         .select({
           id: offers.id,
           name: offers.name,
           category: categories.name,
           status: offers.status,
-          conversions: sql<number>`count(${conversions.id})`,
+          clicks: sql<number>`count(DISTINCT ${clicks.id})`,
+          conversions: sql<number>`count(DISTINCT ${conversions.id})`,
           revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
           lastConversion: sql<string>`max(${conversions.createdAt})`,
         })
         .from(offers)
-        .leftJoin(clicks, eq(clicks.offerId, offers.id))
-        .leftJoin(conversions, eq(conversions.clickId, clicks.id))
+        .innerJoin(
+          clicks,
+          and(eq(clicks.offerId, offers.id), gte(clicks.createdAt, todayStart), lte(clicks.createdAt, todayEnd))
+        )
+        .leftJoin(
+          conversions,
+          and(
+            eq(conversions.clickId, clicks.id),
+            gte(conversions.createdAt, todayStart),
+            lte(conversions.createdAt, todayEnd)
+          )
+        )
         .leftJoin(categories, eq(offers.categoryId, categories.id))
-        .where(and(eq(offers.status, "active"), gte(conversions.createdAt, dateFrom), lte(conversions.createdAt, dateTo)))
+        .where(eq(offers.status, "active"))
         .groupBy(offers.id, offers.name, categories.id, categories.name)
-        .orderBy(desc(sql`count(${conversions.id})`))
+        .orderBy(desc(sql`count(DISTINCT ${clicks.id})`))
         .limit(5)
 
       const trends = {
@@ -522,12 +587,7 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
             currency: "USD",
           },
           trends,
-          revenueByPeriod: (revenueSeries as any[]).map((row: any) => ({
-            period: String(row.period ?? ""),
-            revenue: Number(row.revenue ?? 0),
-            clicks: Number(row.clicks ?? 0),
-            conversions: Number(row.conversions ?? 0),
-          })),
+          revenueByPeriod,
           customerSegments,
           geography,
           activeOffersList: (activeOffersList as any[]).map((row) => ({
@@ -535,6 +595,7 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
             name: row.name,
             category: row.category ?? "Uncategorized",
             status: row.status,
+            clicks: Number(row.clicks ?? 0),
             conversions: Number(row.conversions ?? 0),
             revenue: Number(row.revenue ?? 0),
             lastConversion: row.lastConversion,

@@ -1,117 +1,147 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { formatCompactNumber } from "../utils"
 import type { GeographyItem } from "../types"
 import { Button } from "@adscrush/ui/components/button"
+import { Badge } from "@adscrush/ui/components/badge"
 import DottedMap from "dotted-map"
+import { COUNTRIES } from "../countries"
+import { cn } from "@adscrush/ui/lib/utils"
 
 interface GeographyPanelProps {
   geography: GeographyItem[]
   totalConversions: number
 }
 
+interface HoveredCountryInfo {
+  name: string
+  flag: string
+  total: number
+  clicks: number
+  conversions: number
+  x: number
+  y: number
+}
+
 export function GeographyPanel({ geography, totalConversions }: GeographyPanelProps) {
-  const [hoveredCode, setHoveredCode] = useState<string | null>(null)
+  const [hoveredCountry, setHoveredCountry] = useState<HoveredCountryInfo | null>(null)
+
+  // Map country codes to geographical data
+  const mappedGeography = useMemo(() => {
+    return geography
+      .map((item) => {
+        const countryData = COUNTRIES[item.countryCode.toUpperCase()]
+        if (!countryData) return null
+        return {
+          ...item,
+          name: countryData.name,
+          flag: countryData.flag,
+          lat: countryData.lat,
+          lng: countryData.lng,
+        }
+      })
+      .filter((item): item is GeographyItem & { name: string; flag: string } => item !== null)
+  }, [geography])
 
   // Generate map points using dotted-map
   const mapSVG = useMemo(() => {
-    // Generate a map with specific dimensions
     const map = new DottedMap({ height: 30, grid: "diagonal" })
-    
-    // We can add pins for our geography data
-    geography.forEach(item => {
-      if (item.lat && item.lng) {
-        try {
-          map.addPin({
-            lat: item.lat,
-            lng: item.lng,
-            svgOptions: { color: "var(--primary)", radius: 0.4 }
-          })
-        } catch (e) {
-          // Ignore out of bounds
-        }
-      }
-    })
-
     return map.getPoints()
-  }, [geography])
+  }, [])
 
-  // Simple segmented progress mock based on top 3 regions
-  const topRegions = useMemo(() => {
-    const sorted = [...geography].sort((a, b) => b.total - a.total)
-    const total = sorted.reduce((sum, item) => sum + item.total, 0)
-    if (total === 0) return []
-    
-    return [
-      { label: "North America", value: 36, color: "var(--primary)" },
-      { label: "Europe", value: 56, color: "color-mix(in oklch, var(--primary) 55%, var(--background))" },
-      { label: "Other", value: 8, color: "color-mix(in oklch, var(--primary) 25%, var(--background))" },
-    ]
-  }, [geography])
+  // Coordinates mapping from lat/lng to the dotted map projection (63x30)
+  const getCoordinates = (lat: number, lng: number) => {
+    // Basic Equirectangular projection mapping to 63x30
+    const x = ((lng + 180) * 63) / 360
+    const y = ((90 - lat) * 30) / 180
+    return { x, y }
+  }
+
+  // Summary breakdown of clicks vs conversions
+  const totalClicks = mappedGeography.reduce((sum, item) => sum + item.clicks, 0)
+  const totalConvs = mappedGeography.reduce((sum, item) => sum + item.conversions, 0)
+  const totalActionCount = totalClicks + totalConvs
+
+  const breakdown = [
+    {
+      label: "Click",
+      value: totalActionCount > 0 ? (totalClicks / totalActionCount) * 100 : 0,
+      color: "var(--primary)",
+    },
+    {
+      label: "Conversion",
+      value: totalActionCount > 0 ? (totalConvs / totalActionCount) * 100 : 0,
+      color: "color-mix(in oklch, var(--primary) 55%, var(--background))",
+    },
+  ]
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 h-full bg-background">
+    <div className="relative flex h-full flex-col gap-4 bg-background p-4 sm:gap-5 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Geography</span>
-          <div className="flex items-baseline gap-2">
+          <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">Geography</span>
+          <div className="flex items-center gap-2">
             <span className="font-mono text-2xl font-bold tabular-nums">
-              {totalConversions.toLocaleString()}
+              {hoveredCountry ? hoveredCountry.total.toLocaleString() : totalConversions.toLocaleString()}
             </span>
+            {hoveredCountry && (
+              <Badge
+                variant="outline"
+                className="h-6 gap-1.5 rounded-none border-muted/50 bg-muted/5 px-2 font-normal text-muted-foreground"
+              >
+                <span className="text-xs">{hoveredCountry.flag}</span>
+                <span className="text-xs">{hoveredCountry.name}</span>
+              </Badge>
+            )}
           </div>
         </div>
-        <Button variant="outline" size="sm" className="h-7 px-2 text-xs rounded-none">
+        <Button variant="outline" size="sm" className="h-7 rounded-none px-2 text-xs">
           Details
         </Button>
       </div>
 
-      {/* Segmented Progress Bar */}
+      {/* Action Breakdown Progress Bar */}
       <div className="flex flex-col gap-3">
-        <div className="flex h-1.5 w-full overflow-hidden bg-muted/30 rounded-none">
-          {topRegions.map((region, i) => (
+        <div className="flex h-1.5 w-full overflow-hidden rounded-none bg-muted/30">
+          {breakdown.map((item, i) => (
             <div
               key={i}
               className="h-full transition-all duration-500 ease-out"
-              style={{ 
-                width: `${region.value}%`, 
-                backgroundColor: region.color 
+              style={{
+                width: `${item.value}%`,
+                backgroundColor: item.color,
               }}
             />
           ))}
         </div>
-        <div className="flex items-center gap-3 text-[10px] font-medium text-muted-foreground">
-          {topRegions.map((region, i) => (
+        <div className="flex items-center gap-3 text-[10px] font-medium tracking-tight text-muted-foreground uppercase">
+          {breakdown.map((item, i) => (
             <span key={i} className="flex items-center gap-1.5">
-              <span 
-                className="inline-block h-1.5 w-1.5 rounded-full" 
-                style={{ backgroundColor: region.color }} 
-              />
-              {region.label} {region.value}%
+              <span className="inline-block h-1.5 w-1.5 rounded-none" style={{ backgroundColor: item.color }} />
+              {item.label} {item.value.toFixed(1)}%
             </span>
           ))}
         </div>
       </div>
 
       {/* Dotted World Map */}
-      <div className="relative h-[200px] mt-2">
-        <svg 
-          viewBox="0 0 63 30" 
-          preserveAspectRatio="xMidYMid meet" 
-          className="h-full w-full"
-        >
+      <div className="group relative mt-2 h-[200px]">
+        <svg viewBox="0 0 63 30" preserveAspectRatio="xMidYMid meet" className="h-full w-full">
           <defs>
             <style>{`
               @keyframes mapMarkerPulse {
-                0% { opacity: 1.0; transform: scale(1); }
-                50% { opacity: 0.65; transform: scale(1.1); }
-                100% { opacity: 1.0; transform: scale(1); }
+                0% { transform: scale(1); opacity: 0.8; }
+                50% { transform: scale(1.5); opacity: 0.3; }
+                100% { transform: scale(1); opacity: 0.8; }
               }
-              .map-dot { transition: opacity 300ms ease-out; }
-              .map-marker { cursor: pointer; animation: mapMarkerPulse 3s ease-in-out infinite; }
+              .map-marker { cursor: pointer; }
+              .marker-pulse { 
+                animation: mapMarkerPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                transform-origin: center;
+              }
             `}</style>
           </defs>
-          
+
           {/* Background Dots */}
           {mapSVG.map((point, i) => (
             <circle
@@ -120,40 +150,102 @@ export function GeographyPanel({ geography, totalConversions }: GeographyPanelPr
               cy={point.y}
               r={0.35}
               fill="currentColor"
-              opacity="0.12"
+              opacity="0.1"
               style={{ transition: "opacity 300ms ease-out" }}
             />
           ))}
 
-          {/* Hotspots / Pins */}
-          {geography.slice(0, 5).map((item, i) => {
-            const hotspots = [
-              { x: 17.5, y: 10.4, r: 2.8 },
-              { x: 31, y: 7.8, r: 2.25 },
-              { x: 45, y: 14.7, r: 2.03 },
-              { x: 22.5, y: 20.8, r: 1.74 },
-              { x: 56, y: 11.3, r: 1.63 },
-            ]
-            
-            const spot = hotspots[i]
-            if (!spot) return null
+          {/* Real Action Markers (Pins) */}
+          {mappedGeography.map((item, i) => {
+            const { x, y } = getCoordinates(item.lat, item.lng)
+            const radius = Math.max(1, Math.min(3, Math.log10(item.clicks + 1) * 2))
 
             return (
-              <g key={i} className="map-marker" style={{ animationDelay: `${i * 0.6}s` }}>
+              <g
+                key={i}
+                className="map-marker"
+                onMouseEnter={() =>
+                  setHoveredCountry({
+                    name: item.name,
+                    flag: item.flag,
+                    total: item.clicks,
+                    clicks: item.clicks,
+                    conversions: item.conversions,
+                    x,
+                    y,
+                  })
+                }
+                onMouseLeave={() => setHoveredCountry(null)}
+              >
+                {/* Pulse Effect */}
+                <circle cx={x} cy={y} r={radius * 1.5} fill="var(--primary)" className="marker-pulse" />
+                {/* Main Marker */}
                 <circle
-                  cx={spot.x}
-                  cy={spot.y}
-                  r={spot.r}
-                  fill="color-mix(in oklch, var(--primary) 55%, var(--background))"
-                  fillOpacity="0.4"
-                  stroke="color-mix(in oklch, var(--primary) 55%, var(--background))"
-                  strokeWidth="0.4"
-                  strokeOpacity="0.4"
+                  cx={x}
+                  cy={y}
+                  r={radius}
+                  fill="var(--primary)"
+                  fillOpacity="0.8"
+                  stroke="var(--background)"
+                  strokeWidth="0.3"
+                  className="transition-all duration-300 hover:fill-primary"
                 />
               </g>
             )
           })}
         </svg>
+
+        {/* Custom Tooltip */}
+        {hoveredCountry && (
+          <div
+            className="pointer-events-none absolute z-50 min-w-[160px] border border-border bg-background p-3 shadow-xl"
+            style={{
+              left: `${(hoveredCountry.x / 63) * 100}%`,
+              top: `${(hoveredCountry.y / 30) * 100}%`,
+              transform: "translate(-50%, -110%)",
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">{hoveredCountry.flag}</span>
+                <span className="text-sm font-bold tracking-tight uppercase">{hoveredCountry.name}</span>
+              </div>
+              <div className="flex flex-col">
+                <div className="font-mono text-2xl leading-none font-bold">{hoveredCountry.total.toLocaleString()}</div>
+                <span className="mt-1 text-[10px] font-bold text-muted-foreground uppercase">Total Clicks</span>
+              </div>
+
+              <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-none bg-muted/30">
+                <div
+                  className="h-full bg-primary"
+                  style={{
+                    width: `${(hoveredCountry.clicks / (hoveredCountry.clicks + hoveredCountry.conversions || 1)) * 100}%`,
+                  }}
+                />
+                <div
+                  className="h-full bg-primary opacity-50"
+                  style={{
+                    width: `${(hoveredCountry.conversions / (hoveredCountry.clicks + hoveredCountry.conversions || 1)) * 100}%`,
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 bg-primary" />
+                  {hoveredCountry.clicks} Clicks
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 bg-primary opacity-50" />
+                  {hoveredCountry.conversions} Conv
+                </span>
+              </div>
+            </div>
+
+            {/* Tooltip Arrow */}
+            <div className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-r border-b border-border bg-background" />
+          </div>
+        )}
       </div>
     </div>
   )

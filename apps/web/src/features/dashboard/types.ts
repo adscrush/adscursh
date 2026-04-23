@@ -1,4 +1,4 @@
-export type DashboardPeriod = "1w" | "1m" | "3m" | "custom"
+export type DashboardPeriod = "1w" | "1m" | "3m" | "12m" | "custom"
 
 export interface CustomerSegment {
   segment: string
@@ -13,11 +13,8 @@ export interface GeographyItem {
   countryName: string
   flag: string
   total: number
-  genderBreakdown?: {
-    men: number
-    women: number
-    other: number
-  }
+  clicks: number
+  conversions: number
   lat: number
   lng: number
 }

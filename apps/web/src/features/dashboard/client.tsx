@@ -1,7 +1,5 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
-import { PeriodSelector } from "./components/period-selector"
 import { MetricHero } from "./components/metric-hero"
 import { RevenueChart } from "./components/revenue-chart"
 import { CustomerVennPanel } from "./components/customer-venn-panel"
@@ -12,8 +10,7 @@ import { Skeleton } from "@adscrush/ui/components/skeleton"
 import type { DashboardPeriod } from "./types"
 
 export function DashboardClient() {
-  const searchParams = useSearchParams()
-  const period = (searchParams.get("period") as DashboardPeriod) || "1m"
+  const period: DashboardPeriod = "12m"
 
   const { data, isLoading, error } = useDashboardAnalytics({ period })
 
@@ -55,35 +52,34 @@ export function DashboardClient() {
   const { summary, trends, revenueByPeriod, customerSegments, geography, activeOffersList } = data
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-none bg-background">
+    <div className="-m-6 flex flex-col rounded-none bg-background">
       <div className="flex items-center justify-between border-b border-border bg-background p-6">
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <PeriodSelector period={period} />
       </div>
 
       {/* KPI Cards */}
       <MetricHero
         metrics={[
           {
-            label: "Total Revenue",
+            label: "Today's Revenue",
             value: summary.totalRevenue,
             trend: trends.revenueChange,
             format: "currency",
           },
           {
-            label: "Conversion Rate",
+            label: "Today's CR",
             value: summary.conversionRate,
             trend: trends.conversionRateChange,
             format: "percentage",
           },
           {
-            label: "Total Conversions",
+            label: "Today's Conversions",
             value: summary.totalConversions,
             trend: trends.conversionsChange,
             format: "number",
           },
           {
-            label: "Total Clicks",
+            label: "Today's Clicks",
             value: summary.totalClicks,
             trend: trends.clicksChange,
             format: "number",
@@ -111,11 +107,11 @@ export function DashboardClient() {
       </div>
 
       {/* Bottom Grid: Geography & Active Offers */}
-      <div className="grid grid-cols-1 lg:grid-cols-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="border-b border-border lg:col-span-1 lg:border-r lg:border-b-0">
           <GeographyPanel geography={geography} totalConversions={summary.totalConversions} />
         </div>
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-2">
           <ActiveOffersPanel offers={activeOffersList} />
         </div>
       </div>

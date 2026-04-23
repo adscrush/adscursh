@@ -63,7 +63,7 @@ export function MetricHero({ metrics }: MetricHeroProps) {
                 >
                   {trendInfo.formatted}
                 </span>
-                <span className="text-muted-foreground">vs Last Month</span>
+                <span className="text-muted-foreground">vs Yesterday</span>
               </div>
             )}
           </div>
