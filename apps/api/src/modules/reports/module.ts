@@ -1,6 +1,6 @@
 import Elysia from "elysia"
 import { eq, sql, and, gte, lte, type SQL, desc } from "@adscrush/db/drizzle"
-import { clicks, conversions, offers, affiliates, categories } from "@adscrush/db/schema"
+import { clicks, conversions, offers, affiliates, categories, landingPages } from "@adscrush/db/schema"
 import { db } from "../../lib/db"
 import { requireAuth } from "../../middleware/auth.middleware"
 import { overviewQuerySchema, performanceQuerySchema, conversionLogQuerySchema, dashboardQuerySchema } from "./config"
@@ -106,6 +106,62 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
     { query: overviewQuerySchema }
   )
 
+  // ── GET /stats/mtd ────────────────────────────────────────────────────────
+  .get(
+    "/stats/mtd",
+    async ({ query }) => {
+      const { offerId, affiliateId, advertiserId } = overviewQuerySchema.parse(query)
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+
+      const conditions: SQL[] = [gte(clicks.createdAt, startOfMonth), lte(clicks.createdAt, endOfMonth)]
+      if (offerId) conditions.push(eq(clicks.offerId, offerId))
+      if (affiliateId) conditions.push(eq(clicks.affiliateId, affiliateId))
+      if (advertiserId) conditions.push(eq(offers.advertiserId, advertiserId))
+
+      const where = and(...conditions)
+
+      const dailyData = await db
+        .select({
+          date: sql<string>`date(${clicks.createdAt})::text`,
+          clicks: sql<number>`count(distinct ${clicks.id})`,
+          conversions: sql<number>`count(distinct ${conversions.id})`,
+          revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
+          payout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
+        })
+        .from(clicks)
+        .leftJoin(conversions, eq(clicks.id, conversions.clickId))
+        .leftJoin(offers, eq(clicks.offerId, offers.id))
+        .where(where)
+        .groupBy(sql`date(${clicks.createdAt})`)
+        .orderBy(sql`date(${clicks.createdAt})`)
+
+      // Totals
+      const totals = dailyData.reduce((acc, curr) => ({
+        clicks: acc.clicks + Number(curr.clicks),
+        conversions: acc.conversions + Number(curr.conversions),
+        revenue: acc.revenue + Number(curr.revenue),
+        payout: acc.payout + Number(curr.payout),
+      }), { clicks: 0, conversions: 0, revenue: 0, payout: 0 })
+
+      return {
+        success: true,
+        data: {
+          totals,
+          trend: dailyData.map(d => ({
+            date: d.date,
+            clicks: Number(d.clicks),
+            conversions: Number(d.conversions),
+            revenue: Number(d.revenue),
+            payout: Number(d.payout),
+          }))
+        }
+      }
+    },
+    { query: overviewQuerySchema }
+  )
+
   // ── GET /performance ──────────────────────────────────────────────────────
   .get(
     "/performance",
@@ -115,17 +171,32 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         dateTo,
         offerId,
         affiliateId,
-        groupBy = "offer",
+        advertiserId,
+        status,
+        groupBy = "daily",
         page = 1,
         limit = 50,
       } = performanceQuerySchema.parse(query)
       const offset = (page - 1) * limit
 
-      const from = dateFrom ? new Date(dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      const to = dateTo ? new Date(dateTo) : new Date()
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      
+      const from = dateFrom ? new Date(dateFrom) : startOfMonth
+      let to = dateTo ? new Date(dateTo) : now
+
+      // If dateTo is just a date string (YYYY-MM-DD), ensure it includes the full day
+      if (dateTo && !dateTo.includes("T")) {
+        to.setHours(23, 59, 59, 999)
+      }
+
       const conditions: SQL[] = [gte(clicks.createdAt, from), lte(clicks.createdAt, to)]
+      
       if (offerId) conditions.push(eq(clicks.offerId, offerId))
       if (affiliateId) conditions.push(eq(clicks.affiliateId, affiliateId))
+      if (advertiserId) conditions.push(eq(offers.advertiserId, advertiserId))
+      if (status) conditions.push(eq(offers.status, status as any))
+
       const where = and(...conditions)
 
       if (groupBy === "offer") {
@@ -168,23 +239,83 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
         return { success: true, data }
       }
 
-      const data = await db
-        .select({
-          groupKey: sql<string>`date(${clicks.createdAt})`,
-          clicks: sql<number>`count(distinct ${clicks.id})`,
-          conversions: sql<number>`count(distinct ${conversions.id})`,
-          revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
-          payout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
-        })
-        .from(clicks)
-        .leftJoin(conversions, eq(clicks.id, conversions.clickId))
-        .where(where)
-        .groupBy(sql`date(${clicks.createdAt})`)
-        .orderBy(sql`date(${clicks.createdAt})`)
-        .limit(limit)
-        .offset(offset)
+      if (groupBy === "landing_page") {
+        const data = await db
+          .select({
+            groupKey: sql<string>`coalesce(${clicks.landingPageId}, 'default_offer_url')`,
+            groupName: sql<string>`coalesce(${landingPages.name}, 'default_offer_url')`,
+            clicks: sql<number>`count(distinct ${clicks.id})`,
+            conversions: sql<number>`count(distinct ${conversions.id})`,
+            revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
+            payout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
+          })
+          .from(clicks)
+          .leftJoin(conversions, eq(clicks.id, conversions.clickId))
+          .leftJoin(landingPages, eq(clicks.landingPageId, landingPages.id))
+          .where(where)
+          .groupBy(sql`coalesce(${clicks.landingPageId}, 'default_offer_url')`, landingPages.name)
+          .limit(limit)
+          .offset(offset)
+        return { success: true, data }
+      }
 
-      return { success: true, data }
+      if (groupBy === "detailed") {
+        const data = await db
+          .select({
+            offerId: offers.id,
+            offerName: offers.name,
+            affiliateId: affiliates.id,
+            affiliateName: affiliates.name,
+            lpId: sql<string>`coalesce(${clicks.landingPageId}, 'default_offer_url')`,
+            lpName: sql<string>`coalesce(${landingPages.name}, 'default_offer_url')`,
+            country: clicks.geoCountry,
+            clicks: sql<number>`count(distinct ${clicks.id})`,
+            conversions: sql<number>`count(distinct ${conversions.id})`,
+            revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
+            payout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
+          })
+          .from(clicks)
+          .innerJoin(offers, eq(clicks.offerId, offers.id))
+          .innerJoin(affiliates, eq(clicks.affiliateId, affiliates.id))
+          .leftJoin(conversions, eq(clicks.id, conversions.clickId))
+          .leftJoin(landingPages, eq(clicks.landingPageId, landingPages.id))
+          .where(where)
+          .groupBy(
+            offers.id, 
+            offers.name, 
+            affiliates.id, 
+            affiliates.name, 
+            sql`coalesce(${clicks.landingPageId}, 'default_offer_url')`,
+            landingPages.name,
+            clicks.geoCountry
+          )
+          .limit(limit)
+          .offset(offset)
+        return { success: true, data }
+      }
+
+      if (groupBy === "date" || groupBy === "daily") {
+        const data = await db
+          .select({
+            groupKey: sql<string>`date(${clicks.createdAt})::text`,
+            clicks: sql<number>`count(distinct ${clicks.id})`,
+            conversions: sql<number>`count(distinct ${conversions.id})`,
+            revenue: sql<string>`coalesce(sum(${conversions.revenue}), 0)`,
+            payout: sql<string>`coalesce(sum(${conversions.payout}), 0)`,
+          })
+          .from(clicks)
+          .leftJoin(conversions, eq(clicks.id, conversions.clickId))
+          .leftJoin(offers, eq(clicks.offerId, offers.id))
+          .where(where)
+          .groupBy(sql`date(${clicks.createdAt})`)
+          .orderBy(sql`date(${clicks.createdAt})`)
+          .limit(limit)
+          .offset(offset)
+
+        return { success: true, data }
+      }
+
+      return { success: true, data: [] }
     },
     { query: performanceQuerySchema }
   )
@@ -218,10 +349,13 @@ export const reportRoutes = new Elysia({ prefix: "/reports" })
             createdAt: conversions.createdAt,
             offerName: offers.name,
             affiliateName: affiliates.name,
+            landingPageName: sql<string>`coalesce(${landingPages.name}, 'default_offer_url')`,
           })
           .from(conversions)
           .leftJoin(offers, eq(conversions.offerId, offers.id))
           .leftJoin(affiliates, eq(conversions.affiliateId, affiliates.id))
+          .leftJoin(clicks, eq(conversions.clickId, clicks.id))
+          .leftJoin(landingPages, eq(clicks.landingPageId, landingPages.id))
           .where(where)
           .orderBy(sql`${conversions.createdAt} desc`)
           .limit(limit)

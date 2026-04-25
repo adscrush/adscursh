@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { formatCurrency, formatTrend } from "../utils"
 import type { RevenuePeriod } from "../types"

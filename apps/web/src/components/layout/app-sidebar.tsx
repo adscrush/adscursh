@@ -25,11 +25,11 @@ import {
 
 const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: IconDashboard },
-  { title: "Offers", href: "/dashboard/offers", icon: IconAd2 },
-  { title: "Affiliates", href: "/dashboard/affiliates", icon: IconUsers },
-  { title: "Advertisers", href: "/dashboard/advertisers", icon: IconBuildingStore },
-  { title: "Reports", href: "/dashboard/reports", icon: IconChartBar },
-  { title: "Employees", href: "/dashboard/employees", icon: IconUserCog },
+  { title: "Offers", href: "/offers", icon: IconAd2 },
+  { title: "Affiliates", href: "/affiliates", icon: IconUsers },
+  { title: "Advertisers", href: "/advertisers", icon: IconBuildingStore },
+  { title: "Reports", href: "/reports", icon: IconChartBar },
+  { title: "Employees", href: "/employees", icon: IconUserCog },
 ]
 
 export function AppSidebar() {

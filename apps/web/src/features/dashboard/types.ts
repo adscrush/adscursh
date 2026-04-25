@@ -54,6 +54,7 @@ export interface ActiveOfferItem {
   name: string
   category: string
   status: string
+  clicks: number
   conversions: number
   revenue: number
   lastConversion: string | null

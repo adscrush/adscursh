@@ -7,7 +7,7 @@ const dateRange = {
 
 const paging = {
   page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().max(200).optional(),
+  limit: z.coerce.number().int().positive().max(2000).optional(),
 }
 
 export const overviewQuerySchema = z.object({
@@ -22,7 +22,8 @@ export const performanceQuerySchema = z.object({
   offerId: z.string().optional(),
   affiliateId: z.string().optional(),
   advertiserId: z.string().optional(),
-  groupBy: z.enum(["offer", "affiliate", "date"]).optional(),
+  status: z.string().optional(),
+  groupBy: z.enum(["offer", "affiliate", "date", "daily", "landing_page", "detailed"]).optional(),
   ...paging,
 })
 
